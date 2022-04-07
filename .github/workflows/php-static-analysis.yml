@@ -31,10 +31,10 @@ jobs:
           composer-options: "--prefer-dist"
 
       - name: Check coding standards PHP
-        run: composer check-coding-standards
+        run: @php ./vendor/squizlabs/php_codesniffer/bin/phpcs
 
       - name: Check Psalm
-        run: composer check-psalm
+        run: @php ./vendor/vimeo/psalm/psalm --output-format=compact --no-cache
 
       - name: Annotate coding standards errors PHP
         if: always()
