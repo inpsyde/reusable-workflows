@@ -44,5 +44,10 @@ jobs:
           env.USER != '' && env.TOKEN != ''
         run: composer config --global --auth ${{ inputs.PACKAGIST_COM_URL }} ${{ env.USER }} ${{ env.TOKEN }}
 
+      - name: Install composer dependencies (use cache)
+        uses: ramsey/composer-install@v1
+        with:
+          composer-options: "--prefer-dist"
+
       - name: Run PHPUnit unit tests
         run: composer tests:unit
