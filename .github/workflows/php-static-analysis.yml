@@ -29,7 +29,8 @@ jobs:
           php-version: 7.4
 
       - name: Packagist.com Auth
-        if: ${{ secrets.PACKAGIST_COM_USER && secrets.PACKAGIST_COM_TOKEN }}
+        if: |
+          secrets.PACKAGIST_COM_USER !== '' && secrets.PACKAGIST_COM_TOKEN !== ''
         run: composer config --global --auth ${{ inputs.PACKAGIST_COM_URL }} ${{ secrets.PACKAGIST_COM_USER }} ${{ secrets.PACKAGIST_COM_TOKEN }}
 
       - name: Validate composer.json and composer.lock
