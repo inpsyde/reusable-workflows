@@ -8,13 +8,13 @@ on:
         default: 'http-basic.repo.packagist.com'
         required: false
         type: string
-#    secrets:
-#      PACKAGIST_COM_USER:
-#        description: 'Defines a packagist.com user which can be used for composer config --auth'
-#        required: false
-#      PACKAGIST_COM_TOKEN:
-#        description: 'Defines a packagist.com token which can be used for composer config --auth'
-#        required: false
+    secrets:
+      PACKAGIST_COM_USER:
+        description: 'Defines a packagist.com user which can be used for composer config --auth'
+        required: false
+      PACKAGIST_COM_TOKEN:
+        description: 'Defines a packagist.com token which can be used for composer config --auth'
+        required: false
 
 jobs:
   static-analysis:
@@ -29,9 +29,12 @@ jobs:
           php-version: 7.4
 
       - name: Packagist.com Auth
+        env:
+          USER: ${{ secrets.PACKAGIST_COM_USER }}
+          TOKEN: ${{ secrets.PACKAGIST_COM_TOKEN }}
         if: |
-          secrets.PACKAGIST_COM_USER !== '' && secrets.PACKAGIST_COM_TOKEN !== ''
-        run: composer config --global --auth ${{ inputs.PACKAGIST_COM_URL }} ${{ secrets.PACKAGIST_COM_USER }} ${{ secrets.PACKAGIST_COM_TOKEN }}
+          env.USER !== '' && env.TOKEN !== ''
+        run: composer config --global --auth ${{ inputs.PACKAGIST_COM_URL }} ${{ env.USER }} ${{ env.TOKEN }}
 
       - name: Validate composer.json and composer.lock
         run: composer validate
