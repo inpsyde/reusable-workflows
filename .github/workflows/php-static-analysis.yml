@@ -2,23 +2,16 @@ name: PHP static code analysis
 
 on:
   workflow_call:
-    inputs:
-      PACKAGIST_COM_URL:
-        description: 'Defines a packagist.com URL which can be used for composer config --auth'
-        default: 'http-basic.repo.packagist.com'
-        required: false
-        type: string
     secrets:
-      PACKAGIST_COM_USER:
-        description: 'Defines a packagist.com user which can be used for composer config --auth'
-        required: false
-      PACKAGIST_COM_TOKEN:
-        description: 'Defines a packagist.com token which can be used for composer config --auth'
+      COMPOSER_AUTH_JSON:
+        description: 'Defines the JSON as string for auth.json to use for private packagist services.'
         required: false
 
 jobs:
   static-analysis:
     runs-on: ubuntu-latest
+    env:
+      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -28,14 +21,6 @@ jobs:
         with:
           php-version: 7.4
           tools: composer,cs2pr
-
-      - name: Packagist.com Auth
-        env:
-          USER: ${{ secrets.PACKAGIST_COM_USER }}
-          TOKEN: ${{ secrets.PACKAGIST_COM_TOKEN }}
-        if: |
-          env.USER != '' && env.TOKEN != ''
-        run: composer config --global --auth ${{ inputs.PACKAGIST_COM_URL }} ${{ env.USER }} ${{ env.TOKEN }}
 
       - name: Validate composer.json and composer.lock
         run: composer validate
