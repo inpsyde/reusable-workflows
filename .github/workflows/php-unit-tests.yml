@@ -30,9 +30,9 @@ jobs:
 
       - name: Packagist.com Auth
         env:
-          AUTH_JSON: ${{ secrets.COMPOSER_AUTH_JSON }}
-        if: ${{env.COMPOSER_AUTH_JSON != ''}}
-        run: echo '${{ env.COMPOSER_AUTH_JSON }}' > $GITHUB_WORKSPACE/auth.json
+          COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH_JSON }}
+        if: ${{env.COMPOSER_AUTH != ''}}
+        run: echo '${{ env.COMPOSER_AUTH }}' > $GITHUB_WORKSPACE/auth.json
 
       - name: Install composer dependencies (use cache)
         uses: ramsey/composer-install@v1
