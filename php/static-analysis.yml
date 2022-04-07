@@ -1,4 +1,4 @@
-name: PHP CS
+name: Static code analysis PHP
 
 on:
   workflow_call:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   php-cs:
-    name: Pass input and secrets to my-action
+    name: Static code analysis PHP
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -34,6 +34,9 @@ jobs:
 
       - name: Check coding standards PHP
         run: composer check-coding-standards
+
+      - name: Check Psalm
+        run: composer check-psalm
 
       - name: Annotate coding standards errors PHP
         if: always()
