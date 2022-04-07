@@ -1,0 +1,40 @@
+name: PHP CS
+
+on:
+  workflow_call:
+    # TODO: Define secrets/inputs required for this workflow.
+    #secrets:
+    #  PACKAGIST_TOKEN:
+    #    required: true
+
+jobs:
+  php-cs:
+    name: Pass input and secrets to my-action
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 7.4
+
+      # TODO: test it secrets.PACKAGIST_TOKEN is set and call this
+      #- name: Packagist.com Auth
+      #  run: composer config --global --auth http-basic.repo.packagist.com token ${{ secrets.PACKAGIST_TOKEN }}
+
+      - name: Validate composer.json and composer.lock
+        run: composer validate
+
+      - name: Install composer dependencies (use cache)
+        uses: ramsey/composer-install@v1
+        with:
+          composer-options: "--prefer-dist"
+
+      - name: Check coding standards PHP
+        run: composer check-coding-standards
+
+      - name: Annotate coding standards errors PHP
+        if: always()
+        run: cs2pr --graceful-warnings ./phpcs-report.xml
