@@ -2,11 +2,11 @@ name: PHP static code analysis
 
 on:
   workflow_call:
-    # TODO: Define secrets/inputs required for this workflow.
     inputs:
       PACKAGIST_COM_URL:
         description: 'Defines a packagist.com URL which can be used for composer config --auth'
         default: 'http-basic.repo.packagist.com'
+        required: false
         type: string
     secrets:
       PACKAGIST_COM_USER:
@@ -30,8 +30,7 @@ jobs:
           php-version: 7.4
 
       - name: Packagist.com Auth
-        if: |
-          secrets.PACKAGIST_COM_USER != '' && secrets.PACKAGIST_COM_TOKEN != ''
+        if: ${{secrets.PACKAGIST_COM_USER != '' && secrets.PACKAGIST_COM_TOKEN != ''}}
         run: composer config --global --auth ${{ inputs.PACKAGIST_COM_URL }} ${{ secrets.PACKAGIST_COM_USER }} ${{ secrets.PACKAGIST_COM_TOKEN }}
 
       - name: Validate composer.json and composer.lock
