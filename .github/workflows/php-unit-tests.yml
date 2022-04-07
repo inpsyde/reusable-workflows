@@ -1,0 +1,45 @@
+name: PHP unit tests
+
+on:
+  workflow_call:
+    inputs:
+      VERSIONS:
+        description: 'Defines a matrix of PHP versions as JSON-string like following: "[\"7.4\", \"8.0\"]"'
+        default: '7.4'
+        required: false
+        type: string
+      PACKAGIST_COM_URL:
+        description: 'Defines a packagist.com URL which can be used for composer config --auth'
+        default: 'http-basic.repo.packagist.com'
+        required: false
+        type: string
+    secrets:
+      PACKAGIST_COM_USER:
+        description: 'Defines a packagist.com user which can be used for composer config --auth'
+        required: false
+      PACKAGIST_COM_TOKEN:
+        description: 'Defines a packagist.com token which can be used for composer config --auth'
+        required: false
+
+jobs:
+  static-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{fromJson(inputs.VERSIONS)}}
+
+      - name: Packagist.com Auth
+        env:
+          USER: ${{ secrets.PACKAGIST_COM_USER }}
+          TOKEN: ${{ secrets.PACKAGIST_COM_TOKEN }}
+        if: |
+          env.USER != '' && env.TOKEN != ''
+        run: composer config --global --auth ${{ inputs.PACKAGIST_COM_URL }} ${{ env.USER }} ${{ env.TOKEN }}
+
+      - name: Run PHPUnit unit tests
+        run: composer tests:unit
