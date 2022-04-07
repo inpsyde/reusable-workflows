@@ -3,9 +3,18 @@ name: Static code analysis PHP
 on:
   workflow_call:
     # TODO: Define secrets/inputs required for this workflow.
-    #secrets:
-    #  PACKAGIST_TOKEN:
-    #    required: true
+    inputs:
+      PACKAGIST_COM_URL:
+        description: 'Defines a packagist.com URL which can be used for composer config --auth'
+        default: 'http-basic.repo.packagist.com'
+        type: string
+    secrets:
+      PACKAGIST_COM_USER:
+        description: 'Defines a packagist.com user which can be used for composer config --auth'
+        required: false
+      PACKAGIST_COM_TOKEN:
+        description: 'Defines a packagist.com token which can be used for composer config --auth'
+        required: false
 
 jobs:
   static-analysis:
@@ -20,9 +29,10 @@ jobs:
         with:
           php-version: 7.4
 
-      # TODO: test it secrets.PACKAGIST_TOKEN is set and call this
-      #- name: Packagist.com Auth
-      #  run: composer config --global --auth http-basic.repo.packagist.com token ${{ secrets.PACKAGIST_TOKEN }}
+      - name: Packagist.com Auth
+        if: |
+          secrets.PACKAGIST_COM_USER != '' && secrets.PACKAGIST_COM_TOKEN != ''
+        run: composer config --global --auth ${{ inputs.PACKAGIST_COM_URL }} ${{ secrets.PACKAGIST_COM_USER }} ${{ secrets.PACKAGIST_COM_TOKEN }}
 
       - name: Validate composer.json and composer.lock
         run: composer validate
