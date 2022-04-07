@@ -5,7 +5,7 @@ on:
     inputs:
       VERSIONS:
         description: 'Defines a matrix of PHP versions as JSON-string like following: "[\"7.4\", \"8.0\"]"'
-        default: '7.4'
+        default: '["7.4"]'
         required: false
         type: string
       PACKAGIST_COM_URL:
@@ -24,6 +24,9 @@ on:
 jobs:
   static-analysis:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version: ${{fromJson(inputs.VERSIONS)}}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -31,7 +34,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{fromJson(inputs.VERSIONS)}}
+          php-version: ${{ matrix.php-versions }}
 
       - name: Packagist.com Auth
         env:
