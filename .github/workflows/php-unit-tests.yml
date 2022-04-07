@@ -36,4 +36,4 @@ jobs:
           composer-options: "--prefer-dist"
 
       - name: Run PHPUnit unit tests
-        run: composer tests:unit
+        run: vendor/phpunit/phpunit/phpunit  --coverage-text
