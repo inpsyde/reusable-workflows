@@ -19,6 +19,8 @@ jobs:
     strategy:
       matrix:
         php-version: ${{fromJson(inputs.VERSIONS)}}
+    env:
+      COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH_JSON }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -27,12 +29,6 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
-
-      - name: Packagist.com Auth
-        env:
-          COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH_JSON }}
-        if: ${{env.COMPOSER_AUTH != ''}}
-        run: echo '${{ env.COMPOSER_AUTH }}' > $GITHUB_WORKSPACE/auth.json
 
       - name: Install composer dependencies (use cache)
         uses: ramsey/composer-install@v1
