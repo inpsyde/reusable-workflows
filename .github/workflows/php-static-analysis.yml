@@ -8,17 +8,16 @@ on:
         default: 'http-basic.repo.packagist.com'
         required: false
         type: string
-    secrets:
-      PACKAGIST_COM_USER:
-        description: 'Defines a packagist.com user which can be used for composer config --auth'
-        required: false
-      PACKAGIST_COM_TOKEN:
-        description: 'Defines a packagist.com token which can be used for composer config --auth'
-        required: false
+#    secrets:
+#      PACKAGIST_COM_USER:
+#        description: 'Defines a packagist.com user which can be used for composer config --auth'
+#        required: false
+#      PACKAGIST_COM_TOKEN:
+#        description: 'Defines a packagist.com token which can be used for composer config --auth'
+#        required: false
 
 jobs:
   static-analysis:
-    name: Static code analysis PHP
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -30,7 +29,7 @@ jobs:
           php-version: 7.4
 
       - name: Packagist.com Auth
-        if: ${{secrets.PACKAGIST_COM_USER != '' && secrets.PACKAGIST_COM_TOKEN != ''}}
+        if: ${{ secrets.PACKAGIST_COM_USER && secrets.PACKAGIST_COM_TOKEN }}
         run: composer config --global --auth ${{ inputs.PACKAGIST_COM_URL }} ${{ secrets.PACKAGIST_COM_USER }} ${{ secrets.PACKAGIST_COM_TOKEN }}
 
       - name: Validate composer.json and composer.lock
