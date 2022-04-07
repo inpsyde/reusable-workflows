@@ -33,7 +33,7 @@ jobs:
           USER: ${{ secrets.PACKAGIST_COM_USER }}
           TOKEN: ${{ secrets.PACKAGIST_COM_TOKEN }}
         if: |
-          env.USER !== '' && env.TOKEN !== ''
+          env.USER != '' && env.TOKEN != ''
         run: composer config --global --auth ${{ inputs.PACKAGIST_COM_URL }} ${{ env.USER }} ${{ env.TOKEN }}
 
       - name: Validate composer.json and composer.lock
