@@ -8,7 +8,7 @@ on:
     #    required: true
 
 jobs:
-  php-cs:
+  static-analysis:
     name: Static code analysis PHP
     runs-on: ubuntu-latest
     steps:
