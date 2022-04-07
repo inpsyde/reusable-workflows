@@ -1,4 +1,4 @@
-name: Static code analysis PHP
+name: PHP static code analysis
 
 on:
   workflow_call:
