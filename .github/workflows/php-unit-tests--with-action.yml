@@ -1,0 +1,47 @@
+name: PHP unit tests with action
+
+on:
+  workflow_call:
+    inputs:
+      VERSIONS:
+        description: 'Defines a matrix of PHP versions as JSON-string like following: "[\"7.4\", \"8.0\"]"'
+        default: '["7.4"]'
+        required: false
+        type: string
+      ARGS:
+        description: 'Additional arguments are used on PHP Unit like "--testsuite {name}"'
+        default: ''
+        required: false
+        type: string
+    secrets:
+      COMPOSER_AUTH_JSON:
+        description: 'Defines the JSON as string for auth.json to use for private packagist services.'
+        required: false
+
+jobs:
+  phpunit:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version: ${{fromJson(inputs.VERSIONS)}}
+    env:
+      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+
+      - name: Install composer dependencies (use cache)
+        uses: ramsey/composer-install@v1
+        with:
+          composer-options: "--prefer-dist"
+
+      - name: Run PHPUnit unit tests
+        uses: php-actions/phpunit@v3
+        with:
+          php_version: ${{ matrix.php-version }}
+          args: "${{ input.ARGS }} --coverage-text"
