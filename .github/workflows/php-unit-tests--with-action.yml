@@ -44,4 +44,5 @@ jobs:
         uses: php-actions/phpunit@v3
         with:
           php_version: ${{ matrix.php-version }}
-          args: "${{ inputs.ARGS }} --coverage-text"
+          php_extensions: "xdebug"
+          args: "--coverage-text ${{ inputs.ARGS }}"
