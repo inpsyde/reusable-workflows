@@ -1,4 +1,4 @@
-name: PHP unit tests
+name: PHPUnit tests
 
 on:
   workflow_call:
@@ -9,8 +9,8 @@ on:
         required: false
         type: string
       PHPUNIT_ARGS:
-        description: ' Extra arguments to pass to the phpunit binary.'
-        default: '--coverage-text'
+        description: 'Extra arguments to pass to the PHPUnit binary.'
+        default: ''
         required: false
         type: string
     secrets:
@@ -40,5 +40,5 @@ jobs:
         with:
           composer-options: "--prefer-dist"
 
-      - name: Run PHPUnit unit tests
-        run: "vendor/phpunit/phpunit/phpunit ${{inputs.PHPUNIT_ARGS}}"
+      - name: Run PHPUnit
+        run: "vendor/phpunit/phpunit/phpunit ${{inputs.PHPUNIT_ARGS}} --coverage-text"
