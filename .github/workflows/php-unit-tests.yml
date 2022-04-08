@@ -3,9 +3,14 @@ name: PHP unit tests
 on:
   workflow_call:
     inputs:
-      VERSIONS:
-        description: 'Defines a matrix of PHP versions as JSON-string like following: "[\"7.4\", \"8.0\"]"'
+      PHP_MATRIX:
+        description: 'Defines a matrix of PHP versions as JSON-string like following: "[\"7.4\", \"8.0\"]".'
         default: '["7.4"]'
+        required: false
+        type: string
+      PHPUNIT_ARGS:
+        description: ' Extra arguments to pass to the phpunit binary.'
+        default: '--coverage-text'
         required: false
         type: string
     secrets:
@@ -18,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-version: ${{fromJson(inputs.VERSIONS)}}
+        php-version: ${{fromJson(inputs.PHP_MATRIX)}}
     env:
       COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
     steps:
@@ -36,4 +41,4 @@ jobs:
           composer-options: "--prefer-dist"
 
       - name: Run PHPUnit unit tests
-        run: vendor/phpunit/phpunit/phpunit  --coverage-text
+        run: "vendor/phpunit/phpunit/phpunit ${{inputs.PHPUNIT_ARGS}}"
