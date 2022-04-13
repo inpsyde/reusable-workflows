@@ -4,7 +4,7 @@ on:
   workflow_call:
     secrets:
       COMPOSER_AUTH_JSON:
-        description: 'Defines the JSON as string for auth.json to use for private packagist services.'
+        description: 'Authentication for privately hosted packages and repositories as a JSON formatted object.'
         required: false
 
 jobs:
@@ -26,17 +26,17 @@ jobs:
       - name: Validate composer.json and composer.lock
         run: composer validate
 
-      - name: Install composer dependencies (use cache)
+      - name: Install Composer dependencies
         uses: ramsey/composer-install@v1
         with:
           composer-options: "--prefer-dist"
 
-      - name: Check coding standards PHP
+      - name: Run PHP_CodeSniffer
         run: vendor/squizlabs/php_codesniffer/bin/phpcs
 
-      - name: Check Psalm
+      - name: Run Psalm
         run: vendor/vimeo/psalm/psalm --output-format=compact --no-cache
 
-      - name: Annotate coding standards errors PHP
+      - name: Annotate static code analysis violations
         if: always()
         run: cs2pr --graceful-warnings ./phpcs-report.xml
