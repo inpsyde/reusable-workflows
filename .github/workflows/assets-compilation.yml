@@ -82,7 +82,7 @@ jobs:
         run: composer -vvv compile-assets --env=root
 
       - name: Upload assets artifact [DEV]
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: ${{ !contains(github.ref, 'refs/tags/') }}
         with:
           name: assets-${{ env.ASSETS_HASH }}
