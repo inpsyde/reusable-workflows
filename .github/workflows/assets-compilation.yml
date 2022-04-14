@@ -1,0 +1,92 @@
+name: Assets compilation
+
+on:
+  workflow_call:
+    inputs:
+      NPM_REGISTRY_SCOPE:
+        description: 'Name of the private npm registry scope, including the character "@".'
+        default: '@inpsyde'
+        required: false
+        type: string
+      NPM_REGISTRY_DOMAIN:
+        description: 'Domain of the private npm registry, without protocol and trailing slash.'
+        default: 'npm.pkg.github.com'
+        required: false
+        type: string
+    secrets:
+      COMPOSER_AUTH_JSON:
+        description: 'Authentication for privately hosted packages and repositories as a JSON formatted object.'
+        required: false
+      NPM_REGISTRY_TOKEN:
+        description: 'Authentication for the private npm registry.'
+        required: false
+
+jobs:
+  assets-compilation:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    env:
+      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
+      "NPM_CONFIG_${{ inputs.NPM_REGISTRY_SCOPE }}:registry": 'https://${{ inputs.NPM_REGISTRY_DOMAIN }}'
+      "NPM_CONFIG_//${{ inputs.NPM_REGISTRY_DOMAIN }}/:_authToken": '${{ secrets.NPM_REGISTRY_TOKEN }}'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 7.4
+          tools: composer
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v1
+        with:
+          composer-options: "--prefer-dist"
+
+      - name: Extract package hash into env [DEV]
+        if: ${{ !contains(github.ref, 'refs/tags/') }}
+        run: echo "ASSETS_HASH=$(composer assets-hash)" >> $GITHUB_ENV
+
+      - name: Extract tag name into env [PROD]
+        if: ${{ contains(github.ref, 'refs/tags/') }}
+        run: echo "TAG_NAME=$(echo ${GITHUB_REF#refs/*/})" >> $GITHUB_ENV
+
+      - name: Set ENCORE_ENV to production [PROD]
+        if: ${{ contains(github.ref, 'refs/tags/') }}
+        run: echo "ENCORE_ENV=production" >> $GITHUB_ENV
+
+      - name: Compile assets
+        run: composer -vvv compile-assets --env=root
+
+      - name: Upload assets artifact [DEV]
+        uses: actions/upload-artifact@v2
+        if: ${{ !contains(github.ref, 'refs/tags/') }}
+        with:
+          name: assets-${{ env.ASSETS_HASH }}
+          path: assets
+
+      - name: Zip assets folder [PROD]
+        uses: montudor/action-zip@v0.1.0
+        if: ${{ contains(github.ref, 'refs/tags/') }}
+        with:
+          args: zip -qq -r assets-${{ env.TAG_NAME }}.zip assets
+
+      - name: Upload release attachment [PROD]
+        if: ${{ contains(github.ref, 'refs/tags/') }}
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: assets-${{ env.TAG_NAME }}.zip
+          tag: ${{ github.ref }}
+          overwrite: true
+          body: |
+            # ${{ env.TAG_NAME }}
+            Compiled assets available in `assets-${{ env.TAG_NAME }}.zip`.
