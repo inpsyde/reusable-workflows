@@ -89,7 +89,7 @@ jobs:
           path: assets
 
       - name: Zip assets folder [PROD]
-        uses: montudor/action-zip@v0.1.0
+        uses: montudor/action-zip@v1
         if: ${{ contains(github.ref, 'refs/tags/') }}
         with:
           args: zip -qq -r assets-${{ env.TAG_NAME }}.zip assets
