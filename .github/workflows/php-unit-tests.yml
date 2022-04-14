@@ -31,12 +31,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup PHP
+      - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
 
-      - name: Setup problem matchers for PHPUnit
+      - name: Set up problem matchers for PHPUnit
         run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
       - name: Install Composer dependencies

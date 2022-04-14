@@ -13,6 +13,16 @@ on:
         default: 'npm.pkg.github.com'
         required: false
         type: string
+      NODE_VERSION:
+        description: 'Node version with which the assets will be compiled.'
+        default: '16'
+        required: false
+        type: string
+      PHP_VERSION:
+        description: 'PHP version with which the Composer Asset Compiler is to be executed.'
+        default: '7.4'
+        required: false
+        type: string
     secrets:
       COMPOSER_AUTH_JSON:
         description: 'Authentication for privately hosted packages and repositories as a JSON formatted object.'
@@ -33,10 +43,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup PHP
+      - name: Set up node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ inputs.NODE_VERSION }}
+
+      - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 7.4
+          php-version: ${{ inputs.PHP_VERSION }}
           tools: composer
 
       - uses: actions/cache@v2
