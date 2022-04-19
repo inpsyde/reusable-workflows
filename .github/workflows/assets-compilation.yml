@@ -14,8 +14,8 @@ on:
         required: false
         type: string
       NPM_REGISTRY_DOMAIN:
-        description: Domain of the private npm registry, without protocol and trailing slash.
-        default: 'npm.pkg.github.com'
+        description: Domain of the private npm registry, without trailing slash.
+        default: https://npm.pkg.github.com
         required: false
         type: string
       NODE_VERSION:
@@ -42,8 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
-      "NPM_CONFIG_${{ inputs.NPM_REGISTRY_SCOPE }}:registry": 'https://${{ inputs.NPM_REGISTRY_DOMAIN }}'
-      "NPM_CONFIG_//${{ inputs.NPM_REGISTRY_DOMAIN }}/:_authToken": '${{ secrets.NPM_REGISTRY_TOKEN }}'
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -52,6 +51,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ inputs.NODE_VERSION }}
+          registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
