@@ -9,7 +9,7 @@ on:
         required: false
         type: string
       NPM_REGISTRY_DOMAIN:
-        description: Domain of the private npm registry, without trailing slash.
+        description: Domain of the private npm registry.
         default: https://npm.pkg.github.com/
         required: false
         type: string
