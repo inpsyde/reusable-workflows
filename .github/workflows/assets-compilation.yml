@@ -8,14 +8,9 @@ on:
         default: v
         required: false
         type: string
-      NPM_REGISTRY_SCOPE:
-        description: Name of the private npm registry scope, including the character "@".
-        default: '@inpsyde'
-        required: false
-        type: string
       NPM_REGISTRY_DOMAIN:
         description: Domain of the private npm registry, without trailing slash.
-        default: https://npm.pkg.github.com
+        default: https://npm.pkg.github.com/
         required: false
         type: string
       NODE_VERSION:
