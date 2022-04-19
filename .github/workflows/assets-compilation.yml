@@ -15,7 +15,7 @@ on:
         type: string
       NPM_REGISTRY_DOMAIN:
         description: Domain of the private npm registry, without protocol and trailing slash.
-        default: npm.pkg.github.com
+        default: 'npm.pkg.github.com'
         required: false
         type: string
       NODE_VERSION:
