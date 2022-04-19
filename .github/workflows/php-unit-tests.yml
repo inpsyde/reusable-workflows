@@ -4,18 +4,18 @@ on:
   workflow_call:
     inputs:
       PHP_MATRIX:
-        description: 'Matrix of PHP versions as a JSON formatted object.'
+        description: Matrix of PHP versions as a JSON formatted object.
         default: '["7.4"]'
         required: false
         type: string
       PHPUNIT_ARGS:
-        description: 'Additional arguments passed to the PHPUnit binary.'
+        description: Additional arguments passed to the PHPUnit binary.
         default: ''
         required: false
         type: string
     secrets:
       COMPOSER_AUTH_JSON:
-        description: 'Authentication for privately hosted packages and repositories as a JSON formatted object.'
+        description: Authentication for privately hosted packages and repositories as a JSON formatted object.
         required: false
 
 jobs:

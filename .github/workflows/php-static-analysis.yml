@@ -4,13 +4,13 @@ on:
   workflow_call:
     inputs:
       PHP_VERSION:
-        description: 'PHP version with which the static code analysis is to be executed.'
-        default: '7.4'
+        description: PHP version with which the static code analysis is to be executed.
+        default: 7.4
         required: false
         type: string
     secrets:
       COMPOSER_AUTH_JSON:
-        description: 'Authentication for privately hosted packages and repositories as a JSON formatted object.'
+        description: Authentication for privately hosted packages and repositories as a JSON formatted object.
         required: false
 
 jobs:

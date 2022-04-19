@@ -4,36 +4,36 @@ on:
   workflow_call:
     inputs:
       COMPOSER_VERBOSITY:
-        description: 'Verbosity of Composer output, without the leading dash.'
-        default: 'v'
+        description: Verbosity of Composer output, without the leading dash.
+        default: v
         required: false
         type: string
       NPM_REGISTRY_SCOPE:
-        description: 'Name of the private npm registry scope, including the character "@".'
+        description: Name of the private npm registry scope, including the character "@".
         default: '@inpsyde'
         required: false
         type: string
       NPM_REGISTRY_DOMAIN:
-        description: 'Domain of the private npm registry, without protocol and trailing slash.'
-        default: 'npm.pkg.github.com'
+        description: Domain of the private npm registry, without protocol and trailing slash.
+        default: npm.pkg.github.com
         required: false
         type: string
       NODE_VERSION:
-        description: 'Node version with which the assets will be compiled.'
-        default: '16'
+        description: Node version with which the assets will be compiled.
+        default: 16
         required: false
         type: string
       PHP_VERSION:
-        description: 'PHP version with which the Composer Asset Compiler is to be executed.'
-        default: '7.4'
+        description: PHP version with which the Composer Asset Compiler is to be executed.
+        default: 7.4
         required: false
         type: string
     secrets:
       COMPOSER_AUTH_JSON:
-        description: 'Authentication for privately hosted packages and repositories as a JSON formatted object.'
+        description: Authentication for privately hosted packages and repositories as a JSON formatted object.
         required: false
       NPM_REGISTRY_TOKEN:
-        description: 'Authentication for the private npm registry.'
+        description: Authentication for the private npm registry.
         required: false
 
 jobs:
