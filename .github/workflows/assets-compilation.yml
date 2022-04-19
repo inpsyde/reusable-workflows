@@ -3,6 +3,11 @@ name: Assets compilation
 on:
   workflow_call:
     inputs:
+      COMPOSER_VERBOSITY:
+        description: 'Verbosity of Composer output, without the leading dash.'
+        default: 'v'
+        required: false
+        type: string
       NPM_REGISTRY_SCOPE:
         description: 'Name of the private npm registry scope, including the character "@".'
         default: '@inpsyde'
@@ -79,7 +84,7 @@ jobs:
         run: echo "ENCORE_ENV=production" >> $GITHUB_ENV
 
       - name: Compile assets
-        run: composer -vvv compile-assets --env=root
+        run: composer -${{ inputs.COMPOSER_VERBOSITY }} compile-assets --env=root
 
       - name: Upload assets artifact [DEV]
         uses: actions/upload-artifact@v3
