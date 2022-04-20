@@ -50,6 +50,6 @@ jobs:
         if: ${{ contains(inputs.TARGET, 'psalm') }}
         run: vendor/bin/psalm --output-format=github --no-cache
 
-      - name: Annotate static code analysis violations
+      - name: Annotate PHP_CodeSniffer report
         if: ${{ always() && contains(inputs.TARGET, 'phpcs') }}
         run: cs2pr --graceful-warnings ./phpcs-report.xml
