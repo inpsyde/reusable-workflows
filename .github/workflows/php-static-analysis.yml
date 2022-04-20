@@ -38,10 +38,10 @@ jobs:
           composer-options: "--prefer-dist"
 
       - name: Run PHP_CodeSniffer
-        run: vendor/squizlabs/php_codesniffer/bin/phpcs --report-full --report-checkstyle=./phpcs-report.xml
+        run: vendor/bin/phpcs --report-full --report-checkstyle=./phpcs-report.xml
 
       - name: Run Psalm
-        run: vendor/vimeo/psalm/psalm --output-format=github --no-cache
+        run: vendor/bin/psalm --output-format=github --no-cache
 
       - name: Annotate static code analysis violations
         if: always()

@@ -45,4 +45,4 @@ jobs:
           composer-options: "--prefer-dist"
 
       - name: Run PHPUnit
-        run: "vendor/phpunit/phpunit/phpunit ${{ inputs.PHPUNIT_ARGS }} --coverage-text"
+        run: "vendor/bin/phpunit ${{ inputs.PHPUNIT_ARGS }} --coverage-text"
