@@ -4,8 +4,8 @@ on:
   workflow_call:
     inputs:
       COMPOSER_VERBOSITY:
-        description: Verbosity of Composer output, without the leading dash.
-        default: v
+        description: Verbosity of Composer output.
+        default: '-v'
         required: false
         type: string
       NPM_REGISTRY_DOMAIN:
@@ -79,7 +79,7 @@ jobs:
         run: echo "ENCORE_ENV=production" >> $GITHUB_ENV
 
       - name: Compile assets
-        run: composer -${{ inputs.COMPOSER_VERBOSITY }} compile-assets --env=root
+        run: composer ${{ inputs.COMPOSER_VERBOSITY }} compile-assets --env=root
 
       - name: Upload assets artifact [DEV]
         uses: actions/upload-artifact@v3
