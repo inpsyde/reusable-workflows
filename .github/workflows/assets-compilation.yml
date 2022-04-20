@@ -18,11 +18,6 @@ on:
         default: 16
         required: false
         type: string
-      PHP_VERSION:
-        description: PHP version with which the Composer Asset Compiler is to be executed.
-        default: 7.4
-        required: false
-        type: string
     secrets:
       COMPOSER_AUTH_JSON:
         description: Authentication for privately hosted packages and repositories as a JSON formatted object.
@@ -51,7 +46,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ inputs.PHP_VERSION }}
+          php-version: 7.4
           tools: composer
 
       - uses: actions/cache@v3
