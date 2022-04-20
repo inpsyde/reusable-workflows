@@ -9,7 +9,7 @@ on:
         required: false
         type: string
       TARGET:
-        description: Array of checks to be executed.
+        description: Checks to be executed as a JSON formatted object.
         default: '["phpcs", "psalm"]'
         required: false
         type: string
