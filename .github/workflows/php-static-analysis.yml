@@ -8,6 +8,11 @@ on:
         default: 7.4
         required: false
         type: string
+      TARGET:
+        description: Array of checks to be executed.
+        default: '["phpcs", "psalm"]'
+        required: false
+        type: string
     secrets:
       COMPOSER_AUTH_JSON:
         description: Authentication for privately hosted packages and repositories as a JSON formatted object.
@@ -38,9 +43,11 @@ jobs:
           composer-options: "--prefer-dist"
 
       - name: Run PHP_CodeSniffer
+        if: ${{ contains(inputs.TARGET, 'phpcs') }}
         run: vendor/bin/phpcs --report-full --report-checkstyle=./phpcs-report.xml
 
       - name: Run Psalm
+        if: ${{ contains(inputs.TARGET, 'psalm') }}
         run: vendor/bin/psalm --output-format=github --no-cache
 
       - name: Annotate static code analysis violations
