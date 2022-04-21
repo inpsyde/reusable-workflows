@@ -54,17 +54,18 @@ jobs:
           php-version: 7.4
           tools: composer
 
-      - uses: actions/cache@v3
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v1
+        with:
+          composer-options: ${{ inputs.COMPOSER_ARGS }}
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v3
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-
-      - name: Install Composer dependencies
-        uses: ramsey/composer-install@v1
-        with:
-          composer-options: ${{ inputs.COMPOSER_ARGS }}
 
       - name: Extract package hash into env [DEV]
         if: ${{ !contains(github.ref, 'refs/tags/') }}
