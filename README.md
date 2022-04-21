@@ -38,4 +38,5 @@ either as `input`s or `secret`s. To learn more, consult the documentation of the
 groups here:
 
 [PHP](./docs/php.md)  
+[JavaScript](./docs/js.md)  
 [Assets compilation](./docs/assets-compilation.md)  
