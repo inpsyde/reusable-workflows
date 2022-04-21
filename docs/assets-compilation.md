@@ -46,7 +46,7 @@ jobs:
       COMPOSER_AUTH_JSON: ${{ secrets.COMPOSER_AUTH_JSON }}
       NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
     with:
-      COMPOSER_VERBOSITY: '-vv'
+      COMPILE_ASSETS_ARGS: '-vv --env=root'
       NPM_REGISTRY_DOMAIN: 'https://registry.example.com/'
       NODE_VERSION: 14
 ```
