@@ -41,7 +41,7 @@ jobs:
   static-analysis-javascript:
     uses: inpsyde/reusable-workflows/.github/workflows/js-static-analysis.yml@main
     secrets:
-      COMPOSER_AUTH_JSON: ${{ secrets.COMPOSER_AUTH_JSON }}
+      NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
     with:
       NODE_VERSION: 14
       ESLINT_ARGS: './resources --ext .js'
