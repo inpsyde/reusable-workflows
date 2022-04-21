@@ -32,7 +32,7 @@ jobs:
 | `COMPOSER_AUTH_JSON` | Authentication for privately hosted packages and repositories as a JSON formatted object |
 | `NPM_REGISTRY_TOKEN` | Authentication for the private npm registry.                                             |
 
-**Full example, utilizing all configuration parameters:**
+**Example with configuration parameters:**
 
 ```yml
 name: Assets compilation
