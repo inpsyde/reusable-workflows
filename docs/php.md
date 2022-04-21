@@ -20,16 +20,20 @@ jobs:
 
 #### Inputs
 
-| Name          | Default              | Description                                                        |
-|---------------|----------------------|--------------------------------------------------------------------|
-| `PHP_VERSION` | 7.4                  | PHP version with which the static code analysis is to be executed. |
-| `TARGET`      | `["phpcs", "psalm"]` | Checks to be executed as a JSON formatted object.                  |
+| Name            | Default                                                  | Description                                                       |
+|-----------------|----------------------------------------------------------|-------------------------------------------------------------------|
+| `PHP_VERSION`   | 7.4                                                      | PHP version with which the static code analysis is to be executed |
+| `TARGET`        | `["phpcs", "psalm"]`                                     | Checks to be executed as a JSON formatted object                  |
+| `COMPOSER_ARGS` | `'--prefer-dist'`                                        | Set of arguments passed to Composer                               |
+| `PHPCS_ARGS`    | `'--report-full --report-checkstyle=./phpcs-report.xml'` | Set of arguments passed to PHP_CodeSniffer                        |
+| `PSALM_ARGS`    | `'--output-format=github --no-cache'`                    | Set of arguments passed to Psalm                                  |
+| `CS2PR_ARGS`    | `'--graceful-warnings ./phpcs-report.xml'`               | Set of arguments passed to cs2pr                                  |
 
 #### Secrets
 
-| Name                 | Description                                                                               |
-|----------------------|-------------------------------------------------------------------------------------------|
-| `COMPOSER_AUTH_JSON` | Authentication for privately hosted packages and repositories as a JSON formatted object. |
+| Name                 | Description                                                                              |
+|----------------------|------------------------------------------------------------------------------------------|
+| `COMPOSER_AUTH_JSON` | Authentication for privately hosted packages and repositories as a JSON formatted object |
 
 **Full example, utilizing all configuration parameters:**
 
@@ -67,16 +71,17 @@ jobs:
 
 #### Inputs
 
-| Name           | Default   | Description                                        |
-|----------------|-----------|----------------------------------------------------|
-| `PHP_MATRIX`   | `["7.4"]` | Matrix of PHP versions as a JSON formatted object. |
-| `PHPUNIT_ARGS` | `''`      | Additional arguments passed to the PHPUnit binary. |
+| Name            | Default             | Description                                       |
+|-----------------|---------------------|---------------------------------------------------|
+| `PHP_MATRIX`    | `["7.4"]`           | Matrix of PHP versions as a JSON formatted object |
+| `COMPOSER_ARGS` | `'--prefer-dist'`   | Set of arguments passed to Composer               |
+| `PHPUNIT_ARGS`  | `'--coverage-text'` | Set of arguments passed to PHPUnit                |
 
 #### Secrets
 
-| Name                 | Description                                                                               |
-|----------------------|-------------------------------------------------------------------------------------------|
-| `COMPOSER_AUTH_JSON` | Authentication for privately hosted packages and repositories as a JSON formatted object. |
+| Name                 | Description                                                                              |
+|----------------------|------------------------------------------------------------------------------------------|
+| `COMPOSER_AUTH_JSON` | Authentication for privately hosted packages and repositories as a JSON formatted object |
 
 **Full example, utilizing all configuration parameters:**
 

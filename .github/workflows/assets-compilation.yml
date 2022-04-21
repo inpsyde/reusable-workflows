@@ -3,11 +3,6 @@ name: Assets compilation
 on:
   workflow_call:
     inputs:
-      COMPOSER_VERBOSITY:
-        description: Verbosity of Composer output.
-        default: '-v'
-        required: false
-        type: string
       NPM_REGISTRY_DOMAIN:
         description: Domain of the private npm registry.
         default: https://npm.pkg.github.com/
@@ -16,6 +11,16 @@ on:
       NODE_VERSION:
         description: Node version with which the assets will be compiled.
         default: 16
+        required: false
+        type: string
+      COMPOSER_ARGS:
+        description: Set of arguments passed to Composer.
+        default: '--prefer-dist'
+        required: false
+        type: string
+      COMPILE_ASSETS_ARGS:
+        description: Set of arguments passed to Composer Asset Compiler.
+        default: '-v --env=root'
         required: false
         type: string
     secrets:
@@ -59,7 +64,7 @@ jobs:
       - name: Install Composer dependencies
         uses: ramsey/composer-install@v1
         with:
-          composer-options: "--prefer-dist"
+          composer-options: ${{ inputs.COMPOSER_ARGS }}
 
       - name: Extract package hash into env [DEV]
         if: ${{ !contains(github.ref, 'refs/tags/') }}
@@ -74,7 +79,7 @@ jobs:
         run: echo "ENCORE_ENV=production" >> $GITHUB_ENV
 
       - name: Compile assets
-        run: composer ${{ inputs.COMPOSER_VERBOSITY }} compile-assets --env=root
+        run: composer compile-assets ${{ inputs.COMPILE_ASSETS_ARGS }}
 
       - name: Upload assets artifact [DEV]
         uses: actions/upload-artifact@v3

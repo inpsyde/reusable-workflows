@@ -18,18 +18,19 @@ jobs:
 
 #### Inputs
 
-| Name                  | Default                       | Description                                          |
-|-----------------------|-------------------------------|------------------------------------------------------|
-| `COMPOSER_VERBOSITY`  | `'-v'`                        | Verbosity of Composer output.                        |
-| `NPM_REGISTRY_DOMAIN` | `https://npm.pkg.github.com/` | Domain of the private npm registry.                  |
-| `NODE_VERSION`        | 16                            | Node version with which the assets will be compiled. |
+| Name                  | Default                       | Description                                         |
+|-----------------------|-------------------------------|-----------------------------------------------------|
+| `NPM_REGISTRY_DOMAIN` | `https://npm.pkg.github.com/` | Domain of the private npm registry                  |
+| `NODE_VERSION`        | 16                            | Node version with which the assets will be compiled |
+| `COMPOSER_ARGS`       | `'--prefer-dist'`             | Set of arguments passed to Composer                 |
+| `COMPILE_ASSETS_ARGS` | `'-v --env=root'`             | Set of arguments passed to Composer Asset Compiler  |
 
 #### Secrets
 
-| Name                 | Description                                                                               |
-|----------------------|-------------------------------------------------------------------------------------------|
-| `COMPOSER_AUTH_JSON` | Authentication for privately hosted packages and repositories as a JSON formatted object. |
-| `NPM_REGISTRY_TOKEN` | Authentication for the private npm registry.                                              |
+| Name                 | Description                                                                              |
+|----------------------|------------------------------------------------------------------------------------------|
+| `COMPOSER_AUTH_JSON` | Authentication for privately hosted packages and repositories as a JSON formatted object |
+| `NPM_REGISTRY_TOKEN` | Authentication for the private npm registry.                                             |
 
 **Full example, utilizing all configuration parameters:**
 

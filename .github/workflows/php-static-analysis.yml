@@ -13,6 +13,26 @@ on:
         default: '["phpcs", "psalm"]'
         required: false
         type: string
+      COMPOSER_ARGS:
+        description: Set of arguments passed to Composer.
+        default: '--prefer-dist'
+        required: false
+        type: string
+      PHPCS_ARGS:
+        description: Set of arguments passed to PHP_CodeSniffer.
+        default: '--report-full --report-checkstyle=./phpcs-report.xml'
+        required: false
+        type: string
+      PSALM_ARGS:
+        description: Set of arguments passed to Psalm.
+        default: '--output-format=github --no-cache'
+        required: false
+        type: string
+      CS2PR_ARGS:
+        description: Set of arguments passed to cs2pr.
+        default: '--graceful-warnings ./phpcs-report.xml'
+        required: false
+        type: string
     secrets:
       COMPOSER_AUTH_JSON:
         description: Authentication for privately hosted packages and repositories as a JSON formatted object.
@@ -40,16 +60,16 @@ jobs:
       - name: Install Composer dependencies
         uses: ramsey/composer-install@v1
         with:
-          composer-options: "--prefer-dist"
+          composer-options: ${{ inputs.COMPOSER_ARGS }}
 
       - name: Run PHP_CodeSniffer
         if: ${{ contains(inputs.TARGET, 'phpcs') }}
-        run: vendor/bin/phpcs --report-full --report-checkstyle=./phpcs-report.xml
+        run: vendor/bin/phpcs ${{ inputs.PHPCS_ARGS }}
 
       - name: Run Psalm
         if: ${{ contains(inputs.TARGET, 'psalm') }}
-        run: vendor/bin/psalm --output-format=github --no-cache
+        run: vendor/bin/psalm ${{ inputs.PSALM_ARGS }}
 
       - name: Annotate PHP_CodeSniffer report
         if: ${{ always() && contains(inputs.TARGET, 'phpcs') }}
-        run: cs2pr --graceful-warnings ./phpcs-report.xml
+        run: cs2pr ${{ inputs.CS2PR_ARGS }}
