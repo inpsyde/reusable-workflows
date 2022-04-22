@@ -2,7 +2,7 @@
 
 ## Static code analysis
 
-This workflow runs [Stylint](https://stylelint.io/). It does so by executing the binary in
+This workflow runs [Stylelint](https://stylelint.io/). It does so by executing the binary in
 the `./node_modules/.bin/` folder.
 
 **Simplest possible example:**
