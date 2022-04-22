@@ -51,4 +51,4 @@ jobs:
         run: npm install
 
       - name: Run ESLint
-        run: node_modules/bin/eslint ${{ inputs.ESLINT_ARGS }}
+        run: ./node_modules/.bin/eslint ${{ inputs.ESLINT_ARGS }}

@@ -64,11 +64,11 @@ jobs:
 
       - name: Run PHP_CodeSniffer
         if: ${{ contains(inputs.TARGET, 'phpcs') }}
-        run: vendor/bin/phpcs ${{ inputs.PHPCS_ARGS }}
+        run: ./vendor/bin/phpcs ${{ inputs.PHPCS_ARGS }}
 
       - name: Run Psalm
         if: ${{ contains(inputs.TARGET, 'psalm') }}
-        run: vendor/bin/psalm ${{ inputs.PSALM_ARGS }}
+        run: ./vendor/bin/psalm ${{ inputs.PSALM_ARGS }}
 
       - name: Annotate PHP_CodeSniffer report
         if: ${{ always() && contains(inputs.TARGET, 'phpcs') }}

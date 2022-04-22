@@ -50,4 +50,4 @@ jobs:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
 
       - name: Run PHPUnit
-        run: vendor/bin/phpunit ${{ inputs.PHPUNIT_ARGS }}
+        run: ./vendor/bin/phpunit ${{ inputs.PHPUNIT_ARGS }}
