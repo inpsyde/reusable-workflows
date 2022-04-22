@@ -2,7 +2,8 @@
 
 ## Static code analysis
 
-This workflow runs  [ESLint](https://eslint.org/). It does so by executing the binary.
+This workflow runs [ESLint](https://eslint.org/). It does so by executing the binary in
+the `./node_modules/.bin/` folder.
 
 **Simplest possible example:**
 
@@ -19,11 +20,11 @@ jobs:
 
 #### Inputs
 
-| Name                  | Default                               | Description                                         |
-|-----------------------|---------------------------------------|-----------------------------------------------------|
-| `NPM_REGISTRY_DOMAIN` | `https://npm.pkg.github.com/`         | Domain of the private npm registry                  |
-| `NODE_VERSION`        | 16                                    | Node version with which the assets will be compiled |
-| `ESLINT_ARGS`         | `./resources --ext .js,.jsx,.ts,.tsx` | Set of arguments passed to ESLint                   |
+| Name                  | Default                                 | Description                                         |
+|-----------------------|-----------------------------------------|-----------------------------------------------------|
+| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'`         | Domain of the private npm registry                  |
+| `NODE_VERSION`        | 16                                      | Node version with which the assets will be compiled |
+| `ESLINT_ARGS`         | `'./resources --ext .js,.jsx,.ts,.tsx'` | Set of arguments passed to ESLint                   |
 
 #### Secrets
 
