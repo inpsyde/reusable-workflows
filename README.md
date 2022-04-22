@@ -39,4 +39,5 @@ groups here:
 
 [PHP](./docs/php.md)  
 [JavaScript](./docs/js.md)  
+[Sass](./docs/sass.md)  
 [Assets compilation](./docs/assets-compilation.md)  
