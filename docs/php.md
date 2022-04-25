@@ -1,9 +1,57 @@
 # Reusable workflows – PHP
 
+## Coding standards analysis
+
+This workflow runs [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer). It does so by
+executing the binary in the `./vendor/bin/` folder.
+
+**Simplest possible example:**
+
+```yml
+name: Coding standards analysis PHP
+on:
+  pull_request:
+jobs:
+  coding-standards-analysis-php:
+    uses: inpsyde/reusable-workflows/.github/workflows/coding-standards-php.yml@main
+```
+
+### Configuration parameters
+
+#### Inputs
+
+| Name            | Default                                                  | Description                                                           |
+|-----------------|----------------------------------------------------------|-----------------------------------------------------------------------|
+| `PHP_VERSION`   | 7.4                                                      | PHP version with which the coding standard analysis is to be executed |
+| `COMPOSER_ARGS` | `'--prefer-dist'`                                        | Set of arguments passed to Composer                                   |
+| `PHPCS_ARGS`    | `'--report-full --report-checkstyle=./phpcs-report.xml'` | Set of arguments passed to PHP_CodeSniffer                            |
+| `CS2PR_ARGS`    | `'--graceful-warnings ./phpcs-report.xml'`               | Set of arguments passed to cs2pr                                      |
+
+#### Secrets
+
+| Name                 | Description                                                                              |
+|----------------------|------------------------------------------------------------------------------------------|
+| `COMPOSER_AUTH_JSON` | Authentication for privately hosted packages and repositories as a JSON formatted object |
+
+**Example with configuration parameters:**
+
+```yml
+name: Coding standards analysis PHP
+on:
+  pull_request:
+jobs:
+  coding-standards-analysis-php:
+    uses: inpsyde/reusable-workflows/.github/workflows/coding-standards-php.yml@main
+    secrets:
+      COMPOSER_AUTH_JSON: ${{ secrets.COMPOSER_AUTH_JSON }}
+    with:
+      PHPCS_ARGS: '--report=summary'
+```
+
 ## Static code analysis
 
-This workflow runs both [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer)
-and [Psalm](https://psalm.dev/). It does so by executing the binaries in the `./vendor/bin/` folder.
+This workflow runs [Psalm](https://psalm.dev/). It does so by executing the binary in
+the `./vendor/bin/` folder.
 
 **Simplest possible example:**
 
@@ -12,22 +60,19 @@ name: Static code analysis PHP
 on:
   pull_request:
 jobs:
-  static-analysis-php:
-    uses: inpsyde/reusable-workflows/.github/workflows/php-static-analysis.yml@main
+  static-code-analysis-php:
+    uses: inpsyde/reusable-workflows/.github/workflows/static-analysis-php.yml@main
 ```
 
 ### Configuration parameters
 
 #### Inputs
 
-| Name            | Default                                                  | Description                                                       |
-|-----------------|----------------------------------------------------------|-------------------------------------------------------------------|
-| `PHP_VERSION`   | 7.4                                                      | PHP version with which the static code analysis is to be executed |
-| `TARGET`        | `["phpcs", "psalm"]`                                     | Checks to be executed as a JSON formatted object                  |
-| `COMPOSER_ARGS` | `'--prefer-dist'`                                        | Set of arguments passed to Composer                               |
-| `PHPCS_ARGS`    | `'--report-full --report-checkstyle=./phpcs-report.xml'` | Set of arguments passed to PHP_CodeSniffer                        |
-| `PSALM_ARGS`    | `'--output-format=github --no-cache'`                    | Set of arguments passed to Psalm                                  |
-| `CS2PR_ARGS`    | `'--graceful-warnings ./phpcs-report.xml'`               | Set of arguments passed to cs2pr                                  |
+| Name            | Default                               | Description                                                       |
+|-----------------|---------------------------------------|-------------------------------------------------------------------|
+| `PHP_VERSION`   | 7.4                                   | PHP version with which the static code analysis is to be executed |
+| `COMPOSER_ARGS` | `'--prefer-dist'`                     | Set of arguments passed to Composer                               |
+| `PSALM_ARGS`    | `'--output-format=github --no-cache'` | Set of arguments passed to Psalm                                  |
 
 #### Secrets
 
@@ -42,13 +87,12 @@ name: Static code analysis PHP
 on:
   pull_request:
 jobs:
-  static-analysis-php:
-    uses: inpsyde/reusable-workflows/.github/workflows/php-static-analysis.yml@main
+  static-code-analysis-php:
+    uses: inpsyde/reusable-workflows/.github/workflows/static-analysis-php.yml@main
     secrets:
       COMPOSER_AUTH_JSON: ${{ secrets.COMPOSER_AUTH_JSON }}
     with:
-      TARGET: >-
-        ["phpcs"]
+      PSALM_ARGS: '--threads=3'
 ```
 
 ## PHPUnit tests
@@ -63,8 +107,8 @@ name: Unit tests PHP
 on:
   pull_request:
 jobs:
-  unit-tests-php:
-    uses: inpsyde/reusable-workflows/.github/workflows/php-unit-tests.yml@main
+  tests-unit-php:
+    uses: inpsyde/reusable-workflows/.github/workflows/tests-unit-php.yml@main
 ```
 
 ### Configuration parameters
@@ -90,8 +134,8 @@ name: Unit tests PHP
 on:
   pull_request:
 jobs:
-  unit-tests-php:
-    uses: inpsyde/reusable-workflows/.github/workflows/php-unit-tests.yml@main
+  tests-unit-php:
+    uses: inpsyde/reusable-workflows/.github/workflows/tests-unit-php.yml@main
     secrets:
       COMPOSER_AUTH_JSON: ${{ secrets.COMPOSER_AUTH_JSON }}
     with:

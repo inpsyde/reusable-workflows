@@ -24,7 +24,7 @@ on:
         required: false
 
 jobs:
-  phpunit:
+  tests-unit-php:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     strategy:

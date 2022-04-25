@@ -12,8 +12,8 @@ name: Static code analysis Sass
 on:
   pull_request:
 jobs:
-  static-analysis-sass:
-    uses: inpsyde/reusable-workflows/.github/workflows/sass-static-analysis.yml@main
+  static-code-analysis-sass:
+    uses: inpsyde/reusable-workflows/.github/workflows/static-analysis-sass.yml@main
 ```
 
 ### Configuration parameters
@@ -39,8 +39,8 @@ name: Static code analysis Sass
 on:
   pull_request:
 jobs:
-  static-analysis-sass:
-    uses: inpsyde/reusable-workflows/.github/workflows/sass-static-analysis.yml@main
+  static-code-analysis-sass:
+    uses: inpsyde/reusable-workflows/.github/workflows/static-analysis-sass.yml@main
     secrets:
       NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
     with:

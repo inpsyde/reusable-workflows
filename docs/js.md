@@ -12,8 +12,8 @@ name: Static code analysis JavaScript
 on:
   pull_request:
 jobs:
-  static-analysis-javascript:
-    uses: inpsyde/reusable-workflows/.github/workflows/js-static-analysis.yml@main
+  static-code-analysis-javascript:
+    uses: inpsyde/reusable-workflows/.github/workflows/static-analysis-js.yml@main
 ```
 
 ### Configuration parameters
@@ -39,8 +39,8 @@ name: Static code analysis JavaScript
 on:
   pull_request:
 jobs:
-  static-analysis-javascript:
-    uses: inpsyde/reusable-workflows/.github/workflows/js-static-analysis.yml@main
+  static-code-analysis-javascript:
+    uses: inpsyde/reusable-workflows/.github/workflows/static-analysis-js.yml@main
     secrets:
       NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
     with:

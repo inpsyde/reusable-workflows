@@ -1,16 +1,11 @@
-name: PHP static code analysis
+name: Coding standards analysis PHP
 
 on:
   workflow_call:
     inputs:
       PHP_VERSION:
-        description: PHP version with which the static code analysis is to be executed.
+        description: PHP version with which the coding standard analysis is to be executed.
         default: 7.4
-        required: false
-        type: string
-      TARGET:
-        description: Checks to be executed as a JSON formatted object.
-        default: '["phpcs", "psalm"]'
         required: false
         type: string
       COMPOSER_ARGS:
@@ -21,11 +16,6 @@ on:
       PHPCS_ARGS:
         description: Set of arguments passed to PHP_CodeSniffer.
         default: '--report-full --report-checkstyle=./phpcs-report.xml'
-        required: false
-        type: string
-      PSALM_ARGS:
-        description: Set of arguments passed to Psalm.
-        default: '--output-format=github --no-cache'
         required: false
         type: string
       CS2PR_ARGS:
@@ -39,7 +29,7 @@ on:
         required: false
 
 jobs:
-  static-analysis:
+  coding-standards-php:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     env:
@@ -63,13 +53,8 @@ jobs:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
 
       - name: Run PHP_CodeSniffer
-        if: ${{ contains(inputs.TARGET, 'phpcs') }}
         run: ./vendor/bin/phpcs ${{ inputs.PHPCS_ARGS }}
 
-      - name: Run Psalm
-        if: ${{ contains(inputs.TARGET, 'psalm') }}
-        run: ./vendor/bin/psalm ${{ inputs.PSALM_ARGS }}
-
       - name: Annotate PHP_CodeSniffer report
-        if: ${{ always() && contains(inputs.TARGET, 'phpcs') }}
+        if: ${{ always() }}
         run: cs2pr ${{ inputs.CS2PR_ARGS }}

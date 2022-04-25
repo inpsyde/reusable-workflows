@@ -1,0 +1,51 @@
+name: Static code analysis PHP
+
+on:
+  workflow_call:
+    inputs:
+      PHP_VERSION:
+        description: PHP version with which the static code analysis is to be executed.
+        default: 7.4
+        required: false
+        type: string
+      COMPOSER_ARGS:
+        description: Set of arguments passed to Composer.
+        default: '--prefer-dist'
+        required: false
+        type: string
+      PSALM_ARGS:
+        description: Set of arguments passed to Psalm.
+        default: '--output-format=github --no-cache'
+        required: false
+        type: string
+    secrets:
+      COMPOSER_AUTH_JSON:
+        description: Authentication for privately hosted packages and repositories as a JSON formatted object.
+        required: false
+
+jobs:
+  static-analysis-php:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    env:
+      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.PHP_VERSION }}
+          tools: composer, cs2pr
+
+      - name: Validate composer.json and composer.lock
+        run: composer validate
+
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v1
+        with:
+          composer-options: ${{ inputs.COMPOSER_ARGS }}
+
+      - name: Run Psalm
+        run: ./vendor/bin/psalm ${{ inputs.PSALM_ARGS }}

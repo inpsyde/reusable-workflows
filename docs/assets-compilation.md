@@ -11,7 +11,7 @@ on:
     - cron: '0 0 * * 0'
 jobs:
   assets-compilation:
-    uses: inpsyde/reusable-workflows/.github/workflows/assets-compilation.yml@main
+    uses: inpsyde/reusable-workflows/.github/workflows/build-assets-compilation.yml@main
 ```
 
 ### Configuration parameters
@@ -41,7 +41,7 @@ on:
     - cron: '0 0 * * 0'
 jobs:
   assets-compilation:
-    uses: inpsyde/reusable-workflows/.github/workflows/assets-compilation.yml@main
+    uses: inpsyde/reusable-workflows/.github/workflows/build-assets-compilation.yml@main
     secrets:
       COMPOSER_AUTH_JSON: ${{ secrets.COMPOSER_AUTH_JSON }}
       NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
