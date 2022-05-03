@@ -23,7 +23,7 @@ on:
         description: Authentication for privately hosted packages and repositories as a JSON formatted object.
         required: false
       ENV_VARS:
-        description: Allows to inject ENV variables as JSON string with name and value as keys.
+        description: Additional environment variables as a JSON formatted object.
         required: false
 
 jobs:
