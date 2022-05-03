@@ -126,6 +126,7 @@ jobs:
 | Name                 | Description                                                                              |
 |----------------------|------------------------------------------------------------------------------------------|
 | `COMPOSER_AUTH_JSON` | Authentication for privately hosted packages and repositories as a JSON formatted object |
+| `ENV_VARS`           | Additional environment variables as a JSON formatted object                              |
 
 **Example with configuration parameters:**
 
@@ -142,4 +143,6 @@ jobs:
       PHP_MATRIX: >-
         ["7.4", "8.0", "8.1"]
       PHPUNIT_ARGS: '--coverage-text --debug'
+      ENV_VARS: >-
+        [{"name":"EXAMPLE_USERNAME", "value":"deploybot"}, {"name":"EXAMPLE_TOKEN", "value":"${{ secrets.EXAMPLE_TOKEN }}"}]
 ```
