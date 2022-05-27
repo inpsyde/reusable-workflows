@@ -95,7 +95,7 @@ jobs:
       PSALM_ARGS: '--threads=3'
 ```
 
-## PHPUnit tests
+## Unit tests PHP
 
 This workflow runs [PHPUnit](https://phpunit.de/). It does so by executing the binary in
 the `./vendor/bin/` folder.
