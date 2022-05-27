@@ -28,9 +28,9 @@ jobs:
 
 #### Secrets
 
-| Name                 | Description                                  |
-|----------------------|----------------------------------------------|
-| `NPM_REGISTRY_TOKEN` | Authentication for the private npm registry. |
+| Name                 | Description                                 |
+|----------------------|---------------------------------------------|
+| `NPM_REGISTRY_TOKEN` | Authentication for the private npm registry |
 
 **Example with configuration parameters:**
 
