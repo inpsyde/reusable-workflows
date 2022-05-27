@@ -1,0 +1,54 @@
+name: Unit tests JavaScript
+
+on:
+  workflow_call:
+    inputs:
+      NPM_REGISTRY_DOMAIN:
+        description: Domain of the private npm registry.
+        default: https://npm.pkg.github.com/
+        required: false
+        type: string
+      NODE_VERSION:
+        description: Node version with which the unit tests are to be executed.
+        default: 16
+        required: false
+        type: string
+      JEST_ARGS:
+        description: Set of arguments passed to Jest.
+        default: '--reporters=default --reporters=github-actions'
+        required: false
+        type: string
+    secrets:
+      NPM_REGISTRY_TOKEN:
+        description: Authentication for the private npm registry.
+        required: false
+
+jobs:
+  tests-unit-js:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ inputs.NODE_VERSION }}
+          registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Run Jest
+        run: ./node_modules/.bin/jest ${{ inputs.JEST_ARGS }}

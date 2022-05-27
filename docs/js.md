@@ -28,9 +28,9 @@ jobs:
 
 #### Secrets
 
-| Name                 | Description                                  |
-|----------------------|----------------------------------------------|
-| `NPM_REGISTRY_TOKEN` | Authentication for the private npm registry. |
+| Name                 | Description                                 |
+|----------------------|---------------------------------------------|
+| `NPM_REGISTRY_TOKEN` | Authentication for the private npm registry |
 
 **Example with configuration parameters:**
 
@@ -46,4 +46,52 @@ jobs:
     with:
       NODE_VERSION: 14
       ESLINT_ARGS: './resources --ext .js'
+```
+
+## Unit tests JavaScript
+
+This workflow runs [Jest](https://jestjs.io/). It does so by executing the binary in
+the `./node_modules/.bin/` folder.
+
+**Simplest possible example:**
+
+```yml
+name: Unit tests JavaScript
+on:
+  pull_request:
+jobs:
+  tests-unit-js:
+    uses: inpsyde/reusable-workflows/.github/workflows/tests-unit-js.yml@main
+```
+
+### Configuration parameters
+
+#### Inputs
+
+| Name                  | Default                                            | Description                                               |
+|-----------------------|----------------------------------------------------|-----------------------------------------------------------|
+| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'`                    | Domain of the private npm registry                        |
+| `NODE_VERSION`        | 16                                                 | Node version with which the unit tests are to be executed |
+| `JEST_ARGS`           | `'--reporters=default --reporters=github-actions'` | Set of arguments passed to Jest                           |
+
+#### Secrets
+
+| Name                 | Description                                 |
+|----------------------|---------------------------------------------|
+| `NPM_REGISTRY_TOKEN` | Authentication for the private npm registry |
+
+**Example with configuration parameters:**
+
+```yml
+name: Unit tests JavaScript
+on:
+  pull_request:
+jobs:
+  tests-unit-js:
+    uses: inpsyde/reusable-workflows/.github/workflows/tests-unit-js.yml@main
+    secrets:
+      NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+    with:
+      NODE_VERSION: 14
+      JEST_ARGS: 'my-test --reporters=jest-junit --coverage'
 ```
