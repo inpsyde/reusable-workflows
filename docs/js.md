@@ -20,11 +20,11 @@ jobs:
 
 #### Inputs
 
-| Name                  | Default                                 | Description                                         |
-|-----------------------|-----------------------------------------|-----------------------------------------------------|
-| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'`         | Domain of the private npm registry                  |
-| `NODE_VERSION`        | 16                                      | Node version with which the assets will be compiled |
-| `ESLINT_ARGS`         | `'./resources --ext .js,.jsx,.ts,.tsx'` | Set of arguments passed to ESLint                   |
+| Name                  | Default                                                               | Description                                         |
+|-----------------------|-----------------------------------------------------------------------|-----------------------------------------------------|
+| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'`                                       | Domain of the private npm registry                  |
+| `NODE_VERSION`        | 16                                                                    | Node version with which the assets will be compiled |
+| `ESLINT_ARGS`         | `'-o eslint_report.json -f json --ext .js,.jsx,.ts,.tsx ./resources'` | Set of arguments passed to ESLint                   |
 
 #### Secrets
 

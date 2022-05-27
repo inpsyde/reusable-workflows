@@ -15,7 +15,7 @@ on:
         type: string
       ESLINT_ARGS:
         description: Set of arguments passed to ESLint.
-        default: './resources --ext .js,.jsx,.ts,.tsx'
+        default: '-o eslint_report.json -f json --ext .js,.jsx,.ts,.tsx ./resources'
         required: false
         type: string
     secrets:
@@ -52,3 +52,8 @@ jobs:
 
       - name: Run ESLint
         run: ./node_modules/.bin/eslint ${{ inputs.ESLINT_ARGS }}
+
+      - name: Annotate ESLint report
+        uses: ataylorme/eslint-annotate-action@v2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
