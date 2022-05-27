@@ -52,6 +52,7 @@ jobs:
 
       - name: Run ESLint
         run: ./node_modules/.bin/eslint ${{ inputs.ESLINT_ARGS }}
+        continue-on-error: true
 
       - name: Annotate ESLint report
         uses: ataylorme/eslint-annotate-action@v2
