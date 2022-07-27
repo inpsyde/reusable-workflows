@@ -76,8 +76,8 @@ jobs:
 
       - name: Setup Git
         run: |
-          git config user.email ${{ inputs.GITHUB_USER_EMAIL }}
-          git config user.name ${{ inputs.GITHUB_USER_NAME }}
+          git config user.email "${{ inputs.GITHUB_USER_EMAIL }}" 
+          git config user.name "${{ inputs.GITHUB_USER_NAME }}"
           git config advice.addIgnoredFile false
 
       - name: Setup directory
