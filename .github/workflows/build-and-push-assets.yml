@@ -14,20 +14,13 @@ on:
         required: false
         type: string
       PACKAGE_MANAGER:
-        description: Package manager.
-        type: choice
-        options:
-          - "auto"
-          - "yarn"
-          - "npm"
+        description: Package manager. Supported are "yarn" and "npm".
+        type: string
         default: "auto"
         required: false
       DEPS_INSTALL:
         description: Install dependencies before compiling?
-        type: choice
-        options:
-          - "Yes"
-          - "No"
+        type: string
         default: "Yes"
         required: false
       COMPILE_SCRIPT_PROD:
