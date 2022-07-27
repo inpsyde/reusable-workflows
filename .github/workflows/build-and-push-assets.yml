@@ -104,7 +104,7 @@ jobs:
         if: ${{ inputs.DEPS_INSTALL != 'No' }}
         run: |
           ${{ ((env.PACKAGE_MANAGER == 'npm') && 'npm config set cache ~/.deps_cache --global') || 'yarn config set cache-folder ~/.deps_cache' }}
-          ${{ ((env.PACKAGE_MANAGER == 'npm') && 'npm install --verbose') || 'yarn --verbose' }}
+          ${{ ((env.PACKAGE_MANAGER == 'npm') && 'npm install') || 'yarn' }}
 
       - name: Compile assets
         run: ${{ ((env.PACKAGE_MANAGER == 'npm') && 'npm run') || 'yarn' }} ${{ env.COMPILE_SCRIPT }}
