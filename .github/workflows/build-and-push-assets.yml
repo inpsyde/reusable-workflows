@@ -70,7 +70,7 @@ jobs:
 
       - name: Set production environment variables
         if: ${{ contains(github.ref, 'refs/tags/') }}
-        run:
+        run: |
           echo "TAG_NAME=$(echo ${GITHUB_REF#refs/*/})" >> $GITHUB_ENV
           echo "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_PROD }}" >> $GITHUB_ENV
 
