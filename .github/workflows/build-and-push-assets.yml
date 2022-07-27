@@ -76,8 +76,8 @@ jobs:
 
       - name: Setup Git
         run: |
-          git config --global user.email "${{ inputs.GITHUB_USER_EMAIL }}" 
-          git config --global user.name "${{ inputs.GITHUB_USER_NAME }}"
+          git config --global user.email "${{ secrets.GITHUB_USER_EMAIL }}" 
+          git config --global user.name "${{ secrets.GITHUB_USER_NAME }}"
           git config --global advice.addIgnoredFile false
           mkdir -p ${{ inputs.ASSETS_TARGET_PATHS }}
           declare -a TARGET_PATHS_ARRAY=(${{ inputs.ASSETS_TARGET_PATHS }})
