@@ -96,7 +96,7 @@ This is not the "simplest" possible example, but it showcases all the recommenda
 
 
 
-> *Did not we always say that is a good practice to not push assets compiled in version control?*
+> *Did not we always say that is a good practice to not push compiled assets in version control?*
 
 *We* still don't push assets in version control, it is the GitHub Bot that puts assets in version control, not us ;-)
 
