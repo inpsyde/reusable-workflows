@@ -81,6 +81,10 @@ jobs:
           git config --global advice.addIgnoredFile false
           mkdir -p ${{ inputs.ASSETS_TARGET_PATHS }}
 
+      - name: Git pull on re-run
+        if: ${{ github.run_number }}
+        run: git pull
+
       - name: Try determining package manager by lock file
         if: ${{ inputs.PACKAGE_MANAGER == 'auto' }}
         run: |
