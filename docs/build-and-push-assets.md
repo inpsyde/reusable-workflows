@@ -49,7 +49,7 @@ jobs:
 
 ### What will happen to outdated or invalid generated assets?
 
-The reusable-workflow will not take care of removing od assets. If you use Webpack Encore you can use following to clean up your old assets:
+The reusable-workflow will not take care of removing old assets. If you use Webpack Encore you can use following to clean up your old assets:
 
 ```js
 Encore.cleanupOutputBeforeBuild( ['*.js', '*.css'] )
