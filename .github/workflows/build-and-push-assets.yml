@@ -80,8 +80,6 @@ jobs:
           git config --global user.name "${{ secrets.GITHUB_USER_NAME }}"
           git config --global advice.addIgnoredFile false
           mkdir -p ${{ inputs.ASSETS_TARGET_PATHS }}
-          declare -a TARGET_PATHS_ARRAY=(${{ inputs.ASSETS_TARGET_PATHS }})
-          for path in "${TARGET_PATHS_ARRAY[@]}"; do git rm -r --cached --ignore-unmatch "${path}/*"; done
 
       - name: Try determining package manager by lock file
         if: ${{ inputs.PACKAGE_MANAGER == 'auto' }}
