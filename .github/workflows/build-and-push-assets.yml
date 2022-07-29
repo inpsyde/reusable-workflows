@@ -82,7 +82,7 @@ jobs:
           mkdir -p ${{ inputs.ASSETS_TARGET_PATHS }}
 
       - name: Git pull on re-run
-        if: ${{ github.run_number }}
+        if: ${{ github.run_number > 1 }}
         run: git pull
 
       - name: Try determining package manager by lock file
