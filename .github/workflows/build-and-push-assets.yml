@@ -111,7 +111,7 @@ jobs:
         run: |
           declare -a TARGET_PATHS_ARRAY=(${{ inputs.ASSETS_TARGET_PATHS }})
           for path in "${TARGET_PATHS_ARRAY[@]}"; do git add -f "${path}/*"; done
-          git commit -m "[BOT] Add compiled assets for #${{ github.ref }}"
+          git commit -m "[BOT] Add compiled assets for #${{ github.ref }}" --no-verify
           git push
 
       - name: Move tag
