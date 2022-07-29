@@ -58,6 +58,7 @@ jobs:
       TAG_NAME: ''                                     # we'll override if the push is for tag
       LOCK_FILE: ''                                    # we'll override after checking files
       PACKAGE_MANAGER: "yarn"                          # we'll override based on env/inputs
+      NO_CHANGES: ""                                   # we'll override if no changes to commit
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -116,11 +117,14 @@ jobs:
           declare -a TARGET_PATHS_ARRAY=(${{ inputs.ASSETS_TARGET_PATHS }})
           for path in "${TARGET_PATHS_ARRAY[@]}"; do git add -f "${path}/*"; done
           git add ./*.json && git add ./*.lock
-          git commit -m "[BOT] Add compiled assets for #${{ github.ref }}" --no-verify || echo "No changes to commit"
-          git push
+          git commit -m "[BOT] Add compiled assets for #${{ github.ref }}" --no-verify || ((echo "NO_CHANGES=yes" >> $GITHUB_ENV) && (echo "No changes to commit"))
+
+      - name: Git push
+        if: ${{ env.NO_CHANGES != 'yes' }}
+        run: git push
 
       - name: Move tag
-        if: ${{ env.TAG_NAME != '' }}
+        if: ${{ env.TAG_NAME != '' && env.NO_CHANGES != 'yes' }}
         run: |
           git tag -d ${{ env.TAG_NAME }}
           git push origin :refs/tags/${{ env.TAG_NAME }}
