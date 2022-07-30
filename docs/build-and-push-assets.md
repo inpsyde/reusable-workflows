@@ -12,7 +12,7 @@ To achieve that, the reusable workflow will:
 
 ## Building script
 
-In step *2* above, the assets are" built", whatever that means for a package. For maximum flexibility, the workflow relies on a "script" to be defined in `pakcage.json`. There are two possible building scripts: a "*dev*" script (which will run on regular push to branches), and a "*prod*" script which will run when pushing a tag).
+In step *2* above, the assets are" built", whatever that means for a package. For maximum flexibility, the workflow relies on a "script" to be defined in `package.json`. There are two possible building scripts: a "*dev*" script (which will run on regular push to branches), and a "*prod*" script which will run when pushing a tag).
 
 By default, the two scripts are `encore dev` and `encore prod` but can be configured via [inputs](#inputs).
 
