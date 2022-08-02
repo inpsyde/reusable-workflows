@@ -26,9 +26,9 @@ When a tag is pushed, the 3-step workflow above is extended with an additional s
 
 ## Recommendations for consuming packages
 
-- The consuming packages compiled assets' target folder(s) must be **git-ignored and marked as `linguist-generated` in `.gitattributes`.
-- The calling workflows should use [concurrency settings](https://docs.github.com/en/actions/using-jobs/using-concurrency) to avoid conflicts when a push happens before the current workflow is not completed.
-- It is suggested for calling workflows to use https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#example-including-paths) to avoid running the workflow if no asset sources are changed.
+- The consuming packages compiled assets' target folder(s) must be **git-ignored** and marked as `linguist-generated` in `.gitattributes`.
+- The calling workflows should use ["concurrency" settings](https://docs.github.com/en/actions/using-jobs/using-concurrency) to avoid conflicts when a push happens before the current workflow is not completed.
+- It is suggested for calling workflows to use ["paths" settings](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#example-including-paths) to avoid running the workflow if no asset sources are changed.
 
 
 
@@ -41,7 +41,7 @@ on:
     workflow_dispatch:
     push:
     	paths:
-    	    - '**workflows/assets-build-and-push.yml'
+    	    - '**workflows/build-and-push-assets.yml' # the workflow file itself
     	    - '**.ts'
     	    - '**.scss'
     	    - '**.js'
@@ -142,7 +142,7 @@ jobs:
 
 No, if you follow the recommendations in this document you shouldn't. 
 
-When compiled assets are Git-ignored, they will be ignored by GitHub even if PR assets conflict with the base branch assets. And when merged the PR assets will silently override what is in the base branch. That might not be correct, but that's not relevant: upon merge, the workflow will run again, re-compiling assets to their correct status.
+When compiled assets are Git-ignored, even if PR's assets conflict with the base branch's assets, they will be ignored by GitHub. And when merged, the PR's assets will silently override what's in the base branch. That might not be correct, but that's not relevant: upon merge, the workflow will run again, re-compiling assets to their correct status.
 
 Moreover, having assets marked as `linguist-generated` in `.gitattributes` will prevent GitHub from even showing compiled assets in the PR, making the process entirely transparent to users.
 
@@ -162,7 +162,7 @@ By following recommendations, nothing bad. The recommended [concurrency settings
 
 As a side effect of using the recommended [concurrency settings](https://docs.github.com/en/actions/using-jobs/using-concurrency), the Git history will be linear. The compilation commit would normally refer to the previous commit, whatever that is. In the case of cherry-picking or another non-linear branch merging that "linearity" could be compromised. That is why the workflow adds to the commit message the commit hash that caused the compilation to happen.
 
-Regarding "noise", indeed it will be there. However, considering all workflow commits with be prefixed with `[BOT]` it would be pretty easy to ignore them without any cognitive effort.
+Regarding "noise", indeed it will be there. However, considering all workflow commit messages will start with the `[BOT]` prefix, it would be pretty easy to ignore them without any cognitive effort.
 
 ---
 
@@ -170,7 +170,7 @@ Regarding "noise", indeed it will be there. However, considering all workflow co
 
 > *When using commit-precise Composer requirements like "dev-master#a1bcde0" there's the risk to point to a package's status that has no compiled assets.*
 
-That's true. However, commit-precise requirements are not recommended (especially in production), usually temporary, and objectively rare. In the rare case we need to keep a specific commit hash, we can surely be careful in choosing the commit hash wisely.
+That's true. However, commit-precise requirements are not recommended (especially in production), usually temporary, and objectively rare. And iIn the rare case we need to keep a specific commit hash, we can be careful in choosing the commit hash wisely.
 
 ---
 
@@ -178,8 +178,8 @@ That's true. However, commit-precise requirements are not recommended (especiall
 
 > *What happens if I create a release using GitHub UI?*
 
-If the release is created for an existing tag, the only care needed is to wait before making the release that the workflow completes, and so the tag is moved.
+If the release is created for an existing tag, the only care you need is waiting the workflow completes before making a release. That will ensure the release points to the "moved" tag.
 
-Unfortunately, creating a release via GitHub UI for a non-existing tag is **incompatible** with this workflow. GitHub in that case would create a tag and then associate the release with it. However, the tag creation would not trigger the workflow. Hence the release will point to a tag that does not contain assets. And even if the workflow is configured to run on release publishing, the workflow will fail because there's no "current branch" on release, so the workflow would try to push a commit made in a "detached HEAD" status, failing.
+Unfortunately, creating a release via GitHub UI for a non-existing tag is **incompatible** with this workflow. GitHub in that case would first create a tag and then associate the release with it. However, that tag creation would not trigger the workflow. Hence, the release will point to a tag that does not contain assets. And even if the workflow is configured to run on release publishing, the workflow will fail because there's no "current branch" on release, so the workflow would try to push a commit made in a "detached HEAD" status, failing.
 
 In theory, it is possible to make the workflow 100% compliant with a release via UI. However (as of now), the complexity needed has been judged not worthwhile the effort.
