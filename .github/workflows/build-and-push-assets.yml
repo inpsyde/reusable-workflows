@@ -1,0 +1,132 @@
+name: Build and push assets
+
+on:
+  workflow_call:
+    inputs:
+      NODE_VERSION:
+        description: Node version with which the assets will be compiled.
+        default: 16
+        required: false
+        type: string
+      NPM_REGISTRY_DOMAIN:
+        description: Domain of the private npm registry.
+        default: "https://npm.pkg.github.com/"
+        required: false
+        type: string
+      PACKAGE_MANAGER:
+        description: Package manager. Supported are "yarn" and "npm".
+        type: string
+        default: "auto"
+        required: false
+      DEPS_INSTALL:
+        description: Install dependencies before compiling?
+        type: string
+        default: "yes"
+        required: false
+      COMPILE_SCRIPT_PROD:
+        description: Script added to "npm run" or "yarn" to build PROD assets.
+        type: string
+        default: "encore prod"
+        required: false
+      COMPILE_SCRIPT_DEV:
+        description: Script added to "npm run" or "yarn" to build DEV assets.
+        type: string
+        default: "encore dev"
+        required: false
+      ASSETS_TARGET_PATHS:
+        description: Target path(s) for compiled assets.
+        default: "./assets"
+        required: false
+        type: string
+    secrets:
+      NPM_REGISTRY_TOKEN:
+        description: Authentication for the private npm registry.
+        required: false
+      GITHUB_USER_EMAIL:
+        description: Github User email used in "git config".
+        required: true
+      GITHUB_USER_NAME:
+        description: Github Username used in "git config".
+        required: true
+jobs:
+  compile-assets:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      COMPILE_SCRIPT: ${{ inputs.COMPILE_SCRIPT_DEV }} # we'll override if the push is for tag
+      TAG_NAME: ''                                     # we'll override if the push is for tag
+      LOCK_FILE: ''                                    # we'll override after checking files
+      PACKAGE_MANAGER: "yarn"                          # we'll override based on env/inputs
+      NO_CHANGES: ""                                   # we'll override if no changes to commit
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ inputs.NODE_VERSION }}
+          registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
+
+      - name: Set production environment variables
+        if: ${{ contains(github.ref, 'refs/tags/') }}
+        run: |
+          echo "TAG_NAME=$(echo ${GITHUB_REF#refs/*/})" >> $GITHUB_ENV
+          echo "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_PROD }}" >> $GITHUB_ENV
+
+      - name: Setup Git
+        run: |
+          git config --global user.email "${{ secrets.GITHUB_USER_EMAIL }}" 
+          git config --global user.name "${{ secrets.GITHUB_USER_NAME }}"
+          git config --global advice.addIgnoredFile false
+          mkdir -p ${{ inputs.ASSETS_TARGET_PATHS }}
+
+      - name: Git pull on re-run
+        if: ${{ github.run_attempt > 1 }}
+        run: git pull
+
+      - name: Try determining package manager by lock file
+        if: ${{ inputs.PACKAGE_MANAGER == 'auto' }}
+        run: |
+          [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] && echo "LOCK_FILE=npm" >> $GITHUB_ENV
+          [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ] && echo "LOCK_FILE=npm" >> $GITHUB_ENV
+          [ -f "${GITHUB_WORKSPACE}/yarn.lock" ] && echo "LOCK_FILE=yarn" >> $GITHUB_ENV
+
+      - name: Determine package manager
+        if: ${{ (env.LOCK_FILE == 'npm') || (inputs.PACKAGE_MANAGER == 'npm') }}
+        run: echo "PACKAGE_MANAGER=npm" >> $GITHUB_ENV
+
+      - name: Cache npm/Yarn dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.deps_cache
+          key: ${{ runner.os }}-node-${{ inputs.NODE_VERSION }}-${{ env.PACKAGE_MANAGER }}-${{ hashFiles('**/package-lock.json', '**/npm-shrinkwrap.json', '**/yarn.lock') }}
+
+      - name: Install dependencies
+        if: ${{ ! startsWith( 'no', inputs.DEPS_INSTALL ) }}
+        run: |
+          ${{ ((env.PACKAGE_MANAGER == 'npm') && 'npm config set cache ~/.deps_cache --global') || 'yarn config set cache-folder ~/.deps_cache' }}
+          ${{ ((env.PACKAGE_MANAGER == 'npm') && 'npm install') || 'yarn' }}
+
+      - name: Compile assets
+        run: ${{ ((env.PACKAGE_MANAGER == 'npm') && 'npm run') || 'yarn' }} ${{ env.COMPILE_SCRIPT }}
+
+      - name: Git add, commit, push
+        run: |
+          declare -a TARGET_PATHS_ARRAY=(${{ inputs.ASSETS_TARGET_PATHS }})
+          for path in "${TARGET_PATHS_ARRAY[@]}"; do git add -f "${path}/*"; done
+          git add ./*.json && git add ./*.lock
+          git commit -m "[BOT] Add compiled assets for #${{ github.ref }}" --no-verify || ((echo "NO_CHANGES=yes" >> $GITHUB_ENV) && (echo "No changes to commit"))
+
+      - name: Git push
+        if: ${{ env.NO_CHANGES != 'yes' }}
+        run: git push
+
+      - name: Move tag
+        if: ${{ env.TAG_NAME != '' && env.NO_CHANGES != 'yes' }}
+        run: |
+          git tag -d ${{ env.TAG_NAME }}
+          git push origin :refs/tags/${{ env.TAG_NAME }}
+          git tag ${{ env.TAG_NAME }}
+          git push origin --tags
