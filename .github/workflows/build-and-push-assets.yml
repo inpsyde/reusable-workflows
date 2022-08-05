@@ -56,6 +56,7 @@ jobs:
       NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       COMPILE_SCRIPT: ${{ inputs.COMPILE_SCRIPT_DEV }} # we'll override if the push is for tag
       TAG_NAME: ''                                     # we'll override if the push is for tag
+      TAG_BRANCH_NAME: ''                              # we'll override if the push is for tag
       LOCK_FILE: ''                                    # we'll override after checking files
       PACKAGE_MANAGER: "yarn"                          # we'll override based on env/inputs
       NO_CHANGES: ""                                   # we'll override if no changes to commit
@@ -63,7 +64,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          # when current push is a tag, we check out the tag's SHA, we'll create a new branch later
+          ref: ${{ ((github.ref_type == 'tag') && github.sha) || github.ref }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -82,11 +84,18 @@ jobs:
           git config --global user.email "${{ secrets.GITHUB_USER_EMAIL }}" 
           git config --global user.name "${{ secrets.GITHUB_USER_NAME }}"
           git config --global advice.addIgnoredFile false
+          git config --global push.autoSetupRemote true
           mkdir -p ${{ inputs.ASSETS_TARGET_PATHS }}
 
       - name: Git pull on re-run
-        if: ${{ github.run_attempt > 1 }}
+        if: ${{ (github.run_attempt > 1) && (github.ref_type != 'tag') }}
         run: git pull
+
+      - name: Checkout new branch when running for a tag
+        if: ${{ github.ref_type == 'tag' }}
+        run: |
+          git checkout -b bot/compiled-assets/${{ github.sha }}
+          echo "TAG_BRANCH_NAME=bot/compiled-assets/${{ github.sha }}" >> $GITHUB_ENV
 
       - name: Try determining package manager by lock file
         if: ${{ inputs.PACKAGE_MANAGER == 'auto' }}
@@ -132,3 +141,10 @@ jobs:
           git push origin :refs/tags/${{ env.TAG_NAME }}
           git tag ${{ env.TAG_NAME }}
           git push origin --tags
+
+      - name: Delete tag branch
+        if: ${{ env.TAG_BRANCH_NAME != '' && env.NO_CHANGES != 'yes' }}
+        run: |
+          git checkout --detach
+          git branch -d {{ env.TAG_BRANCH_NAME }}
+          git push origin --delete {{ env.TAG_BRANCH_NAME }}
