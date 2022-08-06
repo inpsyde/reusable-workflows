@@ -100,9 +100,13 @@ jobs:
       - name: Try determining package manager by lock file
         if: ${{ inputs.PACKAGE_MANAGER == 'auto' }}
         run: |
-          [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] && echo "LOCK_FILE=npm" >> $GITHUB_ENV
-          [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ] && echo "LOCK_FILE=npm" >> $GITHUB_ENV
-          [ -f "${GITHUB_WORKSPACE}/yarn.lock" ] && echo "LOCK_FILE=yarn" >> $GITHUB_ENV
+          [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] && echo "LOCK_FILE=npm" >> $GITHUB_ENV || echo "No package-lock.json found"
+          [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ] && echo "LOCK_FILE=npm" >> $GITHUB_ENV || echo "No npm-shrinkwrap.json found"
+          [ -f "${GITHUB_WORKSPACE}/yarn.lock" ] && echo "LOCK_FILE=yarn" >> $GITHUB_ENV || echo "No yarn.lock found"
+          
+      - name: Warning for fallback package manager
+        if: ${{ (inputs.PACKAGE_MANAGER == 'auto') && (env.LOCK_FILE == '') }}
+        run: echo "::warning::PACKAGE_MANAGER input not defined, and no lock file found, using Yarn as default."
 
       - name: Determine package manager
         if: ${{ (env.LOCK_FILE == 'npm') || (inputs.PACKAGE_MANAGER == 'npm') }}
