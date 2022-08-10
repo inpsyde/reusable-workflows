@@ -55,6 +55,9 @@ jobs:
               .parse(process.env.ENV_VARS)
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
+      - name: Check source code syntax
+        run: find . -type f -name '*.php' -print0 | xargs -0 -L 1 -P 4 -- php -l
+
       - name: Set up problem matchers for PHPUnit
         run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
