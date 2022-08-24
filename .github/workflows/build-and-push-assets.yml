@@ -147,7 +147,7 @@ jobs:
           git push origin --tags
 
       - name: Delete tag branch
-        if: ${{ env.TAG_BRANCH_NAME != '' && env.NO_CHANGES != 'yes' }}
+        if: ${{ always() && (env.TAG_BRANCH_NAME != '' && env.NO_CHANGES != 'yes') }}
         run: |
           git checkout --detach
           git branch -d {{ env.TAG_BRANCH_NAME }}
