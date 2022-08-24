@@ -150,5 +150,5 @@ jobs:
         if: ${{ always() && (env.TAG_BRANCH_NAME != '' && env.NO_CHANGES != 'yes') }}
         run: |
           git checkout --detach
-          git branch -d {{ env.TAG_BRANCH_NAME }}
-          git push origin --delete {{ env.TAG_BRANCH_NAME }}
+          git branch -d ${{ env.TAG_BRANCH_NAME }}
+          git push origin --delete ${{ env.TAG_BRANCH_NAME }}
