@@ -40,8 +40,8 @@ name: Build and push assets
 on:
     workflow_dispatch:
     push:
-        tags:
-            - '*'
+        tags: ['*']
+        branches: ['*']
     	paths:
     	    - '**workflows/build-and-push-assets.yml' # the workflow file itself
     	    - '**.ts'
