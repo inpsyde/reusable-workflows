@@ -172,7 +172,7 @@ Regarding "noise", indeed it will be there. However, considering all workflow co
 
 > *When using commit-precise Composer requirements like "dev-master#a1bcde0" there's the risk to point to a package's status that has no compiled assets.*
 
-That's true. However, commit-precise requirements are not recommended (especially in production), usually temporary, and objectively rare. And iIn the rare case we need to keep a specific commit hash, we can be careful in choosing the commit hash wisely.
+That's true. However, commit-precise requirements are not recommended (especially in production), usually temporary, and objectively rare. And in the rare case we need to keep a specific commit hash, we can be careful in choosing the commit hash wisely.
 
 ---
 
