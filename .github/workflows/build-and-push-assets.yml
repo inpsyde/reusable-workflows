@@ -49,7 +49,7 @@ on:
         description: Github Username used in "git config".
         required: true
       GITHUB_USER_SSH_KEY:
-        description: Private SSH key associated to the GitHub user in "GITHUB_USER_NAME".
+        description: Private SSH key associated to the GitHub user in Github Username.
         required: false
 
 jobs:
