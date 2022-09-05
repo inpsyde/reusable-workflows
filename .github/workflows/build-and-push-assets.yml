@@ -48,14 +48,15 @@ on:
       GITHUB_USER_NAME:
         description: Github Username used in "git config".
         required: true
-      GITHUB_TOKEN:
+      GH_TOKEN:
         description: Github Api Token to access third party packages.
-        required: true  
+        required: false
 jobs:
   compile-assets:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     env:
+      GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       COMPILE_SCRIPT: ${{ inputs.COMPILE_SCRIPT_DEV }} # we'll override if the push is for tag
       TAG_NAME: ''                                     # we'll override if the push is for tag
@@ -107,7 +108,7 @@ jobs:
           [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] && echo "LOCK_FILE=npm" >> $GITHUB_ENV || echo "No package-lock.json found"
           [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ] && echo "LOCK_FILE=npm" >> $GITHUB_ENV || echo "No npm-shrinkwrap.json found"
           [ -f "${GITHUB_WORKSPACE}/yarn.lock" ] && echo "LOCK_FILE=yarn" >> $GITHUB_ENV || echo "No yarn.lock found"
-          
+
       - name: Warning for fallback package manager
         if: ${{ (inputs.PACKAGE_MANAGER == 'auto') && (env.LOCK_FILE == '') }}
         run: echo "::warning::PACKAGE_MANAGER input not defined, and no lock file found, using Yarn as default."
