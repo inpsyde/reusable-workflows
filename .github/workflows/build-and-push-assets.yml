@@ -58,6 +58,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
       COMPILE_SCRIPT: ${{ inputs.COMPILE_SCRIPT_DEV }} # we'll override if the push is for tag
       TAG_NAME: ''                                     # we'll override if the push is for tag
       TAG_BRANCH_NAME: ''                              # we'll override if the push is for tag
@@ -85,7 +86,7 @@ jobs:
           echo "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_PROD }}" >> $GITHUB_ENV
 
       - name: Setup SSH
-        if: ${{ secrets.GITHUB_USER_SSH_KEY }}
+        if: ${{ env.GITHUB_USER_SSH_KEY != '' }}
         uses: webfactory/ssh-agent@v0.5.4
         with:
           ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
