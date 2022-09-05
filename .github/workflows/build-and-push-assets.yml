@@ -48,6 +48,9 @@ on:
       GITHUB_USER_NAME:
         description: Github Username used in "git config".
         required: true
+      GITHUB_TOKEN:
+        description: Github Api Token to access third party packages.
+        required: true  
 jobs:
   compile-assets:
     timeout-minutes: 10
