@@ -48,9 +48,10 @@ on:
       GITHUB_USER_NAME:
         description: Github Username used in "git config".
         required: true
-      GH_TOKEN:
-        description: Github Api Token to access third party packages.
+      GITHUB_USER_SSH_KEY:
+        description: Private SSH key associated to the GitHub user in "GITHUB_USER_NAME".
         required: false
+
 jobs:
   compile-assets:
     timeout-minutes: 10
@@ -83,6 +84,12 @@ jobs:
         run: |
           echo "TAG_NAME=$(echo ${GITHUB_REF#refs/*/})" >> $GITHUB_ENV
           echo "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_PROD }}" >> $GITHUB_ENV
+
+      - name: Setup SSH
+        if: ${{ secrets.GITHUB_USER_SSH_KEY }}
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
       - name: Setup Git
         run: |

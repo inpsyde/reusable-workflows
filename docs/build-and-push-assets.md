@@ -86,11 +86,12 @@ This is not the "simplest" possible example, but it showcases all the recommenda
 
 ## Secrets
 
-| Name                 | Description                                  |
-| -------------------- | -------------------------------------------- |
-| `NPM_REGISTRY_TOKEN` | Authentication for the private npm registry. |
-| `GITHUB_USER_EMAIL`  | GitHub User email used in `git config`.      |
-| `GITHUB_USER_NAME`   | GitHub User name used in `git config`.       |
+| Name                  | Description                                                          |
+|-----------------------|----------------------------------------------------------------------|
+| `NPM_REGISTRY_TOKEN`  | Authentication for the private npm registry.                         |
+| `GITHUB_USER_EMAIL`   | GitHub User email used in `git config`.                              |
+| `GITHUB_USER_NAME`    | GitHub User name used in `git config`.                               |
+| `GITHUB_USER_SSH_KEY` | Private SSH key associated to the GitHub user in "GITHUB_USER_NAME". |
 
 
 
