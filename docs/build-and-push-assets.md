@@ -86,12 +86,12 @@ This is not the "simplest" possible example, but it showcases all the recommenda
 
 ## Secrets
 
-| Name                  | Description                                                          |
-|-----------------------|----------------------------------------------------------------------|
-| `NPM_REGISTRY_TOKEN`  | Authentication for the private npm registry.                         |
-| `GITHUB_USER_EMAIL`   | GitHub User email used in `git config`.                              |
-| `GITHUB_USER_NAME`    | GitHub User name used in `git config`.                               |
-| `GITHUB_USER_SSH_KEY` | Private SSH key associated to the GitHub user in "GITHUB_USER_NAME". |
+| Name                  | Description                                                                   |
+|-----------------------|-------------------------------------------------------------------------------|
+| `NPM_REGISTRY_TOKEN`  | Authentication for the private npm registry.                                  |
+| `GITHUB_USER_EMAIL`   | GitHub User email used in `git config`.                                       |
+| `GITHUB_USER_NAME`    | GitHub User name used in `git config`.                                        |
+| `GITHUB_USER_SSH_KEY` | Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`. |
 
 
 
@@ -197,4 +197,4 @@ The workflow supports a private SSH key to be passed via the `GITHUB_USER_SSH_KE
 
 By passing a key that is associated with the GitHub user defined in the required `GITHUB_USER_NAME`, the workflow will be able to install those packages.
 
-Please consider that in such cases it is a good practice to do not use a "personal" GitHub user, but an _ad-hoc_ "bot" user, with an _ad-hoc_ private SSH key only used for the scope.
+Please consider that in such cases it is a good practice to not use a "personal" GitHub user, but an _ad-hoc_ "bot" user, with an _ad-hoc_ private SSH key only used for the scope.
