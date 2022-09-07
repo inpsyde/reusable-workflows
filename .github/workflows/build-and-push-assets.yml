@@ -85,7 +85,7 @@ jobs:
           echo "TAG_NAME=$(echo ${GITHUB_REF#refs/*/})" >> $GITHUB_ENV
           echo "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_PROD }}" >> $GITHUB_ENV
 
-      - name: Setup SSH
+      - name: Set up SSH
         if: ${{ env.GITHUB_USER_SSH_KEY != '' }}
         uses: webfactory/ssh-agent@v0.5.4
         with:
