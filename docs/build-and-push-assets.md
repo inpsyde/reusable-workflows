@@ -86,11 +86,12 @@ This is not the "simplest" possible example, but it showcases all the recommenda
 
 ## Secrets
 
-| Name                 | Description                                  |
-| -------------------- | -------------------------------------------- |
-| `NPM_REGISTRY_TOKEN` | Authentication for the private npm registry. |
-| `GITHUB_USER_EMAIL`  | GitHub User email used in `git config`.      |
-| `GITHUB_USER_NAME`   | GitHub User name used in `git config`.       |
+| Name                  | Description                                                                   |
+|-----------------------|-------------------------------------------------------------------------------|
+| `NPM_REGISTRY_TOKEN`  | Authentication for the private npm registry.                                  |
+| `GITHUB_USER_EMAIL`   | GitHub User email used in `git config`.                                       |
+| `GITHUB_USER_NAME`    | GitHub User name used in `git config`.                                        |
+| `GITHUB_USER_SSH_KEY` | Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`. |
 
 
 
@@ -185,3 +186,15 @@ If the release is created for an existing tag, the only care you need is waiting
 Unfortunately, creating a release via GitHub UI for a non-existing tag is **incompatible** with this workflow. GitHub in that case would first create a tag and then associate the release with it. However, that tag creation would not trigger the workflow. Hence, the release will point to a tag that does not contain assets. And even if the workflow is configured to run on release publishing, the workflow will fail because there's no "current branch" on release, so the workflow would try to push a commit made in a "detached HEAD" status, failing.
 
 In theory, it is possible to make the workflow 100% compliant with a release via UI. However (as of now), the complexity needed has been judged not worthwhile the effort.
+
+---
+
+
+
+> *I use `git+ssh` requirements in my `package.json`, how do I make those work with this workflow?*
+
+The workflow supports a private SSH key to be passed via the `GITHUB_USER_SSH_KEY` secret.
+
+By passing a key that is associated with the GitHub user defined in the required `GITHUB_USER_NAME`, the workflow will be able to install those packages.
+
+Please consider that in such cases it is a good practice to not use a "personal" GitHub user, but an _ad-hoc_ "bot" user, with an _ad-hoc_ private SSH key only used for the scope.
