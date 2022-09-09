@@ -1,6 +1,8 @@
 # Assets compilation
 
-This workflow utilizes the [Composer Asset Compiler](https://github.com/inpsyde/composer-asset-compiler) to compile assets. For details, refer to https://github.com/inpsyde/composer-asset-compiler#pre-compilation.
+This workflow utilizes
+the [Composer Asset Compiler](https://github.com/inpsyde/composer-asset-compiler) to compile assets.
+For details, refer to https://github.com/inpsyde/composer-asset-compiler#pre-compilation.
 
 **Simplest possible example:**
 
