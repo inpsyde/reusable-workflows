@@ -43,13 +43,13 @@ on:
         description: Authentication for the private npm registry.
         required: false
       GITHUB_USER_EMAIL:
-        description: Github User email used in "git config".
+        description: Email address of the GitHub user with which the repository should be checked out.
         required: true
       GITHUB_USER_NAME:
-        description: Github Username used in "git config".
+        description: User name of the GitHub user passed as `GITHUB_USER_NAME`.
         required: true
       GITHUB_USER_SSH_KEY:
-        description: Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`
+        description: Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`.
         required: false
 
 jobs:
