@@ -89,12 +89,12 @@ then `PACKAGE_MANAGER` input is required**.
 
 ## Secrets
 
-| Name                  | Description                                                                      |
-|-----------------------|----------------------------------------------------------------------------------|
-| `NPM_REGISTRY_TOKEN`  | Authentication for the private npm registry                                      |
-| `GITHUB_USER_EMAIL`   | Email address of the GitHub user with which the repository should be checked out |
-| `GITHUB_USER_NAME`    | User name of the GitHub user passed as `GITHUB_USER_NAME`                        |
-| `GITHUB_USER_SSH_KEY` | Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`     |
+| Name                  | Description                                                                  |
+|-----------------------|------------------------------------------------------------------------------|
+| `NPM_REGISTRY_TOKEN`  | Authentication for the private npm registry                                  |
+| `GITHUB_USER_EMAIL`   | Email address for Git configuration                                          |
+| `GITHUB_USER_NAME`    | Username for Git configuration                                               |
+| `GITHUB_USER_SSH_KEY` | Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME` |
 
 ## FAQ
 
