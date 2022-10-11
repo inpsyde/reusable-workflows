@@ -48,4 +48,4 @@ jobs:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
 
       - name: Run Psalm
-        run: ./vendor/bin/psalm ${{ inputs.PSALM_ARGS }}
+        run: ./vendor/bin/psalm  --php-version="${{ inputs.PHP_VERSION }}" ${{ inputs.PSALM_ARGS }}
