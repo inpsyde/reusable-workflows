@@ -158,7 +158,7 @@ name: Lint PHP
 on:
   pull_request:
 jobs:
-  tests-unit-php:
+  lint-php:
     uses: inpsyde/reusable-workflows/.github/workflows/lint-php.yml@main
 ```
 
