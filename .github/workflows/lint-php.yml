@@ -62,4 +62,4 @@ jobs:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
 
       - name: Run PHP lint check
-        run: parallel-lint ${{ inputs.LINT_ARGS }}
+        run: parallel-lint ${{ inputs.LINT_ARGS }} --checkstyle | cs2pr
