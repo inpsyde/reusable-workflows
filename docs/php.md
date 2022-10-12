@@ -154,7 +154,7 @@ This workflow runs [PHP Parallel Lint](https://github.com/php-parallel-lint/PHP-
 **Simplest possible example:**
 
 ```yml
-name: Unit tests PHP
+name: Lint PHP
 on:
   pull_request:
 jobs:
