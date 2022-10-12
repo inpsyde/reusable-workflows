@@ -139,12 +139,12 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/tests-unit-php.yml@main
     secrets:
       COMPOSER_AUTH_JSON: ${{ secrets.COMPOSER_AUTH_JSON }}
+      ENV_VARS: >-
+        [{"name":"EXAMPLE_USERNAME", "value":"deploybot"}, {"name":"EXAMPLE_TOKEN", "value":"${{ secrets.EXAMPLE_TOKEN }}"}]
     with:
       PHP_MATRIX: >-
         ["7.4", "8.0", "8.1"]
       PHPUNIT_ARGS: '--coverage-text --debug'
-      ENV_VARS: >-
-        [{"name":"EXAMPLE_USERNAME", "value":"deploybot"}, {"name":"EXAMPLE_TOKEN", "value":"${{ secrets.EXAMPLE_TOKEN }}"}]
 ```
 
 ## Lint PHP
@@ -190,10 +190,10 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/lint-php.yml@main
     secrets:
       COMPOSER_AUTH_JSON: ${{ secrets.COMPOSER_AUTH_JSON }}
+      ENV_VARS: >-
+        [{"name":"EXAMPLE_USERNAME", "value":"deploybot"}, {"name":"EXAMPLE_TOKEN", "value":"${{ secrets.EXAMPLE_TOKEN }}"}]
     with:
       PHP_MATRIX: >-
         ["7.4", "8.0", "8.1"]
       LINT_ARGS: '. --exclude vendor --checkstyle | cs2pr'
-      ENV_VARS: >-
-        [{"name":"EXAMPLE_USERNAME", "value":"deploybot"}, {"name":"EXAMPLE_TOKEN", "value":"${{ secrets.EXAMPLE_TOKEN }}"}]
 ```
