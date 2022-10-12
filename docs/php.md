@@ -186,7 +186,7 @@ name: Unit tests PHP
 on:
   pull_request:
 jobs:
-  tests-unit-php:
+  lint-php:
     uses: inpsyde/reusable-workflows/.github/workflows/lint-php.yml@main
     secrets:
       COMPOSER_AUTH_JSON: ${{ secrets.COMPOSER_AUTH_JSON }}
