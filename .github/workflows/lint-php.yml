@@ -61,5 +61,5 @@ jobs:
         with:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
 
-      - name: Run PHP compat check
+      - name: Run PHP lint check
         run: parallel-lint ${{ inputs.LINT_ARGS }}
