@@ -195,5 +195,5 @@ jobs:
     with:
       PHP_MATRIX: >-
         ["7.4", "8.0", "8.1"]
-      LINT_ARGS: '. --exclude vendor --checkstyle | cs2pr'
+      LINT_ARGS: '. --exclude vendor'
 ```
