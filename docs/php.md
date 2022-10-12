@@ -177,7 +177,6 @@ jobs:
 | Name                 | Description                                                                              |
 |----------------------|------------------------------------------------------------------------------------------|
 | `COMPOSER_AUTH_JSON` | Authentication for privately hosted packages and repositories as a JSON formatted object |
-| `ENV_VARS`           | Additional environment variables as a JSON formatted object                              |
 
 **Example with configuration parameters:**
 
@@ -190,8 +189,6 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/lint-php.yml@main
     secrets:
       COMPOSER_AUTH_JSON: ${{ secrets.COMPOSER_AUTH_JSON }}
-      ENV_VARS: >-
-        [{"name":"EXAMPLE_USERNAME", "value":"deploybot"}, {"name":"EXAMPLE_TOKEN", "value":"${{ secrets.EXAMPLE_TOKEN }}"}]
     with:
       PHP_MATRIX: >-
         ["7.4", "8.0", "8.1"]
