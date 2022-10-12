@@ -182,7 +182,7 @@ jobs:
 **Example with configuration parameters:**
 
 ```yml
-name: Unit tests PHP
+name: Lint PHP
 on:
   pull_request:
 jobs:
