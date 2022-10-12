@@ -43,7 +43,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
-          tools: parallel-lint
+          tools: cs2pr, parallel-lint
 
       - name: Set up custom environment variables
         env:
