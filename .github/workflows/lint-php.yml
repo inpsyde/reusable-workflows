@@ -1,0 +1,65 @@
+name: Lint PHP
+
+on:
+  workflow_call:
+    inputs:
+      PHP_MATRIX:
+        description: Matrix of PHP versions as a JSON formatted object.
+        default: '["8.0"]'
+        required: false
+        type: string
+      COMPOSER_ARGS:
+        description: Set of arguments passed to Composer.
+        default: '--prefer-dist'
+        required: false
+        type: string
+      LINT_ARGS:
+        description: Set of arguments passed to PHP-Parallel-Lint.
+        default: '-e php --colors --show-deprecated .'
+        required: false
+        type: string
+    secrets:
+      COMPOSER_AUTH_JSON:
+        description: Authentication for privately hosted packages and repositories as a JSON formatted object.
+        required: false
+      ENV_VARS:
+        description: Additional environment variables as a JSON formatted object.
+        required: false
+
+jobs:
+  tests-unit-php:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version: ${{ fromJson(inputs.PHP_MATRIX) }}
+    env:
+      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          tools: parallel-lint
+
+      - name: Set up custom environment variables
+        env:
+          ENV_VARS: ${{ secrets.ENV_VARS }}
+        if: ${{ env.ENV_VARS }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            JSON
+              .parse(process.env.ENV_VARS)
+              .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
+
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v1
+        with:
+          composer-options: ${{ inputs.COMPOSER_ARGS }}
+
+      - name: Run PHP compat check
+        run: parallel-lint ${{ inputs.LINT_ARGS }}

@@ -146,3 +146,54 @@ jobs:
       ENV_VARS: >-
         [{"name":"EXAMPLE_USERNAME", "value":"deploybot"}, {"name":"EXAMPLE_TOKEN", "value":"${{ secrets.EXAMPLE_TOKEN }}"}]
 ```
+
+## Lint PHP
+
+This workflow runs [PHP Parallel Lint](https://github.com/php-parallel-lint/PHP-Parallel-Lint). 
+
+**Simplest possible example:**
+
+```yml
+name: Unit tests PHP
+on:
+  pull_request:
+jobs:
+  tests-unit-php:
+    uses: inpsyde/reusable-workflows/.github/workflows/lint-php.yml@main
+```
+
+### Configuration parameters
+
+#### Inputs
+
+| Name            | Default                                 | Description                                       |
+|-----------------|-----------------------------------------|---------------------------------------------------|
+| `PHP_MATRIX`    | `["7.4"]`                               | Matrix of PHP versions as a JSON formatted object |
+| `COMPOSER_ARGS` | `'--prefer-dist'`                       | Set of arguments passed to Composer               |
+| `LINT_ARGS`     | `'-e php --colors --show-deprecated .'` | Set of arguments passed to PHP Parallel Lint      |
+
+#### Secrets
+
+| Name                 | Description                                                                              |
+|----------------------|------------------------------------------------------------------------------------------|
+| `COMPOSER_AUTH_JSON` | Authentication for privately hosted packages and repositories as a JSON formatted object |
+| `ENV_VARS`           | Additional environment variables as a JSON formatted object                              |
+
+**Example with configuration parameters:**
+
+```yml
+name: Unit tests PHP
+on:
+  pull_request:
+jobs:
+  tests-unit-php:
+    uses: inpsyde/reusable-workflows/.github/workflows/lint-php.yml@main
+    secrets:
+      COMPOSER_AUTH_JSON: ${{ secrets.COMPOSER_AUTH_JSON }}
+    with:
+      PHP_MATRIX: >-
+        ["7.4", "8.0", "8.1"]
+      LINT_ARGS: '. --exclude vendor --checkstyle | cs2pr'
+      ENV_VARS: >-
+        [{"name":"EXAMPLE_USERNAME", "value":"deploybot"}, {"name":"EXAMPLE_TOKEN", "value":"${{ secrets.EXAMPLE_TOKEN }}"}]
+```
