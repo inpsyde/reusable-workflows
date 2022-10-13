@@ -41,6 +41,7 @@ jobs:
         with:
           php-version: ${{ matrix.php-version }}
           tools: cs2pr, parallel-lint
+          coverage: none
 
       - name: Install Composer dependencies
         uses: ramsey/composer-install@v1
