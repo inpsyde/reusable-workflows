@@ -20,8 +20,8 @@ jobs:
 
 #### Inputs
 
-| Name                  | Default                       | Description                                                           |
-|-----------------------|-------------------------------|-----------------------------------------------------------------------|
+| Name                  | Default                       | Description                                                      |
+|-----------------------|-------------------------------|------------------------------------------------------------------|
 | `PHP_VERSION`         | 7.4                           | PHP version with which the assets compilation is to be executed  |
 | `NPM_REGISTRY_DOMAIN` | `https://npm.pkg.github.com/` | Domain of the private npm registry                               |
 | `NODE_VERSION`        | 16                            | Node version with which the assets will be compiled              |
