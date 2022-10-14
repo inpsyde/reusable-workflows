@@ -166,12 +166,12 @@ jobs:
 
 #### Inputs
 
-| Name                    | Default                                 | Description                                       |
-|-------------------------|-----------------------------------------|---------------------------------------------------|
-| `PHP_MATRIX`            | `["8.0"]`                               | Matrix of PHP versions as a JSON formatted object |
-| `COMPOSER_ARGS`         | `'--prefer-dist'`                       | Set of arguments passed to Composer               |
-| `LINT_ARGS`             | `'-e php --colors --show-deprecated .'` | Set of arguments passed to PHP Parallel Lint      |
-| `COMPOSER_DEPS_INSTALL` | `false`                                 | Install composer dependencies before linting?     |
+| Name                    | Default                                 | Description                                                    |
+|-------------------------|-----------------------------------------|----------------------------------------------------------------|
+| `PHP_MATRIX`            | `["8.0"]`                               | Matrix of PHP versions as a JSON formatted object              |
+| `COMPOSER_ARGS`         | `'--prefer-dist'`                       | Set of arguments passed to Composer                            |
+| `LINT_ARGS`             | `'-e php --colors --show-deprecated .'` | Set of arguments passed to PHP Parallel Lint                   |
+| `COMPOSER_DEPS_INSTALL` | `false`                                 | Whether or not to install Composer dependencies before linting |
 
 #### Secrets
 
