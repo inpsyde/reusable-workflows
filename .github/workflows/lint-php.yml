@@ -20,8 +20,8 @@ on:
         type: string
       COMPOSER_DEPS_INSTALL:
         description: Install composer dependencies before linting?
-        type: string
-        default: "no"
+        type: boolean
+        default: false
         required: false
     secrets:
       COMPOSER_AUTH_JSON:
@@ -49,7 +49,7 @@ jobs:
           coverage: none
 
       - name: Install Composer dependencies
-        if: ${{ ! startsWith( 'no', inputs.COMPOSER_DEPS_INSTALL ) }}
+        if: ${{ inputs.COMPOSER_DEPS_INSTALL }}
         uses: ramsey/composer-install@v1
         with:
           composer-options: ${{ inputs.COMPOSER_ARGS }}

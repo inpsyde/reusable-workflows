@@ -171,7 +171,7 @@ jobs:
 | `PHP_MATRIX`            | `["8.0"]`                               | Matrix of PHP versions as a JSON formatted object |
 | `COMPOSER_ARGS`         | `'--prefer-dist'`                       | Set of arguments passed to Composer               |
 | `LINT_ARGS`             | `'-e php --colors --show-deprecated .'` | Set of arguments passed to PHP Parallel Lint      |
-| `COMPOSER_DEPS_INSTALL` | `"no"`                                  | Install composer dependencies before linting?     |
+| `COMPOSER_DEPS_INSTALL` | `false`                                 | Install composer dependencies before linting?     |
 
 #### Secrets
 
@@ -194,5 +194,5 @@ jobs:
       PHP_MATRIX: >-
         ["7.4", "8.0", "8.1"]
       LINT_ARGS: '. --exclude vendor'
-      COMPOSER_DEPS_INSTALL: 'yes'
+      COMPOSER_DEPS_INSTALL: true
 ```
