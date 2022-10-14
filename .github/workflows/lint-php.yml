@@ -18,6 +18,11 @@ on:
         default: '. -e php --colors --show-deprecated'
         required: false
         type: string
+      COMPOSER_DEPS_INSTALL:
+        description: Install composer dependencies before linting?
+        type: string
+        default: "no"
+        required: false
     secrets:
       COMPOSER_AUTH_JSON:
         description: Authentication for privately hosted packages and repositories as a JSON formatted object.
@@ -44,6 +49,7 @@ jobs:
           coverage: none
 
       - name: Install Composer dependencies
+        if: ${{ ! startsWith( 'no', inputs.COMPOSER_DEPS_INSTALL ) }}
         uses: ramsey/composer-install@v1
         with:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
