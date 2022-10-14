@@ -1,0 +1,58 @@
+name: Lint PHP
+
+on:
+  workflow_call:
+    inputs:
+      PHP_MATRIX:
+        description: Matrix of PHP versions as a JSON formatted object.
+        default: '["8.0"]'
+        required: false
+        type: string
+      COMPOSER_ARGS:
+        description: Set of arguments passed to Composer.
+        default: '--prefer-dist'
+        required: false
+        type: string
+      LINT_ARGS:
+        description: Set of arguments passed to PHP Parallel Lint.
+        default: '. -e php --colors --show-deprecated'
+        required: false
+        type: string
+      COMPOSER_DEPS_INSTALL:
+        description: Whether or not to install Composer dependencies before linting.
+        type: boolean
+        default: false
+        required: false
+    secrets:
+      COMPOSER_AUTH_JSON:
+        description: Authentication for privately hosted packages and repositories as a JSON formatted object.
+        required: false
+
+jobs:
+  lint-php:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version: ${{ fromJson(inputs.PHP_MATRIX) }}
+    env:
+      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          tools: cs2pr, parallel-lint
+          coverage: none
+
+      - name: Install Composer dependencies
+        if: ${{ inputs.COMPOSER_DEPS_INSTALL }}
+        uses: ramsey/composer-install@v1
+        with:
+          composer-options: ${{ inputs.COMPOSER_ARGS }}
+
+      - name: Run PHP lint check
+        run: parallel-lint ${{ inputs.LINT_ARGS }} --checkstyle | cs2pr
