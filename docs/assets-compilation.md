@@ -20,12 +20,13 @@ jobs:
 
 #### Inputs
 
-| Name                  | Default                       | Description                                         |
-|-----------------------|-------------------------------|-----------------------------------------------------|
-| `NPM_REGISTRY_DOMAIN` | `https://npm.pkg.github.com/` | Domain of the private npm registry                  |
-| `NODE_VERSION`        | 16                            | Node version with which the assets will be compiled |
-| `COMPOSER_ARGS`       | `'--prefer-dist'`             | Set of arguments passed to Composer                 |
-| `COMPILE_ASSETS_ARGS` | `'-v --env=root'`             | Set of arguments passed to Composer Asset Compiler  |
+| Name                  | Default                       | Description                                                      |
+|-----------------------|-------------------------------|------------------------------------------------------------------|
+| `PHP_VERSION`         | 7.4                           | PHP version with which the assets compilation is to be executed  |
+| `NPM_REGISTRY_DOMAIN` | `https://npm.pkg.github.com/` | Domain of the private npm registry                               |
+| `NODE_VERSION`        | 16                            | Node version with which the assets will be compiled              |
+| `COMPOSER_ARGS`       | `'--prefer-dist'`             | Set of arguments passed to Composer                              |
+| `COMPILE_ASSETS_ARGS` | `'-v --env=root'`             | Set of arguments passed to Composer Asset Compiler               |
 
 #### Secrets
 
