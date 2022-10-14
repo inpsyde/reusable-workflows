@@ -19,7 +19,7 @@ on:
         required: false
         type: string
       COMPOSER_DEPS_INSTALL:
-        description: Install composer dependencies before linting?
+        description: Whether or not to install Composer dependencies before linting.
         type: boolean
         default: false
         required: false
