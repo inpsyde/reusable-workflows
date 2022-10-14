@@ -38,6 +38,7 @@ jobs:
         with:
           php-version: ${{ inputs.PHP_VERSION }}
           tools: composer, cs2pr
+          coverage: none
 
       - name: Validate composer.json and composer.lock
         run: composer validate
