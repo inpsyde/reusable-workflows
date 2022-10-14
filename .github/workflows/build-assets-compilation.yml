@@ -3,6 +3,11 @@ name: Assets compilation
 on:
   workflow_call:
     inputs:
+      PHP_VERSION:
+        description: PHP version with which the coding standard analysis is to be executed.
+        default: 7.4
+        required: false
+        type: string
       NPM_REGISTRY_DOMAIN:
         description: Domain of the private npm registry.
         default: https://npm.pkg.github.com/
@@ -21,11 +26,6 @@ on:
       COMPILE_ASSETS_ARGS:
         description: Set of arguments passed to Composer Asset Compiler.
         default: '-v --env=root'
-        required: false
-        type: string
-      PHP_VERSION:
-        description: PHP version with which the coding standard analysis is to be executed.
-        default: 7.4
         required: false
         type: string
     secrets:
