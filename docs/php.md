@@ -48,7 +48,7 @@ jobs:
       PHPCS_ARGS: '--report=summary'
 ```
 
-**Note**: Coding standards analysis can only be performed with a specific PHP version and not in a PHP matrix, as it should always be tested with the highest PHP version in use. To check the compatibility of the code with multiple PHP versions, use the [Lint PHP](#lint-php) workflow.
+**Note**: Coding standards analysis can only be performed with a specific PHP version and not in a PHP matrix, as it should always be tested with the highest PHP version in use. To check compatibility with multiple PHP versions, use the [Lint PHP](#lint-php) workflow.
 
 
 ## Static code analysis
@@ -98,7 +98,7 @@ jobs:
       PSALM_ARGS: '--threads=3'
 ```
 
-**Note**: Static code analysis can only be performed with a specific PHP version and not in a PHP matrix, as it should always be tested with the highest PHP version in use. To check the compatibility of the code with multiple PHP versions, use the [Lint PHP](#lint-php) workflow.
+**Note**: Static code analysis can only be performed with a specific PHP version and not in a PHP matrix, as it should always be tested with the highest PHP version in use. To check compatibility with multiple PHP versions, use the [Lint PHP](#lint-php) workflow.
 
 ## Unit tests PHP
 
