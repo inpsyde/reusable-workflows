@@ -74,6 +74,8 @@ jobs:
 | `NODE_VERSION`        | 16                                                 | Node version with which the unit tests are to be executed |
 | `JEST_ARGS`           | `'--reporters=default --reporters=github-actions'` | Set of arguments passed to Jest                           |
 
+**Note**: The default `github-actions` reporter requires Jest 28 or higher.
+
 #### Secrets
 
 | Name                 | Description                                 |
