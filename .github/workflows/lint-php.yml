@@ -50,7 +50,7 @@ jobs:
 
       - name: Install Composer dependencies
         if: ${{ inputs.COMPOSER_DEPS_INSTALL }}
-        uses: ramsey/composer-install@v1
+        uses: ramsey/composer-install@v2
         with:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
 
