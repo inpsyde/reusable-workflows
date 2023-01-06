@@ -25,6 +25,7 @@ jobs:
 | `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                  |
 | `NODE_VERSION`        | 16                              | Node version with which the assets will be compiled |
 | `STYLELINT_ARGS`      | `'./resources/**/*.scss'`       | Set of arguments passed to Stylelint                |
+| `PACKAGE_MANAGER`     | `npm`                           | Package manager. Supported are "yarn" and "npm".    |
 
 #### Secrets
 
