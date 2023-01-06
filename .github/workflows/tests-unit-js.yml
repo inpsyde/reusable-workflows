@@ -18,6 +18,11 @@ on:
         default: '--reporters=default --reporters=github-actions'
         required: false
         type: string
+      PACKAGE_MANAGER:
+        description: Package manager. Supported are "yarn" and "npm".
+        default: "npm"
+        required: false
+        type: string
     secrets:
       NPM_REGISTRY_TOKEN:
         description: Authentication for the private npm registry.
@@ -39,16 +44,16 @@ jobs:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
 
-      - name: Cache npm dependencies
+      - name: Cache npm/Yarn dependencies
         uses: actions/cache@v3
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+          path: ~/.deps_cache
+          key: ${{ runner.os }}-node-${{ inputs.NODE_VERSION }}-${{ env.PACKAGE_MANAGER }}-${{ hashFiles('**/package-lock.json', '**/npm-shrinkwrap.json', '**/yarn.lock') }}
 
-      - name: Install npm dependencies
-        run: npm install
+      - name: Install dependencies
+        run: |
+          ${{ ((env.PACKAGE_MANAGER == 'yarn') && 'yarn config set cache-folder ~/.deps_cache') || 'npm config set cache ~/.deps_cache --global' }}
+          ${{ ((env.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm install' }}
 
       - name: Run Jest
         run: ./node_modules/.bin/jest ${{ inputs.JEST_ARGS }}
