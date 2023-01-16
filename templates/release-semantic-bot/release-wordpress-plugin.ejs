@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# plugin template
+
+export PATH="./node_modules/.bin:$PATH"
+VER=$1
+
+#Replace version on main file
+TO="Version:     "
+TO_VER="$TO$VER"
+sed -i "s/Version:\(.*\)/$TO_VER/" "<%= filename %>"
