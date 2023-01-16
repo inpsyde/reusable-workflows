@@ -28,8 +28,9 @@ jobs:
     steps:
       - name: FIRST DEBUG POINT
         run: |
-          ls -al
-          echo '${{ toJSON(github) }}'
+          ls -al ${{ github.path }}
+          ls -al ${{ github.workspace }}
+
       - name: Create semantic release bot configuration file
         if: ${{ inputs.PACKAGE_TYPE }} != "custom"
         run: ejs ../../templates/release-semantic-bot/release.config.ejs -o release.config.js files=${{ inputs.FILES }}
