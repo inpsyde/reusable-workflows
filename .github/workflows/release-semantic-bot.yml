@@ -29,25 +29,25 @@ jobs:
       - name: FIRST DEBUG POINT
         run: |
           ls -al
-          echo ${GITHUB_WORKSPACE}
+          echo ${GITHUB_ACTION_PATH}
       - name: Create semantic release bot configuration file
         if: ${{ inputs.PACKAGE_TYPE }} != "custom"
-        run: ejs ${GITHUB_WORKSPACE}/../../templates/release-semantic-bot/release.config.ejs -o release.config.js files=${{ inputs.FILES }}
+        run: ejs ${GITHUB_ACTION_PATH}/../../templates/release-semantic-bot/release.config.ejs -o release.config.js files=${{ inputs.FILES }}
       - name: Configure semantic release bot for a wordpress plugin
         if: ${{ inputs.PACKAGE_TYPE }} == "wordpress-plugin"
-        run: ejs ${GITHUB_WORKSPACE}/../../templates/release-semantic-bot/release-wordpress-plugin.ejs -o release.sh filename=${{ inputs.MAIN_FILENAME }}
+        run: ejs ${GITHUB_ACTION_PATH}/../../templates/release-semantic-bot/release-wordpress-plugin.ejs -o release.sh filename=${{ inputs.MAIN_FILENAME }}
       - name: Configure semantic release bot for a wordpress theme
         if: ${{ inputs.PACKAGE_TYPE }} == "wordpress-theme"
-        run: ejs ${GITHUB_WORKSPACE}/../../templates/release-semantic-bot/release-wordpress-theme.ejs -o release.sh filename=${{ inputs.MAIN_FILENAME }}
+        run: ejs ${GITHUB_ACTION_PATH}/../../templates/release-semantic-bot/release-wordpress-theme.ejs -o release.sh filename=${{ inputs.MAIN_FILENAME }}
       - name: Configure semantic release bot for a library
         if: ${{ inputs.PACKAGE_TYPE }} == "library"
-        run: ejs ${GITHUB_WORKSPACE}/../../templates/release-semantic-bot/release-library.ejs -o release.sh filename=${{ inputs.MAIN_FILENAME }}
+        run: ejs ${GITHUB_ACTION_PATH}/../../templates/release-semantic-bot/release-library.ejs -o release.sh filename=${{ inputs.MAIN_FILENAME }}
       - name: Configure semantic release bot for a custom package
         if: ${{ inputs.PACKAGE_TYPE }} == "custom"
         run: echo "Using repository release configurations"
       - name: DEBUG
         run: |
-          echo ${GITHUB_WORKSPACE}
+          echo ${GITHUB_ACTION_PATH}
           cat release.sh
           cat release.config.js
       - name: Checkout
