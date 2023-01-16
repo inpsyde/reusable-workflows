@@ -26,11 +26,27 @@ jobs:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install dependencies
+        run: |
+          npm i -g @semantic-release/changelog \
+            @semantic-release/commit-analyzer \
+            @semantic-release/exec \
+            @semantic-release/git \
+            @semantic-release/github \
+            @semantic-release/npm \
+            @semantic-release/release-notes-generator \
+            semantic-release \
+            ejs
       - name: FIRST DEBUG POINT
         run: |
           ls -al ${{ github.path }}
           ls -al ${{ github.workspace }}
-
+          echo ${GITHUB_ACTION_PATH}
+          echo 'last line'
       - name: Create semantic release bot configuration file
         if: ${{ inputs.PACKAGE_TYPE }} != "custom"
         run: ejs ../../templates/release-semantic-bot/release.config.ejs -o release.config.js files=${{ inputs.FILES }}
@@ -53,21 +69,8 @@ jobs:
           cat release.config.js
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-      - name: Install dependencies
-        run: |
-          npm i -g @semantic-release/changelog \
-            @semantic-release/commit-analyzer \
-            @semantic-release/exec \
-            @semantic-release/git \
-            @semantic-release/github \
-            @semantic-release/npm \
-            @semantic-release/release-notes-generator \
-            semantic-release \
-            ejs
+
+
       - name: Remove Husky hooks
         run: rm -f .husky/pre-commit
 
