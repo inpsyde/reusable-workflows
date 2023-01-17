@@ -73,7 +73,7 @@ jobs:
             \"tagFormat\": \"\${version}\"
           }" > release.config.js
       - name: Configure semantic release bot for a wordpress plugin
-        if: ${{ inputs.PACKAGE_TYPE == "wordpress-plugin" }}
+        if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' }}
         env:
           MAIN_FILENAME: ${{ inputs.MAIN_FILENAME }}
         run: echo "export PATH=\"./node_modules/.bin:\$PATH\"
@@ -82,17 +82,17 @@ jobs:
               TO_VER=\"\$TO     \$VER\"
               sed -i \"s/Version:\(.*\)/\$TO_VER/\" \"$MAIN_FILENAME\"" > release.sh
       - name: Configure semantic release bot for a wordpress theme
-        if: ${{ inputs.PACKAGE_TYPE == "wordpress-theme" }}
+        if: ${{ inputs.PACKAGE_TYPE == 'wordpress-theme' }}
         run: echo 'export PATH="./node_modules/.bin:$PATH"
               VER=$1
               TO="Version:"
               TO_VER="$TO $VER"
               sed -i "s/Version:\(.*\)/$TO_VER/" "style.css"' > release.sh
       - name: Configure semantic release bot for a library
-        if: ${{ inputs.PACKAGE_TYPE == "library" }}
+        if: ${{ inputs.PACKAGE_TYPE == 'library' }}
         run: echo "" > release.sh
       - name: Configure semantic release bot for a custom package
-        if: ${{ inputs.PACKAGE_TYPE == "custom" }}
+        if: ${{ inputs.PACKAGE_TYPE == 'custom' }}
         run: echo "Using repository release configurations"
       - name: DEBUG
         run: |
