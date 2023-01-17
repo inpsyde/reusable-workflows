@@ -93,7 +93,7 @@ jobs:
           MAIN_FILENAME: "style.css"
           PACKAGE_FILES: ${{ inputs.FILES }}
           BRANCHES: ${{ inputs.BRANCHES }}
-          run: |
+        run: |
             echo "module.exports = {
               \"branches\": $BRANCHES,
               \"plugins\": [
