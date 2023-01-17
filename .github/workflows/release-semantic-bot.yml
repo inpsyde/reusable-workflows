@@ -76,14 +76,16 @@ jobs:
         if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' }}
         env:
           MAIN_FILENAME: ${{ inputs.MAIN_FILENAME }}
-        run: echo "export PATH=\"./node_modules/.bin:\$PATH\"
+        run: echo "#!/bin/sh
+              export PATH=\"./node_modules/.bin:\$PATH\"
               VER=\$1
               TO=\"Version:\"
               TO_VER=\"\$TO     \$VER\"
               sed -i \"s/Version:\(.*\)/\$TO_VER/\" \"$MAIN_FILENAME\"" > release.sh
       - name: Configure semantic release bot for a wordpress theme
         if: ${{ inputs.PACKAGE_TYPE == 'wordpress-theme' }}
-        run: echo 'export PATH="./node_modules/.bin:$PATH"
+        run: echo '#!/bin/sh
+              export PATH="./node_modules/.bin:$PATH"
               VER=$1
               TO="Version:"
               TO_VER="$TO $VER"
