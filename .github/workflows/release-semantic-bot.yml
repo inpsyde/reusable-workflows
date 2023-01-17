@@ -150,10 +150,6 @@ jobs:
       - name: Configure semantic release bot for a custom package
         if: ${{ inputs.PACKAGE_TYPE == 'custom' }}
         run: echo "Using repository release configurations"
-      - name: DEBUG
-        run: |
-          cat release.config.js
-
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
