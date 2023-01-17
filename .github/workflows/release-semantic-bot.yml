@@ -45,7 +45,7 @@ jobs:
         uses: actions/checkout@v3
       - name: Remove Husky hooks
         run: rm -f .husky/pre-commit
-      - name: Configure semantic release bot for a wordpress plugin
+      - name: Configure semantic release bot for a WordPress plugin
         if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' }}
         run: |
           echo "module.exports = {
@@ -83,9 +83,9 @@ jobs:
               }]
             ],
             \"preset\": \"angular\",
-            \"tagFormat\": \"\${version}\"
+            \"tagFormat\": \"\${version}\"\
           }" > release.config.js
-      - name: Configure semantic release bot for a wordpress theme
+      - name: Configure semantic release bot for a WordPress theme
         if: ${{ inputs.PACKAGE_TYPE == 'wordpress-theme' }}
         run: |
           echo "module.exports = {
