@@ -33,19 +33,108 @@ jobs:
       - name: Install dependencies
         run: |
           npm i -g @semantic-release/changelog \
-            @semantic-release/commit-analyzer \
-            @semantic-release/exec \
             @semantic-release/git \
-            @semantic-release/github \
             @semantic-release/npm \
-            @semantic-release/release-notes-generator \
+            @google/semantic-release-replace-plugin \
             semantic-release
       - name: Checkout
         uses: actions/checkout@v3
       - name: Remove Husky hooks
         run: rm -f .husky/pre-commit
-      - name: Create semantic release bot configuration file
-        if: ${{ inputs.PACKAGE_TYPE }} != "custom"
+      - name: Configure semantic release bot for a wordpress plugin
+        if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' }}
+        env:
+          MAIN_FILENAME: ${{ inputs.MAIN_FILENAME }}
+          PACKAGE_FILES: ${{ inputs.FILES }}
+          BRANCHES: ${{ inputs.BRANCHES }}
+        run: |
+            echo "module.exports = {
+              \"branches\": $BRANCHES,
+              \"plugins\": [
+                \"@semantic-release/commit-analyzer\",
+                \"@semantic-release/release-notes-generator\",
+                \"@semantic-release/changelog\",
+                [\"@semantic-release/npm\", {
+                  \"tarballDir\": \"release\",
+                  \"npmPublish\": false
+                }],
+                [\"@google/semantic-release-replace-plugin\", {
+                  {
+                    \"replacements\": [
+                      {
+                        \"files\": [\"$MAIN_FILENAME\"],
+                        \"from\": \"Version:\(.*\)\",
+                        \"to\": \"Version:     \${nextRelease.version}\",
+                        \"results\": [
+                          {
+                            \"file\": \"$MAIN_FILENAME\",
+                            \"hasChanged\": true,
+                            \"numMatches\": 1,
+                            \"numReplacements\": 1
+                          }
+                        ],
+                        \"countMatches\": true
+                      }
+                    ]
+                  }
+                }],
+                \"@semantic-release/github\",
+                [\"@semantic-release/git\", {
+                  \"assets\": $PACKAGE_FILES,
+                  \"message\": \"chore(release): \${nextRelease.version} [skip ci]\n\n\${nextRelease.notes}\"
+                }]
+              ],
+              \"preset\": \"angular\",
+              \"tagFormat\": \"\${version}\"
+            }" > release.config.js
+      - name: Configure semantic release bot for a wordpress theme
+        if: ${{ inputs.PACKAGE_TYPE == 'wordpress-theme' }}
+        env:
+          MAIN_FILENAME: "style.css"
+          PACKAGE_FILES: ${{ inputs.FILES }}
+          BRANCHES: ${{ inputs.BRANCHES }}
+          run: |
+            echo "module.exports = {
+              \"branches\": $BRANCHES,
+              \"plugins\": [
+                \"@semantic-release/commit-analyzer\",
+                \"@semantic-release/release-notes-generator\",
+                \"@semantic-release/changelog\",
+                [\"@semantic-release/npm\", {
+                  \"tarballDir\": \"release\",
+                  \"npmPublish\": false
+                }],
+                [\"@google/semantic-release-replace-plugin\", {
+                  {
+                    \"replacements\": [
+                      {
+                        \"files\": [\"$MAIN_FILENAME\"],
+                        \"from\": \"Version:\(.*\)\",
+                        \"to\": \"Version:     \${nextRelease.version}\",
+                        \"results\": [
+                          {
+                            \"file\": \"$MAIN_FILENAME\",
+                            \"hasChanged\": true,
+                            \"numMatches\": 1,
+                            \"numReplacements\": 1
+                          }
+                        ],
+                        \"countMatches\": true
+                      }
+                    ]
+                  }
+                }],
+                \"@semantic-release/github\",
+                [\"@semantic-release/git\", {
+                  \"assets\": $PACKAGE_FILES,
+                  \"message\": \"chore(release): \${nextRelease.version} [skip ci]\n\n\${nextRelease.notes}\"
+                }]
+              ],
+              \"preset\": \"angular\",
+              \"tagFormat\": \"\${version}\"
+            }" > release.config.js
+      - name: Configure semantic release bot for a library
+        if: ${{ inputs.PACKAGE_TYPE == 'library' }}
         env:
           PACKAGE_FILES: ${{ inputs.FILES }}
           BRANCHES: ${{ inputs.BRANCHES }}
@@ -60,9 +149,6 @@ jobs:
                 \"tarballDir\": \"release\",
                 \"npmPublish\": false
               }],
-              [\"@semantic-release/exec\", {
-                \"prepareCmd\": \"bash release.sh \${nextRelease.version}\",
-              }],
               \"@semantic-release/github\",
               [\"@semantic-release/git\", {
                 \"assets\": $PACKAGE_FILES,
@@ -72,33 +158,12 @@ jobs:
             \"preset\": \"angular\",
             \"tagFormat\": \"\${version}\"
           }" > release.config.js
-      - name: Configure semantic release bot for a wordpress plugin
-        if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' }}
-        env:
-          MAIN_FILENAME: ${{ inputs.MAIN_FILENAME }}
-        run: echo "#!/bin/sh
-              export PATH=\"./node_modules/.bin:\$PATH\"
-              VER=\$1
-              TO=\"Version:\"
-              TO_VER=\"\$TO     \$VER\"
-              sed -i \"s/Version:\(.*\)/\$TO_VER/\" \"$MAIN_FILENAME\"" > release.sh
-      - name: Configure semantic release bot for a wordpress theme
-        if: ${{ inputs.PACKAGE_TYPE == 'wordpress-theme' }}
-        run: echo '#!/bin/sh
-              export PATH="./node_modules/.bin:$PATH"
-              VER=$1
-              TO="Version:"
-              TO_VER="$TO $VER"
-              sed -i "s/Version:\(.*\)/$TO_VER/" "style.css"' > release.sh
-      - name: Configure semantic release bot for a library
-        if: ${{ inputs.PACKAGE_TYPE == 'library' }}
-        run: echo "" > release.sh
       - name: Configure semantic release bot for a custom package
         if: ${{ inputs.PACKAGE_TYPE == 'custom' }}
         run: echo "Using repository release configurations"
       - name: DEBUG
         run: |
-          cat release.sh
+          cat release.config.js
 
       - name: Release
         env:
