@@ -25,6 +25,10 @@ jobs:
     name: Release
     timeout-minutes: 5
     runs-on: ubuntu-latest
+    env:
+      MAIN_FILENAME: ${{ inputs.MAIN_FILENAME }}
+      PACKAGE_FILES: ${{ inputs.FILES }}
+      BRANCHES: ${{ inputs.BRANCHES }}
     steps:
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -43,97 +47,86 @@ jobs:
         run: rm -f .husky/pre-commit
       - name: Configure semantic release bot for a wordpress plugin
         if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' }}
-        env:
-          MAIN_FILENAME: ${{ inputs.MAIN_FILENAME }}
-          PACKAGE_FILES: ${{ inputs.FILES }}
-          BRANCHES: ${{ inputs.BRANCHES }}
         run: |
-            echo "module.exports = {
-              \"branches\": $BRANCHES,
-              \"plugins\": [
-                \"@semantic-release/commit-analyzer\",
-                \"@semantic-release/release-notes-generator\",
-                \"@semantic-release/changelog\",
-                [\"@semantic-release/npm\", {
-                  \"tarballDir\": \"release\",
-                  \"npmPublish\": false
-                }],
-                [\"@google/semantic-release-replace-plugin\", {
-                  \"replacements\": [
-                    {
-                      \"files\": [\"$MAIN_FILENAME\"],
-                      \"from\": \"Version:\(.*\)\",
-                      \"to\": \"Version:     \${nextRelease.version}\",
-                      \"results\": [
-                        {
-                          \"file\": \"$MAIN_FILENAME\",
-                          \"hasChanged\": true,
-                          \"numMatches\": 1,
-                          \"numReplacements\": 1
-                        }
-                      ],
-                      \"countMatches\": true
-                    }
-                  ]
-                }],
-                \"@semantic-release/github\",
-                [\"@semantic-release/git\", {
-                  \"assets\": $PACKAGE_FILES,
-                  \"message\": \"chore(release): \${nextRelease.version} [skip ci]\n\n\${nextRelease.notes}\"
-                }]
-              ],
-              \"preset\": \"angular\",
-              \"tagFormat\": \"\${version}\"
-            }" > release.config.js
+          echo "module.exports = {
+            \"branches\": $BRANCHES,
+            \"plugins\": [
+              \"@semantic-release/commit-analyzer\",
+              \"@semantic-release/release-notes-generator\",
+              \"@semantic-release/changelog\",
+              [\"@semantic-release/npm\", {
+                \"tarballDir\": \"release\",
+                \"npmPublish\": false
+              }],
+              [\"@google/semantic-release-replace-plugin\", {
+                \"replacements\": [
+                  {
+                    \"files\": [\"$MAIN_FILENAME\"],
+                    \"from\": \"Version:\(.*\)\",
+                    \"to\": \"Version:     \${nextRelease.version}\",
+                    \"results\": [
+                      {
+                        \"file\": \"$MAIN_FILENAME\",
+                        \"hasChanged\": true,
+                        \"numMatches\": 1,
+                        \"numReplacements\": 1
+                      }
+                    ],
+                    \"countMatches\": true
+                  }
+                ]
+              }],
+              \"@semantic-release/github\",
+              [\"@semantic-release/git\", {
+                \"assets\": $PACKAGE_FILES,
+                \"message\": \"chore(release): \${nextRelease.version} [skip ci]\n\n\${nextRelease.notes}\"
+              }]
+            ],
+            \"preset\": \"angular\",
+            \"tagFormat\": \"\${version}\"
+          }" > release.config.js
       - name: Configure semantic release bot for a wordpress theme
         if: ${{ inputs.PACKAGE_TYPE == 'wordpress-theme' }}
-        env:
-          MAIN_FILENAME: "style.css"
-          PACKAGE_FILES: ${{ inputs.FILES }}
-          BRANCHES: ${{ inputs.BRANCHES }}
         run: |
-            echo "module.exports = {
-              \"branches\": $BRANCHES,
-              \"plugins\": [
-                \"@semantic-release/commit-analyzer\",
-                \"@semantic-release/release-notes-generator\",
-                \"@semantic-release/changelog\",
-                [\"@semantic-release/npm\", {
-                  \"tarballDir\": \"release\",
-                  \"npmPublish\": false
-                }],
-                [\"@google/semantic-release-replace-plugin\", {
-                  \"replacements\": [
-                    {
-                      \"files\": [\"$MAIN_FILENAME\"],
-                      \"from\": \"Version:\(.*\)\",
-                      \"to\": \"Version:     \${nextRelease.version}\",
-                      \"results\": [
-                        {
-                          \"file\": \"$MAIN_FILENAME\",
-                          \"hasChanged\": true,
-                          \"numMatches\": 1,
-                          \"numReplacements\": 1
-                        }
-                      ],
-                      \"countMatches\": true
-                    }
-                  ]
-                }],
-                \"@semantic-release/github\",
-                [\"@semantic-release/git\", {
-                  \"assets\": $PACKAGE_FILES,
-                  \"message\": \"chore(release): \${nextRelease.version} [skip ci]\n\n\${nextRelease.notes}\"
-                }]
-              ],
-              \"preset\": \"angular\",
-              \"tagFormat\": \"\${version}\"
-            }" > release.config.js
+          echo "module.exports = {
+            \"branches\": $BRANCHES,
+            \"plugins\": [
+              \"@semantic-release/commit-analyzer\",
+              \"@semantic-release/release-notes-generator\",
+              \"@semantic-release/changelog\",
+              [\"@semantic-release/npm\", {
+                \"tarballDir\": \"release\",
+                \"npmPublish\": false
+              }],
+              [\"@google/semantic-release-replace-plugin\", {
+                \"replacements\": [
+                  {
+                    \"files\": [\"style.css\"],
+                    \"from\": \"Version:\(.*\)\",
+                    \"to\": \"Version: \${nextRelease.version}\",
+                    \"results\": [
+                      {
+                        \"file\": \"style.css\",
+                        \"hasChanged\": true,
+                        \"numMatches\": 1,
+                        \"numReplacements\": 1
+                      }
+                    ],
+                    \"countMatches\": true
+                  }
+                ]
+              }],
+              \"@semantic-release/github\",
+              [\"@semantic-release/git\", {
+                \"assets\": $PACKAGE_FILES,
+                \"message\": \"chore(release): \${nextRelease.version} [skip ci]\n\n\${nextRelease.notes}\"
+              }]
+            ],
+            \"preset\": \"angular\",
+            \"tagFormat\": \"\${version}\"
+          }" > release.config.js
       - name: Configure semantic release bot for a library
         if: ${{ inputs.PACKAGE_TYPE == 'library' }}
-        env:
-          PACKAGE_FILES: ${{ inputs.FILES }}
-          BRANCHES: ${{ inputs.BRANCHES }}
         run: |
           echo "module.exports = {
             \"branches\": $BRANCHES,
