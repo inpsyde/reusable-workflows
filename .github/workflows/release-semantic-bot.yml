@@ -81,9 +81,7 @@ jobs:
               VER=\$1
               TO=\"Version:\"
               TO_VER=\"\$TO     \$VER\"
-              echo \$TO_VER
               sed -i \"s/Version:\(.*\)/\$TO_VER/\" \"$MAIN_FILENAME\"" > release.sh
-              echo $?
       - name: Configure semantic release bot for a wordpress theme
         if: ${{ inputs.PACKAGE_TYPE == 'wordpress-theme' }}
         run: echo '#!/bin/sh
