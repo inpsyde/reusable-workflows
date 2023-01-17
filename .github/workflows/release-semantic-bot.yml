@@ -70,7 +70,7 @@ jobs:
               }]
             ],
             \"preset\": \"angular\",
-            \"tagFormat\": "\${version}"
+            \"tagFormat\": \"\${version}\"
           }" > release.config.js
       - name: Configure semantic release bot for a wordpress plugin
         if: ${{ inputs.PACKAGE_TYPE }} == "wordpress-plugin"
