@@ -101,12 +101,12 @@ jobs:
               [\"@google/semantic-release-replace-plugin\", {
                 \"replacements\": [
                   {
-                    \"files\": [\"style.css\"],
+                    \"files\": [\"$MAIN_FILENAME\"],
                     \"from\": \"Version:\(.*\)\",
                     \"to\": \"Version: \${nextRelease.version}\",
                     \"results\": [
                       {
-                        \"file\": \"style.css\",
+                        \"file\": \"$MAIN_FILENAME\",
                         \"hasChanged\": true,
                         \"numMatches\": 1,
                         \"numReplacements\": 1
