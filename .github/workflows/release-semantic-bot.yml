@@ -78,15 +78,15 @@ jobs:
           MAIN_FILENAME: ${{ inputs.MAIN_FILENAME }}
         run: echo "export PATH=\"./node_modules/.bin:\$PATH\"
               VER=\$1
-              TO=\"Version \"
-              TO_VER=\"\$TO\$VER\"
+              TO=\"Version:\"
+              TO_VER=\"\$TO \$VER\"
               sed -i \"s/Version:\(.*\)/\$TO_VER/\" \"$MAIN_FILENAME\"" > release.sh
       - name: Configure semantic release bot for a wordpress theme
         if: ${{ inputs.PACKAGE_TYPE }} == "wordpress-theme"
         run: echo 'export PATH="./node_modules/.bin:$PATH"
               VER=$1
-              TO="Version "
-              TO_VER="$TO$VER"
+              TO="Version:"
+              TO_VER="$TO $VER"
               sed -i "s/Version:\(.*\)/$TO_VER/" "style.css"' > release.sh
       - name: Configure semantic release bot for a library
         if: ${{ inputs.PACKAGE_TYPE }} == "library"
@@ -101,4 +101,4 @@ jobs:
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release  --tag-format "${version}"
+        run: npx semantic-release
