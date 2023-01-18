@@ -8,16 +8,17 @@ on:
         required: false
         type: string
       PACKAGE_TYPE:
-        description: Choices are "wordpress-plugin", "wordpress-theme", "library", "custom". Needed to understand what release procedure to run or to run a completely custom procedure that lives inside the repository
+        description: Choices are "wordpress-plugin", "wordpress-theme", "library", "custom". Needed to understand what release procedure to run or to run a completely custom procedure that lives inside the repository.
         required: true
         type: string
       MAIN_FILENAME:
-        description: Main file name where the WordPress header is present
-        required: true
+        description: If there is a main file with the WordPress header, provide its name.
+        required: false
+        default: ''
         type: string
       FILES_TO_COMMIT:
         description: File names where the version number needs to be updated. Provide it in JSON format.
-        required: true
+        required: false
         type: string
       NODE_VERSION:
         description: Node version with which the assets will be compiled.
@@ -50,8 +51,23 @@ jobs:
         uses: actions/checkout@v3
       - name: Remove Husky hooks
         run: rm -f .husky/pre-commit
-      - name: Configure semantic release bot for a WordPress plugin
+      - name: Prepare main filename for a WordPress plugin
         if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' }}
+        run: |
+          MAIN_FILENAME=${MAIN_FILENAME:-"index.php"}
+          echo MAIN_FILENAME
+      - name: Prepare main filename for a WordPress theme
+          if: ${{ inputs.PACKAGE_TYPE == 'wordpress-theme' }}
+          run: |
+            MAIN_FILENAME=${MAIN_FILENAME:-"style.css"}
+            echo MAIN_FILENAME
+      - name: Prepare list of files to commit
+        if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' || inputs.PACKAGE_TYPE == 'wordpress-theme' }}
+        run: |
+          FILES_TO_COMMIT=${FILES_TO_COMMIT:-"[\"CHANGELOG.md\", \"package-lock.json\", \"package.json\", \"composer.json\", \"$MAIN_FILENAME\"]"}
+          echo $FILES_TO_COMMIT
+      - name: Configure semantic release bot for a WordPress plugin or theme
+        if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' || inputs.PACKAGE_TYPE == 'wordpress-theme'}}
         run: |
           echo "module.exports = {
             \"branches\": $BRANCHES,
@@ -90,46 +106,6 @@ jobs:
             \"preset\": \"angular\",
             \"tagFormat\": \"\${version}\"\
           }" > release.config.js
-      - name: Configure semantic release bot for a WordPress theme
-        if: ${{ inputs.PACKAGE_TYPE == 'wordpress-theme' }}
-        run: |
-          echo "module.exports = {
-            \"branches\": $BRANCHES,
-            \"plugins\": [
-              \"@semantic-release/commit-analyzer\",
-              \"@semantic-release/release-notes-generator\",
-              \"@semantic-release/changelog\",
-              [\"@semantic-release/npm\", {
-                \"tarballDir\": \"release\",
-                \"npmPublish\": false
-              }],
-              [\"@google/semantic-release-replace-plugin\", {
-                \"replacements\": [
-                  {
-                    \"files\": [\"$MAIN_FILENAME\"],
-                    \"from\": \"Version:\(.*\)\",
-                    \"to\": \"Version: \${nextRelease.version}\",
-                    \"results\": [
-                      {
-                        \"file\": \"$MAIN_FILENAME\",
-                        \"hasChanged\": true,
-                        \"numMatches\": 1,
-                        \"numReplacements\": 1
-                      }
-                    ],
-                    \"countMatches\": true
-                  }
-                ]
-              }],
-              \"@semantic-release/github\",
-              [\"@semantic-release/git\", {
-                \"assets\": $FILES_TO_COMMIT,
-                \"message\": \"chore(release): \${nextRelease.version} [skip ci]\n\n\${nextRelease.notes}\"
-              }]
-            ],
-            \"preset\": \"angular\",
-            \"tagFormat\": \"\${version}\"
-          }" > release.config.js
       - name: Configure semantic release bot for a library
         if: ${{ inputs.PACKAGE_TYPE == 'library' }}
         run: |
@@ -155,7 +131,21 @@ jobs:
       - name: Configure semantic release bot for a custom package
         if: ${{ inputs.PACKAGE_TYPE == 'custom' }}
         run: echo "Using repository release configurations"
+      - name: DEBUG POINT
+        run: |
+          echo release.config.js
+      - name: Check the presence of the configuration file
+        run: |
+          CHECK_CONFIGURATION_EXISTS=true
+          if [ ! -f "release.config.js" ]; then 
+            echo "Configuration file release.config.js does not exist, aborting!" 
+            CHECK_CONFIGURATION_EXISTS=false
+          else
+            echo "Configuration file release.config.js exists, proceeding with the release!" 
+          fi
+          echo $CHECK_CONFIGURATION_EXISTS
       - name: Release
+        if: $CHECK_CONFIGURATION_EXISTS
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
