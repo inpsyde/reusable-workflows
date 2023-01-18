@@ -146,7 +146,7 @@ jobs:
           echo "CHECK_CONFIGURATION_EXISTS=$CHECK_CONFIGURATION_EXISTS" >> $GITHUB_ENV
           echo $CHECK_CONFIGURATION_EXISTS
       - name: Release
-        if: ${{ env.CHECK_CONFIGURATION_EXISTS == true }}
+        if: ${{ env.CHECK_CONFIGURATION_EXISTS }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
