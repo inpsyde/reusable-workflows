@@ -19,6 +19,11 @@ on:
         description: File names where the version number needs to be updated. Provide it in JSON format.
         required: true
         type: string
+      NODE_VERSION:
+        description: Node version with which the assets will be compiled.
+        default: 18
+        required: false
+        type: string
 
 jobs:
   release:
@@ -33,7 +38,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: ${{ inputs.NODE_VERSION }}
       - name: Install dependencies
         run: |
           npm i -g @semantic-release/changelog \
