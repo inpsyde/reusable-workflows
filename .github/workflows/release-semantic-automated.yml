@@ -143,9 +143,10 @@ jobs:
           else
             echo "Configuration file release.config.js exists, proceeding with the release!" 
           fi
+          echo $CHECK_CONFIGURATION_EXISTS >> $GITHUB_ENV
           echo $CHECK_CONFIGURATION_EXISTS
       - name: Release
-        if: ${{ CHECK_CONFIGURATION_EXISTS }}
+        if: ${{ env.CHECK_CONFIGURATION_EXISTS }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
