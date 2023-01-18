@@ -15,7 +15,7 @@ on:
         description: Main file name where the WordPress header is present
         required: true
         type: string
-      FILES:
+      FILES_TO_COMMIT:
         description: File names where the version number needs to be updated. Provide it in JSON format.
         required: true
         type: string
@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       MAIN_FILENAME: ${{ inputs.MAIN_FILENAME }}
-      PACKAGE_FILES: ${{ inputs.FILES }}
+      PACKAGE_FILES: ${{ inputs.FILES_TO_COMMIT }}
       BRANCHES: ${{ inputs.BRANCHES }}
     steps:
       - name: Setup Node.js
