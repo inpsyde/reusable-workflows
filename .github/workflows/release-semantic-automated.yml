@@ -31,6 +31,10 @@ jobs:
     name: Release
     timeout-minutes: 5
     runs-on: ubuntu-latest
+    env:
+      MAIN_FILENAME: ${{ inputs.MAIN_FILENAME }}
+      FILES_TO_COMMIT: ${{ inputs.FILES_TO_COMMIT }}
+      BRANCHES: ${{ inputs.BRANCHES }}
     steps:
       - name: Setup Node.js
         uses: actions/setup-node@v3
