@@ -55,16 +55,19 @@ jobs:
         if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' }}
         run: |
           MAIN_FILENAME=${MAIN_FILENAME:-"index.php"}
+          echo "MAIN_FILENAME=$MAIN_FILENAME" >> $GITHUB_ENV
           echo $MAIN_FILENAME
       - name: Prepare main filename for a WordPress theme
         if: ${{ inputs.PACKAGE_TYPE == 'wordpress-theme' }}
         run: |
             MAIN_FILENAME=${MAIN_FILENAME:-"style.css"}
+          echo "MAIN_FILENAME=$MAIN_FILENAME" >> $GITHUB_ENV
             echo $MAIN_FILENAME
       - name: Prepare list of files to commit
         if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' || inputs.PACKAGE_TYPE == 'wordpress-theme' }}
         run: |
           FILES_TO_COMMIT=${FILES_TO_COMMIT:-"[\"CHANGELOG.md\", \"package-lock.json\", \"package.json\", \"composer.json\", \"$MAIN_FILENAME\"]"}
+          echo "FILES_TO_COMMIT=$FILES_TO_COMMIT" >> $GITHUB_ENV
           echo $FILES_TO_COMMIT
       - name: Configure semantic release bot for a WordPress plugin or theme
         if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' || inputs.PACKAGE_TYPE == 'wordpress-theme'}}
