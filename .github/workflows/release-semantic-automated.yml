@@ -55,12 +55,12 @@ jobs:
         if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' }}
         run: |
           MAIN_FILENAME=${MAIN_FILENAME:-"index.php"}
-          echo MAIN_FILENAME
+          echo $MAIN_FILENAME
       - name: Prepare main filename for a WordPress theme
         if: ${{ inputs.PACKAGE_TYPE == 'wordpress-theme' }}
         run: |
             MAIN_FILENAME=${MAIN_FILENAME:-"style.css"}
-            echo MAIN_FILENAME
+            echo $MAIN_FILENAME
       - name: Prepare list of files to commit
         if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' || inputs.PACKAGE_TYPE == 'wordpress-theme' }}
         run: |
@@ -133,7 +133,7 @@ jobs:
         run: echo "Using repository release configurations"
       - name: DEBUG POINT
         run: |
-          echo release.config.js
+          cat release.config.js
       - name: Check the presence of the configuration file
         run: |
           CHECK_CONFIGURATION_EXISTS=true
@@ -146,7 +146,7 @@ jobs:
           echo $CHECK_CONFIGURATION_EXISTS >> $GITHUB_ENV
           echo $CHECK_CONFIGURATION_EXISTS
       - name: Release
-        if: ${{ env.CHECK_CONFIGURATION_EXISTS }}
+        if: ${{ env.CHECK_CONFIGURATION_EXISTS == true }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
