@@ -12,7 +12,7 @@ on:
         required: true
         type: string
       MAIN_FILENAME:
-        description: If there is a main file with the WordPress header, provide its name.
+        description: If there is a main file with the WordPress header, provide its name. Default index.php for WordPress plugin and style.css for WordPress theme
         required: false
         default: ''
         type: string
@@ -57,8 +57,8 @@ jobs:
           MAIN_FILENAME=${MAIN_FILENAME:-"index.php"}
           echo MAIN_FILENAME
       - name: Prepare main filename for a WordPress theme
-          if: ${{ inputs.PACKAGE_TYPE == 'wordpress-theme' }}
-          run: |
+        if: ${{ inputs.PACKAGE_TYPE == 'wordpress-theme' }}
+        run: |
             MAIN_FILENAME=${MAIN_FILENAME:-"style.css"}
             echo MAIN_FILENAME
       - name: Prepare list of files to commit
