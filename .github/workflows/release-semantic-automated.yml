@@ -60,10 +60,10 @@ jobs:
         if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' || inputs.PACKAGE_TYPE == 'wordpress-theme' }}
         run: |
           FILES_TO_COMMIT=${FILES_TO_COMMIT:-'["CHANGELOG.md", "package-lock.json", "package.json", "composer.json", "'$MAIN_FILENAME'"]'}
-          echo "FILES_TO_COMMIT=$(echo FILES_TO_COMMIT | sed 's/"/\\"/g')" >> $GITHUB_ENV
+          echo "FILES_TO_COMMIT=$(echo $FILES_TO_COMMIT | sed 's/"/\\"/g')" >> $GITHUB_ENV
       - name: Prepare list of branches
         run: |
-          echo "BRANCHES=$(echo BRANCHES | sed 's/"/\\"/g')" >> $GITHUB_ENV
+          echo "BRANCHES=$(echo $BRANCHES | sed 's/"/\\"/g')" >> $GITHUB_ENV
       - name: Configure semantic release bot for a WordPress plugin or theme
         if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' || inputs.PACKAGE_TYPE == 'wordpress-theme'}}
         run: |
