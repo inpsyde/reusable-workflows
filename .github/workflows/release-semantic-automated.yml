@@ -67,6 +67,12 @@ jobs:
       - name: Configure semantic release bot for a WordPress plugin or theme
         if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' || inputs.PACKAGE_TYPE == 'wordpress-theme'}}
         run: |
+          echo ${{ env.BRANCHES }}
+          echo ${{ env.MAIN_FILENAME }}
+          echo ${{ env.FILES_TO_COMMIT }}
+          echo $BRANCHES
+          echo $MAIN_FILENAME
+          echo $FILES_TO_COMMIT
           wget https://raw.githubusercontent.com/inpsyde/reusable-workflows/automatic-release/templates/release-semantic-automated/release.config.js
           sed -i "s/££BRANCHES££/${{ env.BRANCHES }}/" "release.config.js"
           sed -i "s/££MAIN_FILENAME££/${{ env.MAIN_FILENAME }}/" "release.config.js"
