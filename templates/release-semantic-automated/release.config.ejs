@@ -1,5 +1,5 @@
 module.exports = {
-  "branches": <%- JSON.stringify(branches) %>,
+  "branches": <%= JSON.stringify(branches) %>,
   "plugins": [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
@@ -11,7 +11,7 @@ module.exports = {
     ["@google/semantic-release-replace-plugin", {
       "replacements": [
         {
-          "files": ["$MAIN_FILENAME"],
+          "files": ["<%- mainFilename %>"],
           "from": "Version:\(.*\)",
           "to": "Version:     \${nextRelease.version}",
           "results": [
