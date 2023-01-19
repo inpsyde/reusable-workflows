@@ -68,9 +68,9 @@ jobs:
         if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' || inputs.PACKAGE_TYPE == 'wordpress-theme'}}
         run: |
           wget https://raw.githubusercontent.com/inpsyde/reusable-workflows/automatic-release/templates/release-semantic-automated/release.config.js
-          sed -i "s/$$BRANCHES$$/${{ env.BRANCHES }}/" "release.config.js"
-          sed -i "s/$$MAIN_FILENAME$$/${{ env.MAIN_FILENAME }}/" "release.config.js"
-          sed -i "s/$$FILES_TO_COMMIT$$/${{ env.FILES_TO_COMMIT }}/" "release.config.js"
+          sed -i "s/££BRANCHES££/${{ env.BRANCHES }}/" "release.config.js"
+          sed -i "s/££MAIN_FILENAME££/${{ env.MAIN_FILENAME }}/" "release.config.js"
+          sed -i "s/££FILES_TO_COMMIT££/${{ env.FILES_TO_COMMIT }}/" "release.config.js"
           cat release.config.js
       - name: Configure semantic release bot for a library
         if: ${{ inputs.PACKAGE_TYPE == 'library' }}
