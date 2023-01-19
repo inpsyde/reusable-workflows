@@ -1,5 +1,5 @@
 module.exports = {
-  "branches": <%- branches %>,
+  "branches": <%- JSON.stringify(branches) %>,
   "plugins": [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
@@ -28,7 +28,7 @@ module.exports = {
     }],
     "@semantic-release/github",
     ["@semantic-release/git", {
-      "assets": <%- filesToCommit %>,
+      "assets": <%- JSON.stringify(filesToCommit) %>,
       "message": "chore(release): \${nextRelease.version} [skip ci]\n\n\${nextRelease.notes}"
     }]
   ],
