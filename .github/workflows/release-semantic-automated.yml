@@ -63,14 +63,15 @@ jobs:
       - name: Prepare list of files to commit
         if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' || inputs.PACKAGE_TYPE == 'wordpress-theme' }}
         run: |
-          echo "FILES_TO_COMMIT=${FILES_TO_COMMIT:-["CHANGELOG.md", "package-lock.json", "package.json", "composer.json", "$MAIN_FILENAME"]}" >> $GITHUB_ENV
-          echo $FILES_TO_COMMIT
+          echo "FILES_TO_COMMIT=${FILES_TO_COMMIT:-["CHANGELOG.md", "package-lock.json", "package.json", "composer.json", "$MAIN_FILENAME"]} >> $GITHUB_ENV
       - name: Configure semantic release bot for a WordPress plugin or theme
         if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' || inputs.PACKAGE_TYPE == 'wordpress-theme'}}
         run: |
-          wget https://raw.githubusercontent.com/inpsyde/reusable-workflows/automatic-release/templates/release-semantic-automated/release.config.ejs
-          cat release.config.ejs
-          ejs release.config.ejs -o release.config.js branches="${{ env.BRANCHES }}" mainFilename=${{ env.MAIN_FILENAME }} filesToCommit="${{ env.FILES_TO_COMMIT }}"
+          wget https://raw.githubusercontent.com/inpsyde/reusable-workflows/automatic-release/templates/release-semantic-automated/release.config.js
+          sed -i "s/$$BRANCHES$$/${{ env.BRANCHES }}/" "release.config.js"
+          sed -i "s/$$MAIN_FILENAME$$/${{ env.MAIN_FILENAME }}/" "release.config.js"
+          sed -i "s/$$FILES_TO_COMMIT$$/${{ env.FILES_TO_COMMIT }}/" "release.config.js"
+          cat release.config.js
       - name: Configure semantic release bot for a library
         if: ${{ inputs.PACKAGE_TYPE == 'library' }}
         run: |

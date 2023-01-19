@@ -1,5 +1,5 @@
 module.exports = {
-  "branches": <%- branches %>,
+  "branches": $$BRANCHES$$,
   "plugins": [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
@@ -11,12 +11,12 @@ module.exports = {
     ["@google/semantic-release-replace-plugin", {
       "replacements": [
         {
-          "files": ["<%- mainFilename %>"],
+          "files": ["$$MAIN_FILENAME$$"],
           "from": "Version:\(.*\)",
           "to": "Version:     \${nextRelease.version}",
           "results": [
             {
-              "file": "<%- mainFilename %>",
+              "file": "$$MAIN_FILENAME$$",
               "hasChanged": true,
               "numMatches": 1,
               "numReplacements": 1
@@ -28,7 +28,7 @@ module.exports = {
     }],
     "@semantic-release/github",
     ["@semantic-release/git", {
-      "assets": <%- filesToCommit %>,
+      "assets": $$FILES_TO_COMMIT$$,
       "message": "chore(release): \${nextRelease.version} [skip ci]\n\n\${nextRelease.notes}"
     }]
   ],
