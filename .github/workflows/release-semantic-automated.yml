@@ -4,7 +4,7 @@ on:
     inputs:
       BRANCHES:
         description: The release branches. Provide it in JSON format.
-        default: '["main", "next", {"name": "beta", "prerelease": true}, {"name": "alpha", "prerelease": true} ]'
+        default: ''
         required: false
         type: string
       PACKAGE_TYPE:
@@ -63,7 +63,8 @@ jobs:
           echo "FILES_TO_COMMIT=$(echo $FILES_TO_COMMIT | sed 's/"/\\"/g')" >> $GITHUB_ENV
       - name: Prepare list of branches
         run: |
-          echo "BRANCHES=$(echo ${{ inputs.BRANCHES }} | sed 's/"/\\"/g')" >> $GITHUB_ENV
+          BRANCHES=${BRANCHES:-'["main", "next", {"name": "beta", "prerelease": true}, {"name": "alpha", "prerelease": true}]'}
+          echo "BRANCHES=$(echo $BRANCHES | sed 's/"/\\"/g')" >> $GITHUB_ENV
       - name: Configure semantic release bot for a WordPress plugin or theme
         if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' || inputs.PACKAGE_TYPE == 'wordpress-theme'}}
         run: |
@@ -73,10 +74,8 @@ jobs:
           echo $BRANCHES
           echo $MAIN_FILENAME
           echo $FILES_TO_COMMIT
-          wget https://raw.githubusercontent.com/inpsyde/reusable-workflows/automatic-release/templates/release-semantic-automated/release.config.js
-          sed -i "s/££BRANCHES££/${{ env.BRANCHES }}/" "release.config.js"
-          sed -i "s/££MAIN_FILENAME££/${{ env.MAIN_FILENAME }}/" "release.config.js"
-          sed -i "s/££FILES_TO_COMMIT££/${{ env.FILES_TO_COMMIT }}/" "release.config.js"
+          wget https://raw.githubusercontent.com/inpsyde/reusable-workflows/automatic-release/templates/release-semantic-automated/release.config.ejs
+          ejs release.config.ejs -o release.config.js branches="${{ env.BRANCHES }}" mainFilename=${{ env.MAIN_FILENAME }} filesToCommit="${{ env.FILES_TO_COMMIT }}"
           cat release.config.js
       - name: Configure semantic release bot for a library
         if: ${{ inputs.PACKAGE_TYPE == 'library' }}
