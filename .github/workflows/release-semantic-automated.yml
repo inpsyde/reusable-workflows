@@ -46,7 +46,8 @@ jobs:
             @semantic-release/git \
             @semantic-release/npm \
             @google/semantic-release-replace-plugin \
-            semantic-release
+            semantic-release \
+            ejs
       - name: Checkout
         uses: actions/checkout@v3
       - name: Remove Husky hooks
@@ -65,44 +66,7 @@ jobs:
           echo "FILES_TO_COMMIT=${FILES_TO_COMMIT:-[\"CHANGELOG.md\", \"package-lock.json\", \"package.json\", \"composer.json\", \"$MAIN_FILENAME\"]}" >> $GITHUB_ENV
       - name: Configure semantic release bot for a WordPress plugin or theme
         if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' || inputs.PACKAGE_TYPE == 'wordpress-theme'}}
-        run: |
-          echo "module.exports = {
-            \"branches\": $BRANCHES,
-            \"plugins\": [
-              \"@semantic-release/commit-analyzer\",
-              \"@semantic-release/release-notes-generator\",
-              \"@semantic-release/changelog\",
-              [\"@semantic-release/npm\", {
-                \"tarballDir\": \"release\",
-                \"npmPublish\": false
-              }],
-              [\"@google/semantic-release-replace-plugin\", {
-                \"replacements\": [
-                  {
-                    \"files\": [\"$MAIN_FILENAME\"],
-                    \"from\": \"Version:\(.*\)\",
-                    \"to\": \"Version:     \${nextRelease.version}\",
-                    \"results\": [
-                      {
-                        \"file\": \"$MAIN_FILENAME\",
-                        \"hasChanged\": true,
-                        \"numMatches\": 1,
-                        \"numReplacements\": 1
-                      }
-                    ],
-                    \"countMatches\": true
-                  }
-                ]
-              }],
-              \"@semantic-release/github\",
-              [\"@semantic-release/git\", {
-                \"assets\": $FILES_TO_COMMIT,
-                \"message\": \"chore(release): \${nextRelease.version} [skip ci]\n\n\${nextRelease.notes}\"
-              }]
-            ],
-            \"preset\": \"angular\",
-            \"tagFormat\": \"\${version}\"\
-          }" > release.config.js
+        run: ejs https://raw.githubusercontent.com/inpsyde/reusable-workflows/templates/release-semantic-automated/release.config.ejs -o release.config.js branches=${{ env.BRANCHES }} mainFilename=${{ env.MAIN_FILENAME }} filesToCommit=${{ env.FILES_TO_COMMIT }}
       - name: Configure semantic release bot for a library
         if: ${{ inputs.PACKAGE_TYPE == 'library' }}
         run: |
