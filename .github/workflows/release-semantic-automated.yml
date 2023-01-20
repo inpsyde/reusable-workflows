@@ -36,6 +36,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ inputs.NODE_VERSION }}
+
       - name: Install dependencies
         run: |
           npm i -g @semantic-release/changelog \
@@ -44,39 +45,41 @@ jobs:
             @google/semantic-release-replace-plugin \
             semantic-release \
             ejs
+
       - name: Checkout
         uses: actions/checkout@v3
+
       - name: Remove Husky hooks
         run: rm -f .husky/pre-commit
+
       - name: Prepare main filename for a WordPress plugin
         if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' }}
         run: |
-          echo "MAIN_FILENAME=${MAIN_FILENAME:-"index.php"}" >> $GITHUB_ENV
+          echo "MAIN_FILENAME=${${{ inputs.MAIN_FILENAME }}:-"index.php"}" >> $GITHUB_ENV
+
       - name: Prepare main filename for a WordPress theme
         if: ${{ inputs.PACKAGE_TYPE == 'wordpress-theme' }}
         run: |
-          echo "MAIN_FILENAME=${MAIN_FILENAME:-"style.css"}" >> $GITHUB_ENV
+          echo "MAIN_FILENAME=${${{ inputs.MAIN_FILENAME }}:-"style.css"}" >> $GITHUB_ENV
+
       - name: Prepare list of files to commit
         if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' || inputs.PACKAGE_TYPE == 'wordpress-theme' }}
         run: |
-          FILES_TO_COMMIT=${FILES_TO_COMMIT:-'["CHANGELOG.md", "package-lock.json", "package.json", "composer.json", "'$MAIN_FILENAME'"]'}
+          FILES_TO_COMMIT=${${{ inputs.FILES_TO_COMMIT }}:-'["CHANGELOG.md", "package-lock.json", "package.json", "composer.json", "'$MAIN_FILENAME'"]'}
           echo "FILES_TO_COMMIT=$(echo $FILES_TO_COMMIT | sed 's/"/\\"/g')" >> $GITHUB_ENV
+
       - name: Prepare list of branches
         run: |
-          BRANCHES=${BRANCHES:-'["main", "next", {"name": "beta", "prerelease": true}, {"name": "alpha", "prerelease": true}]'}
+          BRANCHES=${${{ inputs.BRANCHES }}:-'["main", "next", {"name": "beta", "prerelease": true}, {"name": "alpha", "prerelease": true}]'}
           echo "BRANCHES=$(echo $BRANCHES | sed 's/"/\\"/g')" >> $GITHUB_ENV
+
       - name: Configure semantic release bot for a WordPress plugin or theme
         if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' || inputs.PACKAGE_TYPE == 'wordpress-theme'}}
         run: |
-          echo ${{ env.BRANCHES }}
-          echo ${{ env.MAIN_FILENAME }}
-          echo ${{ env.FILES_TO_COMMIT }}
-          echo $BRANCHES
-          echo $MAIN_FILENAME
-          echo $FILES_TO_COMMIT
           wget https://raw.githubusercontent.com/inpsyde/reusable-workflows/automatic-release/templates/release-semantic-automated/release.config.ejs
           ejs release.config.ejs -o release.config.js branches="${{ env.BRANCHES }}" mainFilename=${{ env.MAIN_FILENAME }} filesToCommit="${{ env.FILES_TO_COMMIT }}"
           cat release.config.js
+
       - name: Configure semantic release bot for a library
         if: ${{ inputs.PACKAGE_TYPE == 'library' }}
         run: |
@@ -99,12 +102,15 @@ jobs:
             \"preset\": \"angular\",
             \"tagFormat\": \"\${version}\"
           }" > release.config.js
+
       - name: Configure semantic release bot for a custom package
         if: ${{ inputs.PACKAGE_TYPE == 'custom' }}
         run: echo "Using repository release configurations"
+
       - name: DEBUG POINT
         run: |
           cat release.config.js
+
       - name: Check the presence of the configuration file
         run: |
           CHECK_CONFIGURATION_EXISTS=true
