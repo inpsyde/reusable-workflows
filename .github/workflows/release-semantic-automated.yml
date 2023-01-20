@@ -93,10 +93,6 @@ jobs:
         if: ${{ inputs.PACKAGE_TYPE == 'custom' }}
         run: echo "Using repository release configurations"
 
-      - name: DEBUG POINT
-        run: |
-          cat release.config.js
-
       - name: Check the presence of the configuration file
         run: |
           CHECK_CONFIGURATION_EXISTS=true
