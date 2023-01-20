@@ -85,7 +85,7 @@ jobs:
       - name: Configure semantic release bot if it's not a custom package
         if: ${{ inputs.PACKAGE_TYPE != 'custom' }}
         run: |
-          wget https://raw.githubusercontent.com/inpsyde/reusable-workflows/automatic-release/templates/release-semantic-automated/release.config.ejs
+          wget https://raw.githubusercontent.com/inpsyde/reusable-workflows/templates/release-semantic-automated/release.config.ejs
           ejs release.config.ejs -o release.config.js branches="${{ env.BRANCHES }}" mainFilename=${{ env.MAIN_FILENAME }} filesToCommit="${{ env.FILES_TO_COMMIT }}"
           rm release.config.ejs
 
