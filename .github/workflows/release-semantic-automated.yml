@@ -103,6 +103,7 @@ jobs:
           if [ ! -f "release.config.js" ]; then 
             echo "Configuration file release.config.js does not exist, aborting!" 
             CHECK_CONFIGURATION_EXISTS=false
+            exit 1
           fi
           echo "CHECK_CONFIGURATION_EXISTS=$CHECK_CONFIGURATION_EXISTS" >> $GITHUB_ENV
       - name: Release
