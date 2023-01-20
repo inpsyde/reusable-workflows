@@ -87,6 +87,7 @@ jobs:
         run: |
           wget https://raw.githubusercontent.com/inpsyde/reusable-workflows/automatic-release/templates/release-semantic-automated/release.config.ejs
           ejs release.config.ejs -o release.config.js branches="${{ env.BRANCHES }}" mainFilename=${{ env.MAIN_FILENAME }} filesToCommit="${{ env.FILES_TO_COMMIT }}"
+          rm release.config.ejs
 
       - name: Configure semantic release bot for a custom package
         if: ${{ inputs.PACKAGE_TYPE == 'custom' }}
@@ -104,4 +105,8 @@ jobs:
             CHECK_CONFIGURATION_EXISTS=false
           fi
           echo "CHECK_CONFIGURATION_EXISTS=$CHECK_CONFIGURATION_EXISTS" >> $GITHUB_ENV
-      
+      - name: Release
+        if: ${{ env.CHECK_CONFIGURATION_EXISTS }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
