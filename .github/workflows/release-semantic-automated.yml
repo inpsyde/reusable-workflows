@@ -68,8 +68,8 @@ jobs:
 
       - name: Prepare list of files to commit
         run: |
-          if [ -z "$FILES_TO_COMMIT"]; then
-            if [ -z "$MAIN_FILENAME"]; then
+          if [ -z "$FILES_TO_COMMIT" ]; then
+            if [ -z "$MAIN_FILENAME" ]; then
               FILES_TO_COMMIT='["CHANGELOG.md", "package-lock.json", "package.json", "composer.json"]'
             else
               FILES_TO_COMMIT='["CHANGELOG.md", "package-lock.json", "package.json", "composer.json", "'$MAIN_FILENAME'"]'
