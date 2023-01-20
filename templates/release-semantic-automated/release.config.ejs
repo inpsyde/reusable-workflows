@@ -8,6 +8,7 @@ module.exports = {
       "tarballDir": "release",
       "npmPublish": false
     }],
+    <% if (mainFilename) { %>
     ["@google/semantic-release-replace-plugin", {
       "replacements": [
         {
@@ -26,6 +27,7 @@ module.exports = {
         }
       ]
     }],
+    <% } %>
     "@semantic-release/github",
     ["@semantic-release/git", {
       "assets": <%- filesToCommit %>,

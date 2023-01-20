@@ -8,20 +8,20 @@ on:
         required: false
         type: string
       PACKAGE_TYPE:
-        description: Choices are "wordpress-plugin", "wordpress-theme", "library", "custom". Needed to understand what release procedure to run or to run a completely custom procedure that lives inside the repository.
+        description: Choices are "wordpress-plugin", "wordpress-theme", "library", "custom". With "custom" you need to provide your release.config.js in your repository.
         required: true
         type: string
       MAIN_FILENAME:
-        description: If there is a main file with the WordPress header, provide its name. Default index.php for WordPress plugin and style.css for WordPress theme
+        description: If there is a main file with the WordPress header, provide its name. Default index.php for WordPress plugin and style.css for WordPress theme.
         required: false
         default: ''
         type: string
       FILES_TO_COMMIT:
-        description: File names where the version number needs to be updated. Provide it in JSON format.
+        description: File names where the version number needs to be updated and thus they need to be committed. Provide it in JSON format.
         required: false
         type: string
       NODE_VERSION:
-        description: Node version with which the assets will be compiled.
+        description: Node version with which the release will be executed.
         default: 18
         required: false
         type: string
@@ -67,9 +67,14 @@ jobs:
           echo "MAIN_FILENAME=${MAIN_FILENAME:-"style.css"}" >> $GITHUB_ENV
 
       - name: Prepare list of files to commit
-        if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' || inputs.PACKAGE_TYPE == 'wordpress-theme' }}
         run: |
-          FILES_TO_COMMIT=${FILES_TO_COMMIT:-'["CHANGELOG.md", "package-lock.json", "package.json", "composer.json", "'$MAIN_FILENAME'"]'}
+          if [ -z "$FILES_TO_COMMIT"]; then
+            if [ -z "$MAIN_FILENAME"]; then
+              FILES_TO_COMMIT='["CHANGELOG.md", "package-lock.json", "package.json", "composer.json"]'
+            else
+              FILES_TO_COMMIT='["CHANGELOG.md", "package-lock.json", "package.json", "composer.json", "'$MAIN_FILENAME'"]'
+            fi
+          fi
           echo "FILES_TO_COMMIT=$(echo $FILES_TO_COMMIT | sed 's/"/\\"/g')" >> $GITHUB_ENV
 
       - name: Prepare list of branches
@@ -77,35 +82,11 @@ jobs:
           BRANCHES=${BRANCHES:-'["main", "next", {"name": "beta", "prerelease": true}, {"name": "alpha", "prerelease": true}]'}
           echo "BRANCHES=$(echo $BRANCHES | sed 's/"/\\"/g')" >> $GITHUB_ENV
 
-      - name: Configure semantic release bot for a WordPress plugin or theme
-        if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' || inputs.PACKAGE_TYPE == 'wordpress-theme'}}
+      - name: Configure semantic release bot if it's not a custom package
+        if: ${{ inputs.PACKAGE_TYPE != 'custom' }}
         run: |
           wget https://raw.githubusercontent.com/inpsyde/reusable-workflows/automatic-release/templates/release-semantic-automated/release.config.ejs
           ejs release.config.ejs -o release.config.js branches="${{ env.BRANCHES }}" mainFilename=${{ env.MAIN_FILENAME }} filesToCommit="${{ env.FILES_TO_COMMIT }}"
-          cat release.config.js
-
-      - name: Configure semantic release bot for a library
-        if: ${{ inputs.PACKAGE_TYPE == 'library' }}
-        run: |
-          echo "module.exports = {
-            \"branches\": $BRANCHES,
-            \"plugins\": [
-              \"@semantic-release/commit-analyzer\",
-              \"@semantic-release/release-notes-generator\",
-              \"@semantic-release/changelog\",
-              [\"@semantic-release/npm\", {
-                \"tarballDir\": \"release\",
-                \"npmPublish\": false
-              }],
-              \"@semantic-release/github\",
-              [\"@semantic-release/git\", {
-                \"assets\": $FILES_TO_COMMIT,
-                \"message\": \"chore(release): \${nextRelease.version} [skip ci]\n\n\${nextRelease.notes}\"
-              }]
-            ],
-            \"preset\": \"angular\",
-            \"tagFormat\": \"\${version}\"
-          }" > release.config.js
 
       - name: Configure semantic release bot for a custom package
         if: ${{ inputs.PACKAGE_TYPE == 'custom' }}
