@@ -3,12 +3,12 @@ on:
   workflow_call:
     inputs:
       BRANCHES:
-        description: The release branches. Provide it in JSON format.
+        description: The release branches. Provide it in JSON string format as ["main", "next"].
         default: ''
         required: false
         type: string
       PACKAGE_TYPE:
-        description: Choices are "wordpress-plugin", "wordpress-theme", "library", "custom". With "custom" you need to provide your release.config.js in your repository.
+        description: Choices are "wordpress-plugin", "wordpress-muplugin", "wordpress-theme", "library", "custom". With "custom" you need to provide your release.config.js in your repository.
         required: true
         type: string
       MAIN_FILENAME:
@@ -17,7 +17,7 @@ on:
         default: ''
         type: string
       FILES_TO_COMMIT:
-        description: File names where the version number needs to be updated and thus they need to be committed. Provide it in JSON format.
+        description: File names where the version number needs to be updated and thus they need to be committed. Provide it in JSON string format as ["CHANGELOG.md", "package-lock.json", "package.json", "composer.json"].
         required: false
         type: string
       NODE_VERSION:
@@ -57,7 +57,7 @@ jobs:
         run: rm -f .husky/pre-commit
 
       - name: Prepare main filename for a WordPress plugin
-        if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' }}
+        if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' || inputs.PACKAGE_TYPE == 'wordpress-muplugin' }}
         run: |
           echo "MAIN_FILENAME=${MAIN_FILENAME:-"index.php"}" >> $GITHUB_ENV
 
