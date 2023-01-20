@@ -95,15 +95,11 @@ jobs:
 
       - name: Check the presence of the configuration file
         run: |
-          CHECK_CONFIGURATION_EXISTS=true
           if [ ! -f "release.config.js" ]; then 
             echo "Configuration file release.config.js does not exist, aborting!" 
-            CHECK_CONFIGURATION_EXISTS=false
             exit 1
           fi
-          echo "CHECK_CONFIGURATION_EXISTS=$CHECK_CONFIGURATION_EXISTS" >> $GITHUB_ENV
       - name: Release
-        if: ${{ env.CHECK_CONFIGURATION_EXISTS }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
