@@ -64,9 +64,9 @@ jobs:
         if: ${{ env.HAS_CONFIG == false }}
         run: |
           if [ -z "$MAIN_FILENAME" ]; then
-            FILES_TO_COMMIT='["CHANGELOG.md", "package-lock.json", "package.json", "composer.json"]'
+            FILES_TO_COMMIT='["package-lock.json", "package.json", "composer.json"]'
           else
-            FILES_TO_COMMIT='["CHANGELOG.md", "package-lock.json", "package.json", "composer.json", "'$MAIN_FILENAME'"]'
+            FILES_TO_COMMIT='["package-lock.json", "package.json", "composer.json", "'$MAIN_FILENAME'"]'
           fi
           echo "FILES_TO_COMMIT=$(echo $FILES_TO_COMMIT | sed 's/"/\\"/g')" >> $GITHUB_ENV
 
@@ -89,5 +89,8 @@ jobs:
             echo "Configuration file release.config.js does not exist, aborting!" 
             exit 1
           fi
-
-      
+          cat release.config.js
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
