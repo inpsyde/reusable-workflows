@@ -39,9 +39,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Remove Husky hooks
-        run: rm -f .husky/pre-commit
-
       - name: Check presence of release.config.js
         run: |
           HAS_CONFIG=false
