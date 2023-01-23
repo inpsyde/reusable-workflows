@@ -58,7 +58,6 @@ jobs:
           elif [ -f index.php ]; then 
             MAIN_FILENAME='index.php'
           fi
-          echo $MAIN_FILENAME
           echo "MAIN_FILENAME=$MAIN_FILENAME" >> $GITHUB_ENV
 
       - name: Prepare list of files to commit
@@ -96,7 +95,6 @@ jobs:
             echo "Configuration file release.config.js does not exist, aborting!" 
             exit 1
           fi
-          cat release.config.js
 
       - name: Release
         env:
