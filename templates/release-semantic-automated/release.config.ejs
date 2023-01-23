@@ -10,7 +10,7 @@ module.exports = {
     }],
     <% if (mainFilename) { %>
      ["@semantic-release/exec", {
-        "prepareCmd": "sed -i "s/Version:\(.*\)/Version:    ${nextRelease.version}/" "<%- mainFilename %>" ",
+        "prepareCmd": "sed -i "s/Version:\(.*\)/Version:     ${nextRelease.version}/" "<%- mainFilename %>" ",
       }],
     <% } %>
     "@semantic-release/github",

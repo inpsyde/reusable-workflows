@@ -53,9 +53,9 @@ jobs:
       - name: Prepare main filename
         if: ${{ env.HAS_CONFIG == false }}
         run: |
-          if [ -f "style.css" ]; then 
+          if [ -f style.css ]; then 
             MAIN_FILENAME='style.css'
-          elif [ -f "index.php" ]; then 
+          elif [ -f index.php ]; then 
             MAIN_FILENAME='index.php'
           fi
           echo "MAIN_FILENAME=$(MAIN_FILENAME)" >> $GITHUB_ENV
