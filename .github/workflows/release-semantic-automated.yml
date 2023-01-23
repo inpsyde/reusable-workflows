@@ -7,10 +7,6 @@ on:
         default: ''
         required: false
         type: string
-      PACKAGE_TYPE:
-        description: Choices are "wordpress-plugin", "wordpress-muplugin", "wordpress-theme", "library", "custom". With "custom" you need to provide your release.config.js in your repository.
-        required: true
-        type: string
       MAIN_FILENAME:
         description: If there is a main file with the WordPress header, provide its name. Default index.php for WordPress plugin and style.css for WordPress theme.
         required: false
@@ -56,17 +52,30 @@ jobs:
       - name: Remove Husky hooks
         run: rm -f .husky/pre-commit
 
+      - name: Check presence of release.config.js
+        run: |
+          HAS_CONFIG=false
+          if [ -f "release.config.js" ]; then 
+            echo "Configuration file release.config.js found" 
+            HAS_CONFIG=true
+          fi
+
+      - name: Get package type
+        run: |
+          PACKAGE_TYPE=$(cat composer.json | jq '.type')
+
       - name: Prepare main filename for a WordPress plugin
-        if: ${{ inputs.PACKAGE_TYPE == 'wordpress-plugin' || inputs.PACKAGE_TYPE == 'wordpress-muplugin' }}
+        if: ${{ (env.PACKAGE_TYPE == 'wordpress-plugin' || env.PACKAGE_TYPE == 'wordpress-muplugin') && env.HAS_CONFIG == false }}
         run: |
           echo "MAIN_FILENAME=${MAIN_FILENAME:-"index.php"}" >> $GITHUB_ENV
 
       - name: Prepare main filename for a WordPress theme
-        if: ${{ inputs.PACKAGE_TYPE == 'wordpress-theme' }}
+        if: ${{ env.PACKAGE_TYPE == 'wordpress-theme' && env.HAS_CONFIG == false }}
         run: |
           echo "MAIN_FILENAME=${MAIN_FILENAME:-"style.css"}" >> $GITHUB_ENV
 
       - name: Prepare list of files to commit
+        if: ${{ env.HAS_CONFIG == false }}
         run: |
           if [ -z "$FILES_TO_COMMIT" ]; then
             if [ -z "$MAIN_FILENAME" ]; then
@@ -78,20 +87,17 @@ jobs:
           echo "FILES_TO_COMMIT=$(echo $FILES_TO_COMMIT | sed 's/"/\\"/g')" >> $GITHUB_ENV
 
       - name: Prepare list of branches
+        if: ${{ env.HAS_CONFIG == false }}
         run: |
           BRANCHES=${BRANCHES:-'["main", "next", {"name": "beta", "prerelease": true}, {"name": "alpha", "prerelease": true}]'}
           echo "BRANCHES=$(echo $BRANCHES | sed 's/"/\\"/g')" >> $GITHUB_ENV
 
-      - name: Configure semantic release bot if it's not a custom package
-        if: ${{ inputs.PACKAGE_TYPE != 'custom' }}
+      - name: Configure semantic release if config file not provided
+        if: ${{ env.HAS_CONFIG == false }}
         run: |
-          wget https://raw.githubusercontent.com/inpsyde/reusable-workflows/templates/release-semantic-automated/release.config.ejs
+          wget https://raw.githubusercontent.com/inpsyde/reusable-workflows/automatic-release/templates/release-semantic-automated/release.config.ejs
           ejs release.config.ejs -o release.config.js branches="${{ env.BRANCHES }}" mainFilename=${{ env.MAIN_FILENAME }} filesToCommit="${{ env.FILES_TO_COMMIT }}"
           rm release.config.ejs
-
-      - name: Configure semantic release bot for a custom package
-        if: ${{ inputs.PACKAGE_TYPE == 'custom' }}
-        run: echo "Using repository release configurations"
 
       - name: Check the presence of the configuration file
         run: |
@@ -99,7 +105,5 @@ jobs:
             echo "Configuration file release.config.js does not exist, aborting!" 
             exit 1
           fi
-      - name: Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
+
+      
