@@ -76,12 +76,17 @@ jobs:
           BRANCHES=${BRANCHES:-'["main", "next", {"name": "beta", "prerelease": true}, {"name": "alpha", "prerelease": true}]'}
           echo "BRANCHES=$(echo $BRANCHES | sed 's/"/\\"/g')" >> $GITHUB_ENV
 
-      - name: Configure semantic release if config file not provided
+      - name: Checkout this repository if config file not provided
+        if: ${{ env.HAS_CONFIG == false }}
+        uses: actions/checkout@v3
+        with:
+          ref: automated-release
+          path: workflow-repo
+
+      - name: Compile the release.config.js template
         if: ${{ env.HAS_CONFIG == false }}
         run: |
-          wget https://raw.githubusercontent.com/inpsyde/reusable-workflows/automatic-release/templates/release-semantic-automated/release.config.ejs
-          ejs release.config.ejs -o release.config.js branches="${{ env.BRANCHES }}" mainFilename=${{ env.MAIN_FILENAME }} filesToCommit="${{ env.FILES_TO_COMMIT }}"
-          rm release.config.ejs
+          ejs ${GITHUB_WORKSPACE}/workflow-repo/templates/release-semantic-automated/release.config.ejs -o release.config.js branches="${{ env.BRANCHES }}" mainFilename=${{ env.MAIN_FILENAME }} filesToCommit="${{ env.FILES_TO_COMMIT }}"
 
       - name: Check the presence of the configuration file
         run: |
