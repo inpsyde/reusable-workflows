@@ -58,20 +58,7 @@ jobs:
           elif [ -f index.php ]; then 
             MAIN_FILENAME='index.php'
           fi
-          echo "MAIN_FILENAME=$(MAIN_FILENAME)" >> $GITHUB_ENV
-          if [ -e style.css ]; then 
-            echo "style.css exists"
-          elif [ -e index.php ]; then 
-            echo "index.php exists"
-          fi
-          
-          if [ -f style.css ]; then 
-            echo "style.css exists 2"
-          fi
-          
-          if [ -f index.php ]; then 
-            echo "index.php exists 2"
-          fi
+          echo "MAIN_FILENAME=${{ env.MAIN_FILENAME }}" >> $GITHUB_ENV
 
       - name: Prepare list of files to commit
         if: ${{ env.HAS_CONFIG == false }}
