@@ -80,6 +80,7 @@ jobs:
         if: ${{ env.HAS_CONFIG == false }}
         uses: actions/checkout@v3
         with:
+          repository: inpsyde/reusable-workflows
           ref: automated-release
           path: workflow-repo
 
