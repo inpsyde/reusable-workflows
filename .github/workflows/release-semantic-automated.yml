@@ -32,7 +32,7 @@ jobs:
           npm i -g @semantic-release/changelog \
             @semantic-release/git \
             @semantic-release/npm \
-            @google/semantic-release-replace-plugin \
+            @semantic-release/exec \
             semantic-release \
             ejs
 
@@ -76,7 +76,7 @@ jobs:
           BRANCHES=${BRANCHES:-'["main", "next", {"name": "beta", "prerelease": true}, {"name": "alpha", "prerelease": true}]'}
           echo "BRANCHES=$(echo $BRANCHES | sed 's/"/\\"/g')" >> $GITHUB_ENV
 
-      - name: Checkout this repository if config file not provided
+      - name: Checkout the workflow repository
         if: ${{ env.HAS_CONFIG == false }}
         uses: actions/checkout@v3
         with:
