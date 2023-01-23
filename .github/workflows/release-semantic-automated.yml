@@ -7,15 +7,6 @@ on:
         default: ''
         required: false
         type: string
-      MAIN_FILENAME:
-        description: If there is a main file with the WordPress header, provide its name. Default index.php for WordPress plugin and style.css for WordPress theme.
-        required: false
-        default: ''
-        type: string
-      FILES_TO_COMMIT:
-        description: File names where the version number needs to be updated and thus they need to be committed. Provide it in JSON string format as ["CHANGELOG.md", "package-lock.json", "package.json", "composer.json"].
-        required: false
-        type: string
       NODE_VERSION:
         description: Node version with which the release will be executed.
         default: 18
@@ -28,8 +19,7 @@ jobs:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     env:
-      MAIN_FILENAME: ${{ inputs.MAIN_FILENAME }}
-      FILES_TO_COMMIT: ${{ inputs.FILES_TO_COMMIT }}
+      MAIN_FILENAME: ''
       BRANCHES: ${{ inputs.BRANCHES }}
     steps:
       - name: Setup Node.js
@@ -60,29 +50,23 @@ jobs:
             HAS_CONFIG=true
           fi
 
-      - name: Get package type
+      - name: Prepare main filename
+        if: ${{ env.HAS_CONFIG == false }}
         run: |
-          PACKAGE_TYPE=$(cat composer.json | jq '.type')
-
-      - name: Prepare main filename for a WordPress plugin
-        if: ${{ (env.PACKAGE_TYPE == 'wordpress-plugin' || env.PACKAGE_TYPE == 'wordpress-muplugin') && env.HAS_CONFIG == false }}
-        run: |
-          echo "MAIN_FILENAME=${MAIN_FILENAME:-"index.php"}" >> $GITHUB_ENV
-
-      - name: Prepare main filename for a WordPress theme
-        if: ${{ env.PACKAGE_TYPE == 'wordpress-theme' && env.HAS_CONFIG == false }}
-        run: |
-          echo "MAIN_FILENAME=${MAIN_FILENAME:-"style.css"}" >> $GITHUB_ENV
+          if [ -f "style.css" ]; then 
+            MAIN_FILENAME='style.css'
+          elif [ -f "index.php" ]; then 
+            MAIN_FILENAME='index.php'
+          fi
+          echo "MAIN_FILENAME=$(MAIN_FILENAME)" >> $GITHUB_ENV
 
       - name: Prepare list of files to commit
         if: ${{ env.HAS_CONFIG == false }}
         run: |
-          if [ -z "$FILES_TO_COMMIT" ]; then
-            if [ -z "$MAIN_FILENAME" ]; then
-              FILES_TO_COMMIT='["CHANGELOG.md", "package-lock.json", "package.json", "composer.json"]'
-            else
-              FILES_TO_COMMIT='["CHANGELOG.md", "package-lock.json", "package.json", "composer.json", "'$MAIN_FILENAME'"]'
-            fi
+          if [ -z "$MAIN_FILENAME" ]; then
+            FILES_TO_COMMIT='["CHANGELOG.md", "package-lock.json", "package.json", "composer.json"]'
+          else
+            FILES_TO_COMMIT='["CHANGELOG.md", "package-lock.json", "package.json", "composer.json", "'$MAIN_FILENAME'"]'
           fi
           echo "FILES_TO_COMMIT=$(echo $FILES_TO_COMMIT | sed 's/"/\\"/g')" >> $GITHUB_ENV
 
