@@ -58,7 +58,8 @@ jobs:
           elif [ -f index.php ]; then 
             MAIN_FILENAME='index.php'
           fi
-          echo "MAIN_FILENAME=${{ env.MAIN_FILENAME }}" >> $GITHUB_ENV
+          echo $MAIN_FILENAME
+          echo "MAIN_FILENAME=$MAIN_FILENAME" >> $GITHUB_ENV
 
       - name: Prepare list of files to commit
         if: ${{ env.HAS_CONFIG == false }}
