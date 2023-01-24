@@ -72,15 +72,15 @@ This is not the simplest possible example, but it showcases all the recommendati
 
 ### Inputs
 
-| Name                  | Default                         | Description                                                                            |
-|-----------------------|---------------------------------|----------------------------------------------------------------------------------------|
-| `NODE_VERSION`        | `16`                            | Node version with which the assets will be compiled                                    |
-| `NPM_REGISTRY_DOMAIN` | `"https://npm.pkg.github.com/"` | Domain of the private npm registry                                                     |
-| `PACKAGE_MANAGER`     | `"auto"` <sup>**^1**</sup>      | Package manager with which the dependencies should be installed (`npm` or yarn`). Required if no lock file is available |
-| `DEPS_INSTALL`        | `"yes"`                         | Install dependencies before compiling? Options: `"yes"` (default) `"no"`               |
-| `COMPILE_SCRIPT_PROD` | `"encore prod"`                 | Script added to `npm run` or `yarn` to build production assets                         |
-| `COMPILE_SCRIPT_DEV`  | `"encore dev"`                  | Script added to `npm run` or `yarn` to build development assets                        |
-| `ASSETS_TARGET_PATHS` | `"./assets"`                    | Target path(s) for compiled assets                                                     |
+| Name                  | Default                         | Description                                                                                                             |
+|-----------------------|---------------------------------|-------------------------------------------------------------------------------------------------------------------------|
+| `NODE_VERSION`        | `16`                            | Node version with which the assets will be compiled                                                                     |
+| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                                                      |
+| `PACKAGE_MANAGER`     | `'auto'` <sup>**^1**</sup>      | Package manager with which the dependencies should be installed (`npm` or yarn`). Required if no lock file is available |
+| `DEPS_INSTALL`        | `'yes'`                         | Install dependencies before compiling? Options: `'yes'` (default) `'no'`                                                |
+| `COMPILE_SCRIPT_PROD` | `'encore prod'`                 | Script added to `npm run` or `yarn` to build production assets                                                          |
+| `COMPILE_SCRIPT_DEV`  | `'encore dev'`                  | Script added to `npm run` or `yarn` to build development assets                                                         |
+| `ASSETS_TARGET_PATHS` | `'./assets'`                    | Target path(s) for compiled assets                                                                                      |
 
 <sup>**^1**</sup> `PACKAGE_MANAGER` defaults to "auto" because it tries to determine the package
 manager by looking at lock file (e.g. presence of `yarn.lock` means _Yarn_, `npm-shrinkwrap.json`
