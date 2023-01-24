@@ -76,7 +76,7 @@ This is not the simplest possible example, but it showcases all the recommendati
 |-----------------------|---------------------------------|----------------------------------------------------------------------------------------|
 | `NODE_VERSION`        | `16`                            | Node version with which the assets will be compiled                                    |
 | `NPM_REGISTRY_DOMAIN` | `"https://npm.pkg.github.com/"` | Domain of the private npm registry                                                     |
-| `PACKAGE_MANAGER`     | `"auto"` <sup>**^1**</sup>      | Package manager. Supported are "yarn" and "npm". Required if no lock file is available |
+| `PACKAGE_MANAGER`     | `"auto"` <sup>**^1**</sup>      | Package manager with which the dependencies should be installed (`npm` or yarn`). Required if no lock file is available |
 | `DEPS_INSTALL`        | `"yes"`                         | Install dependencies before compiling? Options: `"yes"` (default) `"no"`               |
 | `COMPILE_SCRIPT_PROD` | `"encore prod"`                 | Script added to `npm run` or `yarn` to build production assets                         |
 | `COMPILE_SCRIPT_DEV`  | `"encore dev"`                  | Script added to `npm run` or `yarn` to build development assets                        |

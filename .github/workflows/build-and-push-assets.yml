@@ -14,7 +14,7 @@ on:
         required: false
         type: string
       PACKAGE_MANAGER:
-        description: Package manager. Supported are "yarn" and "npm".
+        description: Package manager with which the dependencies should be installed (`npm` or yarn`).
         type: string
         default: "auto"
         required: false
@@ -124,7 +124,7 @@ jobs:
         if: ${{ (env.LOCK_FILE == 'npm') || (inputs.PACKAGE_MANAGER == 'npm') }}
         run: echo "PACKAGE_MANAGER=npm" >> $GITHUB_ENV
 
-      - name: Cache npm/Yarn dependencies
+      - name: Cache dependencies
         uses: actions/cache@v3
         with:
           path: ~/.deps_cache

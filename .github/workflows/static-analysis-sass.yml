@@ -19,7 +19,7 @@ on:
         required: false
         type: string
       PACKAGE_MANAGER:
-        description: Package manager. Supported are "yarn" and "npm".
+        description: Package manager with which the dependencies should be installed (`npm` or yarn`).
         default: "npm"
         required: false
         type: string
@@ -47,7 +47,7 @@ jobs:
       - name: Set up problem matchers for Stylelint
         uses: xt0rted/stylelint-problem-matcher@v1
 
-      - name: Cache npm/Yarn dependencies
+      - name: Cache dependencies
         uses: actions/cache@v3
         with:
           path: ~/.deps_cache
