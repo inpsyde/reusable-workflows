@@ -1,0 +1,64 @@
+name: Create plugin release
+
+on:
+  workflow_call:
+    inputs:
+      PLUGIN_MAIN_FILE:
+        description: The path/name of the plugin main file.
+        required: true
+        type: string
+      PLUGIN_VERSION:
+        description: The plugin version.
+        required: true
+        type: string
+      COMPOSER_ARGS:
+        description: Set of arguments passed to Composer.
+        default: '--prefer-dist'
+        required: false
+        type: string
+    secrets:
+      COMPOSER_AUTH_JSON:
+        description: Authentication for privately hosted packages and repositories as a JSON formatted object.
+        required: false
+
+jobs:
+  create-plugin-release:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    outputs:
+      artifact: ${{ steps.set-artifact-name.outputs.artifact }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup composer authentication via DDEV global homeadditions
+        run: mkdir -p ~/.ddev/homeadditions/.composer && echo '${{ secrets.COMPOSER_AUTH_JSON }}' > ~/.ddev/homeadditions/.composer/auth.json
+
+      - uses: jonaseberle/github-action-setup-ddev@v1
+
+      - name: Install dependencies
+        run: ddev composer install ${{ inputs.COMPOSER_ARGS }}
+
+      - name: Install npm dependencies
+        run: ddev exec npm install
+
+      - name: Add commit hash to plugin header
+        env:
+          GIT_SHA: ${{ steps.git.outputs.sha_short }}
+        run: 'sed -Ei "s/SHA: .*/SHA: ${GIT_SHA}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
+
+      - name: Set plugin version header
+        env:
+          PACKAGE_VERSION: ${{ github.event.inputs.packageVersion }}
+        run: 'sed -Ei "s/Version: .*/Version: ${PACKAGE_VERSION}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
+
+      - name: Run build command
+        run: ddev build --packageVersion=${{ inputs.PLUGIN_VERSION }}
+
+      - id: set-artifact-name
+        run: echo "artifact=Package-${{ inputs.PLUGIN_VERSION }}" >> $GITHUB_OUTPUT
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ steps.set-artifact-name.outputs.artifact }}
+          path: dist/*.zip
