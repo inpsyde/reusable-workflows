@@ -13,7 +13,7 @@ on:
         type: string
       COMPOSER_ARGS:
         description: Set of arguments passed to Composer.
-        default: '--no-dev --prefer-dist'
+        default: '--no-dev --no-scripts --prefer-dist'
         required: false
         type: string
     secrets:
