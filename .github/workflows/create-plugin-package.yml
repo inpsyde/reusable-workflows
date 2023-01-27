@@ -36,11 +36,13 @@ jobs:
 
       - uses: jonaseberle/github-action-setup-ddev@v1
 
-      - name: Install dependencies
-        run: test -f ./composer.json && ddev composer install ${{ inputs.COMPOSER_ARGS }}
+      - name: Install composer dependencies
+        if: test -f ./composer.json
+        run: ddev composer install ${{ inputs.COMPOSER_ARGS }}
 
       - name: Install npm dependencies
-        run: test -f ./package.json && ddev exec npm install
+        if: test -f ./package.json
+        run: ddev exec npm install
 
       - name: Add commit hash to plugin header
         env:
