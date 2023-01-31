@@ -103,7 +103,7 @@ jobs:
         run: wp package install wp-cli/dist-archive-command
 
       - name: Run wp-cli command
-        run: wp dist-archive . archive.zip
+        run: wp dist-archive . archive.zip && pwd && ls
 
         # GitHub Action artifacts would otherwise produce a zip within a zip
       - name: Unzip archive to dist/
