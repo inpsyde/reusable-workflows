@@ -133,11 +133,16 @@ jobs:
         id: dist-archive
         run: |
           PARAMS=""
-          if [ ! -z '${{ inputs.EXTRA_PHP_FILE }}' ]; then
-            PARAMS+="--require='${{ inputs.EXTRA_PHP_FILE }}' "
+          FILE='${{ inputs.EXTRA_PHP_FILE }}'
+          CODE=$(cat <<'EOF'
+          ${{ inputs.EXTRA_PHP }}
+          EOF
+          )
+          if [ ! -z "$FILE" ]; then
+            PARAMS+="--require=$FILE "
           fi
-          if [ ! -z '${{ inputs.EXTRA_PHP }}' ]; then
-            PARAMS+="--exec='${{ inputs.EXTRA_PHP }}' "
+          if [ ! -z "$CODE" ]; then
+            PARAMS+="--exec=$CODE "
           fi
           echo "params=${PARAMS}" >> $GITHUB_OUTPUT
 
