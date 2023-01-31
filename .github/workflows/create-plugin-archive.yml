@@ -60,18 +60,6 @@ jobs:
         id: basename
         run: echo "basename=$(basename ${{ inputs.PLUGIN_MAIN_FILE }} .php)" >> $GITHUB_OUTPUT
 
-      - name: Create dist-archive php parameters from inputs
-        id: dist-archive-params
-        run: |
-          PARAMS=""
-          if [ -z "${{ inputs.EXTRA_PHP_FILE }}" ]; then
-            PARAMS+="--require='${{ inputs.EXTRA_PHP_FILE }}' "
-          fi
-          if [ -z "${{ inputs.EXTRA_PHP }}" ]; then
-            PARAMS+="--exec='${{ inputs.EXTRA_PHP }}' "
-          fi
-          echo "params=${PARAMS}" >> $GITHUB_OUTPUT
-
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
 
@@ -141,8 +129,20 @@ jobs:
       - name: Install dist-archive command
         run: wp package install wp-cli/dist-archive-command
 
+      - name: Create dist-archive php parameters from inputs
+        id: dist-archive
+        run: |
+          PARAMS=""
+          if [ -z "${{ inputs.EXTRA_PHP_FILE }}" ]; then
+            PARAMS+="--require='${{ inputs.EXTRA_PHP_FILE }}' "
+          fi
+          if [ -z "${{ inputs.EXTRA_PHP }}" ]; then
+            PARAMS+="--exec='${{ inputs.EXTRA_PHP }}' "
+          fi
+          echo "params=${PARAMS}" >> $GITHUB_OUTPUT
+
       - name: Run wp-cli command
-        run: wp dist-archive . ./archive.zip && pwd && ls
+        run: wp dist-archive . ./archive.zip ${{ steps.dist-archive.outputs.params }}
 
         # GitHub Action artifacts would otherwise produce a zip within a zip
       - name: Unzip archive to dist/
