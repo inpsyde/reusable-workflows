@@ -92,12 +92,15 @@ jobs:
           PACKAGE_VERSION: ${{ github.event.inputs.packageVersion }}
         run: 'sed -Ei "s/Version: .*/Version: ${PACKAGE_VERSION}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
 
-      - name: Run wp-cli command
+      - name: Install WP-CLI
         run: |
-          sudo add-apt-repository ppa:tiagohillebrandt/wp-cli
-          && sudo apt-get update 
-          && sudo apt-get install wp-cli
-          && wp dist-archive . archive.zip
+          mkdir ~/wp-cli && cd ~/wp-cli
+          curl -L https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar --output wp
+          chmod +x wp
+          sudo ln -s ~/wp-cli/wp /usr/local/bin/wp
+
+      - name: Run wp-cli command
+        run: wp dist-archive . archive.zip
 
         # GitHub Action artifacts would otherwise produce a zip within a zip
       - name: Unzip archive to dist/
