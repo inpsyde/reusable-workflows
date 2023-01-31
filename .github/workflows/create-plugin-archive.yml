@@ -99,6 +99,9 @@ jobs:
           chmod +x wp
           sudo ln -s ~/wp-cli/wp /usr/local/bin/wp
 
+      - name: Install dist-archive command
+        run: wp package install wp-cli/dist-archive-command
+
       - name: Run wp-cli command
         run: wp dist-archive . archive.zip
 
