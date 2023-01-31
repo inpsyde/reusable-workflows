@@ -47,21 +47,30 @@ jobs:
               .parse(process.env.ENV_VARS)
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
-      - name: Set up problem matchers for PHPUnit
-        run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
       - name: Install Composer dependencies
         uses: ramsey/composer-install@v2
         with:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
 
+      - name: Check for package.json
+        id: check-for-package
+        run: |
+          if [ -f package.json ]; then
+            echo "::set-output name=has_package::true"
+          else
+            echo "::set-output name=has_package::false"
+          fi
+
       - name: Set up node
+        if: steps.check-for-package.outputs.has_package == 'true'
         uses: actions/setup-node@v3
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
 
       - name: Cache npm dependencies
+        if: steps.check-for-package.outputs.has_package == 'true'
         uses: actions/cache@v3
         with:
           path: ~/.npm
@@ -70,6 +79,7 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Install npm dependencies
+        if: steps.check-for-package.outputs.has_package == 'true'
         run: npm install
 
       - name: Add commit hash to plugin header
