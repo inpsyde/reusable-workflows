@@ -26,6 +26,16 @@ on:
         default: 16
         required: false
         type: string
+      EXTRA_PHP_FILE:
+        description: Run a custom php script before creating the release archive.
+        default: ''
+        required: false
+        type: string
+      EXTRA_PHP:
+        description: Run custom php code before creating the release archive.
+        default: ''
+        required: false
+        type: string
     secrets:
       COMPOSER_AUTH_JSON:
         description: Authentication for privately hosted packages and repositories as a JSON formatted object.
@@ -49,6 +59,18 @@ jobs:
       - name: Create plugin basename from specified main file
         id: basename
         run: echo "basename=$(basename ${{ inputs.PLUGIN_MAIN_FILE }} .php)" >> $GITHUB_OUTPUT
+
+      - name: Create dist-archive php parameters from inputs
+        id: dist-archive-params
+        run: |
+          PARAMS=""
+          if [ -z "${{ inputs.EXTRA_PHP_FILE }}" ]; then
+            PARAMS+="--require='${{ inputs.EXTRA_PHP_FILE }}'"
+          fi
+          if [ -z "${{ inputs.EXTRA_PHP }}" ]; then
+            PARAMS+="--exec='${{ inputs.EXTRA_PHP }}'"
+          fi
+          echo "params=${PARAMS}" >> $GITHUB_OUTPUT
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
