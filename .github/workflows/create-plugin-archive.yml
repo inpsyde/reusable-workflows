@@ -1,0 +1,98 @@
+name: Create plugin archive
+
+on:
+  workflow_call:
+    inputs:
+      PLUGIN_MAIN_FILE:
+        description: The path/name of the plugin main file.
+        required: true
+        type: string
+      PLUGIN_VERSION:
+        description: The plugin version.
+        required: true
+        type: string
+      COMPOSER_ARGS:
+        description: Set of arguments passed to Composer.
+        default: '--no-dev --no-scripts --prefer-dist'
+        required: false
+        type: string
+    secrets:
+      COMPOSER_AUTH_JSON:
+        description: Authentication for privately hosted packages and repositories as a JSON formatted object.
+        required: false
+
+jobs:
+  create-plugin-archive:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    env:
+      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
+    outputs:
+      artifact: ${{ steps.set-artifact-name.outputs.artifact }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+
+      - name: Set up custom environment variables
+        env:
+          ENV_VARS: ${{ secrets.ENV_VARS }}
+        if: ${{ env.ENV_VARS }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            JSON
+              .parse(process.env.ENV_VARS)
+              .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
+
+      - name: Set up problem matchers for PHPUnit
+        run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v2
+        with:
+          composer-options: ${{ inputs.COMPOSER_ARGS }}
+
+      - name: Set up node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ inputs.NODE_VERSION }}
+          registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Add commit hash to plugin header
+        env:
+          GIT_SHA: ${{ steps.git.outputs.sha_short }}
+        run: 'sed -Ei "s/SHA: .*/SHA: ${GIT_SHA}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
+
+      - name: Set plugin version header
+        env:
+          PACKAGE_VERSION: ${{ github.event.inputs.packageVersion }}
+        run: 'sed -Ei "s/Version: .*/Version: ${PACKAGE_VERSION}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
+
+      - name: Run wp-cli command
+        run: wp dist-archive . archive.zip
+
+        # GitHub Action artifacts would otherwise produce a zip within a zip
+      - name: Unzip archive to dist/
+        run: unzip archive.zip -d dist
+
+      - id: set-artifact-name
+        run: echo "artifact=Package-${{ inputs.PLUGIN_VERSION }}" >> $GITHUB_OUTPUT
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ steps.set-artifact-name.outputs.artifact }}
+          path: dist/*
