@@ -16,9 +16,22 @@ on:
         default: '--no-dev --no-scripts --prefer-dist'
         required: false
         type: string
+      NPM_REGISTRY_DOMAIN:
+        description: Domain of the private npm registry.
+        default: https://npm.pkg.github.com/
+        required: false
+        type: string
+      NODE_VERSION:
+        description: Node version with which the unit tests are to be executed.
+        default: 16
+        required: false
+        type: string
     secrets:
       COMPOSER_AUTH_JSON:
         description: Authentication for privately hosted packages and repositories as a JSON formatted object.
+        required: false
+      ENV_VARS:
+        description: Additional environment variables as a JSON formatted object.
         required: false
 
 jobs:
@@ -32,6 +45,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Create plugin basename from specified main file
+        id: basename
+        run: echo "basename=$(basename ${{ inputs.PLUGIN_MAIN_FILE }} .php)" >> $GITHUB_OUTPUT
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -110,7 +127,7 @@ jobs:
         run: unzip archive.zip -d dist
 
       - id: set-artifact-name
-        run: echo "artifact=Package-${{ inputs.PLUGIN_VERSION }}" >> $GITHUB_OUTPUT
+        run: echo "artifact=${{ steps.basename.outputs.basename }}-${{ inputs.PLUGIN_VERSION }}" >> $GITHUB_OUTPUT
 
       - uses: actions/upload-artifact@v2
         with:
