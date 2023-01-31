@@ -142,7 +142,7 @@ jobs:
             PARAMS+="--require=$FILE "
           fi
           if [ ! -z "$CODE" ]; then
-            PARAMS+="--exec=$CODE "
+            PARAMS+="--exec=${CODE@Q} "
           fi
           echo "params=${PARAMS}" >> $GITHUB_OUTPUT
 
