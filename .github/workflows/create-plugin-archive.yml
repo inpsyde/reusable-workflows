@@ -57,9 +57,9 @@ jobs:
         id: check-for-package
         run: |
           if [ -f package.json ]; then
-            echo "::set-output name=has_package::true"
+            echo "has_package=true" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=has_package::false"
+            echo "has_package=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Set up node
@@ -93,7 +93,11 @@ jobs:
         run: 'sed -Ei "s/Version: .*/Version: ${PACKAGE_VERSION}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
 
       - name: Run wp-cli command
-        run: wp dist-archive . archive.zip
+        run: |
+          sudo add-apt-repository ppa:tiagohillebrandt/wp-cli
+          && sudo apt-get update 
+          && sudo apt-get install wp-cli
+          && wp dist-archive . archive.zip
 
         # GitHub Action artifacts would otherwise produce a zip within a zip
       - name: Unzip archive to dist/
