@@ -65,10 +65,10 @@ jobs:
         run: |
           PARAMS=""
           if [ -z "${{ inputs.EXTRA_PHP_FILE }}" ]; then
-            PARAMS+="--require='${{ inputs.EXTRA_PHP_FILE }}'"
+            PARAMS+="--require='${{ inputs.EXTRA_PHP_FILE }}' "
           fi
           if [ -z "${{ inputs.EXTRA_PHP }}" ]; then
-            PARAMS+="--exec='${{ inputs.EXTRA_PHP }}'"
+            PARAMS+="--exec='${{ inputs.EXTRA_PHP }}' "
           fi
           echo "params=${PARAMS}" >> $GITHUB_OUTPUT
 
