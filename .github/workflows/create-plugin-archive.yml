@@ -11,9 +11,14 @@ on:
         description: The plugin version.
         required: true
         type: string
+      COMPOSER_ARGS_DEV:
+        description: Set of arguments passed to Composer for build setup.
+        default: '--prefer-dist'
+        required: false
+        type: string
       COMPOSER_ARGS:
-        description: Set of arguments passed to Composer.
-        default: '--no-dev --no-scripts --prefer-dist'
+        description: Set of arguments passed to Composer for production setup.
+        default: '--no-dev --no-scripts --prefer-dist --optimize-autoloader'
         required: false
         type: string
       NPM_REGISTRY_DOMAIN:
@@ -53,15 +58,17 @@ jobs:
     outputs:
       artifact: ${{ steps.set-artifact-name.outputs.artifact }}
     steps:
+
+      #
+      # Project setup
+      #
+
       - name: Checkout
         uses: actions/checkout@v3
 
       - name: Create plugin basename from specified main file
         id: basename
         run: echo "basename=$(basename ${{ inputs.PLUGIN_MAIN_FILE }} .php)" >> $GITHUB_OUTPUT
-
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
 
       - name: Set up custom environment variables
         env:
@@ -74,11 +81,29 @@ jobs:
               .parse(process.env.ENV_VARS)
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
+      #
+      # PHP dependencies
+      #
 
-      - name: Install Composer dependencies
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+
+      - name: Install Composer dependencies with dev dependencies
+        # ⬑ The idea is to let composer plugins like assets-compiler/translation downloader execute
         uses: ramsey/composer-install@v2
         with:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
+
+      - name: Install Composer dependencies without dev dependencies
+        # ⬑ Now we want to get rid of dev dependencies and most probably skip composer scripts
+        uses: ramsey/composer-install@v2
+        with:
+          composer-options: ${{ inputs.COMPOSER_ARGS }}
+
+
+      #
+      # JS dependencies
+      #
 
       - name: Check for package.json
         id: check-for-package
@@ -105,6 +130,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
+      #
+      # Package metadata
+      #
+
       - name: Install npm dependencies
         if: steps.check-for-package.outputs.has_package == 'true'
         run: npm install
@@ -118,6 +147,10 @@ jobs:
         env:
           PACKAGE_VERSION: ${{ github.event.inputs.packageVersion }}
         run: 'sed -Ei "s/Version: .*/Version: ${PACKAGE_VERSION}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
+
+      #
+      # Archive tooling
+      #
 
       - name: Install WP-CLI
         run: |
@@ -145,6 +178,10 @@ jobs:
             PARAMS+="--exec=${CODE@Q} "
           fi
           echo "params=${PARAMS}" >> $GITHUB_OUTPUT
+
+      #
+      # Archive/Artifact creation
+      #
 
       - name: Run wp-cli command
         run: wp dist-archive . ./archive.zip ${{ steps.dist-archive.outputs.params }}
