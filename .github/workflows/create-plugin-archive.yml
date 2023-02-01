@@ -92,7 +92,7 @@ jobs:
         # ⬑ The idea is to let composer plugins like assets-compiler/translation downloader execute
         uses: ramsey/composer-install@v2
         with:
-          composer-options: ${{ inputs.COMPOSER_ARGS }}
+          composer-options: ${{ inputs.COMPOSER_ARGS_DEV }}
 
       - name: Install Composer dependencies without dev dependencies
         # ⬑ Now we want to get rid of dev dependencies and most probably skip composer scripts
@@ -102,7 +102,7 @@ jobs:
 
 
       #
-      # JS dependencies
+      # JS environment. Only for setting up node/npm versions. Actual tasks should be run at project level
       #
 
       - name: Check for package.json
@@ -133,10 +133,6 @@ jobs:
       #
       # Package metadata
       #
-
-      - name: Install npm dependencies
-        if: steps.check-for-package.outputs.has_package == 'true'
-        run: npm install
 
       - name: Add commit hash to plugin header
         env:
