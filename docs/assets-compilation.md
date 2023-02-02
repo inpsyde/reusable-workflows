@@ -30,13 +30,13 @@ jobs:
 
 #### Secrets
 
-| Name                 | Description                                                                              |
-|----------------------|------------------------------------------------------------------------------------------|
-| `COMPOSER_AUTH_JSON` | Authentication for privately hosted packages and repositories as a JSON formatted object |
-| `NPM_REGISTRY_TOKEN` | Authentication for the private npm registry.                                             |
-| `GITHUB_USER_EMAIL`  | Email address for Git configuration                                                      |
-| `GITHUB_USER_NAME`   | Username for Git configuration                                                           |
-| `GITHUB_USER_SSH_KEY`| Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`             |
+| Name                  | Description                                                                              |
+|-----------------------|------------------------------------------------------------------------------------------|
+| `COMPOSER_AUTH_JSON`  | Authentication for privately hosted packages and repositories as a JSON formatted object |
+| `NPM_REGISTRY_TOKEN`  | Authentication for the private npm registry                                              |
+| `GITHUB_USER_EMAIL`   | Email address for the GitHub user configuration                                          |
+| `GITHUB_USER_NAME`    | Username for the GitHub user configuration                                               |
+| `GITHUB_USER_SSH_KEY` | Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`             |
 
 **Example with configuration parameters:**
 
