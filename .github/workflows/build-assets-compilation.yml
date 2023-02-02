@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       PHP_VERSION:
-        description: PHP version with which the coding standard analysis is to be executed.
+        description: PHP version with which the assets compilation is to be executed.
         default: 8.0
         required: false
         type: string
@@ -35,6 +35,15 @@ on:
       NPM_REGISTRY_TOKEN:
         description: Authentication for the private npm registry.
         required: false
+      GITHUB_USER_EMAIL:
+        description: Email address for the GitHub user configuration.
+        required: false
+      GITHUB_USER_NAME:
+        description: Username for the GitHub user configuration.
+        required: false
+      GITHUB_USER_SSH_KEY:
+        description: Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`.
+        required: false
 
 jobs:
   assets-compilation:
@@ -43,9 +52,24 @@ jobs:
     env:
       COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
       NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
+      GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
+      GITHUB_USER_EMAIL: ${{ secrets.GITHUB_USER_EMAIL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Set up SSH
+        if: ${{ env.GITHUB_USER_SSH_KEY != '' }}
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
+
+      - name: Setup Git
+        if: ${{ env.GITHUB_USER_EMAIL != '' && env.GITHUB_USER_NAME !) '' }}
+        run: |
+          git config --global user.email "${{ secrets.GITHUB_USER_EMAIL }}" 
+          git config --global user.name "${{ secrets.GITHUB_USER_NAME }}"
 
       - name: Set up node
         uses: actions/setup-node@v3
