@@ -5,7 +5,7 @@ on:
     inputs:
       PHP_MATRIX:
         description: Matrix of PHP versions as a JSON formatted object.
-        default: '["7.4"]'
+        default: '["8.0"]'
         required: false
         type: string
       COMPOSER_ARGS:
