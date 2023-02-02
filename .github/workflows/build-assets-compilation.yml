@@ -52,6 +52,7 @@ jobs:
     env:
       COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
       NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
