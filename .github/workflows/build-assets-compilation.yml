@@ -69,7 +69,6 @@ jobs:
           git config --global user.name "${{ secrets.GITHUB_USER_NAME }}"
           git config --global advice.addIgnoredFile false
           git config --global push.autoSetupRemote true
-          mkdir -p ${{ inputs.ASSETS_TARGET_PATHS }}
           
       - name: Set up node
         uses: actions/setup-node@v3
