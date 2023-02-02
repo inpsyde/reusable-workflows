@@ -19,9 +19,9 @@ on:
         default: "auto"
         required: false
       DEPS_INSTALL:
-        description: Install dependencies before compiling?
-        type: string
-        default: "yes"
+        description: Whether or not to install dependencies before compiling.
+        type: boolean
+        default: true
         required: false
       COMPILE_SCRIPT_PROD:
         description: Script added to "npm run" or "yarn" to build production assets.
@@ -131,7 +131,7 @@ jobs:
           key: ${{ runner.os }}-node-${{ inputs.NODE_VERSION }}-${{ env.PACKAGE_MANAGER }}-${{ hashFiles('**/package-lock.json', '**/npm-shrinkwrap.json', '**/yarn.lock') }}
 
       - name: Install dependencies
-        if: ${{ ! startsWith( 'no', inputs.DEPS_INSTALL ) }}
+        if: ${{ inputs.DEPS_INSTALL }}
         run: |
           ${{ ((env.PACKAGE_MANAGER == 'npm') && 'npm config set cache ~/.deps_cache --global') || 'yarn config set cache-folder ~/.deps_cache' }}
           ${{ ((env.PACKAGE_MANAGER == 'npm') && 'npm install') || 'yarn' }}
