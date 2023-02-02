@@ -22,7 +22,7 @@ jobs:
 
 | Name            | Default                                                  | Description                                                           |
 |-----------------|----------------------------------------------------------|-----------------------------------------------------------------------|
-| `PHP_VERSION`   | 8.0                                                      | PHP version with which the coding standard analysis is to be executed |
+| `PHP_VERSION`   | `"8.0"`                                                  | PHP version with which the coding standard analysis is to be executed |
 | `COMPOSER_ARGS` | `'--prefer-dist'`                                        | Set of arguments passed to Composer                                   |
 | `PHPCS_ARGS`    | `'--report-full --report-checkstyle=./phpcs-report.xml'` | Set of arguments passed to PHP_CodeSniffer                            |
 | `CS2PR_ARGS`    | `'--graceful-warnings ./phpcs-report.xml'`               | Set of arguments passed to cs2pr                                      |
@@ -73,7 +73,7 @@ jobs:
 
 | Name            | Default                               | Description                                                       |
 |-----------------|---------------------------------------|-------------------------------------------------------------------|
-| `PHP_VERSION`   | 8.0                                   | PHP version with which the static code analysis is to be executed |
+| `PHP_VERSION`   | `"8.0"`                               | PHP version with which the static code analysis is to be executed |
 | `COMPOSER_ARGS` | `'--prefer-dist'`                     | Set of arguments passed to Composer                               |
 | `PSALM_ARGS`    | `'--output-format=github --no-cache'` | Set of arguments passed to Psalm                                  |
 
