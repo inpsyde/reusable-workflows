@@ -10,17 +10,17 @@ on:
         type: string
       COMPOSER_ARGS:
         description: Set of arguments passed to Composer.
-        default: '--prefer-dist'
+        default: "--prefer-dist"
         required: false
         type: string
       PHPCS_ARGS:
         description: Set of arguments passed to PHP_CodeSniffer.
-        default: '--report-full --report-checkstyle=./phpcs-report.xml'
+        default: "--report-full --report-checkstyle=./phpcs-report.xml"
         required: false
         type: string
       CS2PR_ARGS:
         description: Set of arguments passed to cs2pr.
-        default: '--graceful-warnings ./phpcs-report.xml'
+        default: "--graceful-warnings ./phpcs-report.xml"
         required: false
         type: string
     secrets:
@@ -33,7 +33,7 @@ jobs:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     env:
-      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
+      COMPOSER_AUTH: "${{ secrets.COMPOSER_AUTH_JSON }}"
     steps:
       - name: Checkout
         uses: actions/checkout@v3

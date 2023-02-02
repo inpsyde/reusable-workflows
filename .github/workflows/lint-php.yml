@@ -10,12 +10,12 @@ on:
         type: string
       COMPOSER_ARGS:
         description: Set of arguments passed to Composer.
-        default: '--prefer-dist'
+        default: "--prefer-dist"
         required: false
         type: string
       LINT_ARGS:
         description: Set of arguments passed to PHP Parallel Lint.
-        default: '. -e php --colors --show-deprecated'
+        default: ". -e php --colors --show-deprecated"
         required: false
         type: string
       COMPOSER_DEPS_INSTALL:
@@ -36,7 +36,7 @@ jobs:
       matrix:
         php-version: ${{ fromJson(inputs.PHP_MATRIX) }}
     env:
-      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
+      COMPOSER_AUTH: "${{ secrets.COMPOSER_AUTH_JSON }}"
     steps:
       - name: Checkout
         uses: actions/checkout@v3

@@ -42,16 +42,16 @@ name: Build and push assets
 on:
   workflow_dispatch:
   push:
-    tags: ['*']
-    branches: ['*']
+    tags: ["*"]
+    branches: ["*"]
     paths:
-      - '**workflows/build-and-push-assets.yml' # the workflow file itself
-      - '**.ts'
-      - '**.scss'
-      - '**.js'
-      - '**package.json'
-      - '**tsconfig.json'
-      - '**yarn.lock'
+      - "**workflows/build-and-push-assets.yml" # the workflow file itself
+      - "**.ts"
+      - "**.scss"
+      - "**.js"
+      - "**package.json"
+      - "**tsconfig.json"
+      - "**yarn.lock"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -74,7 +74,7 @@ This is not the simplest possible example, but it showcases all the recommendati
 
 | Name                  | Default                         | Description                                                                            |
 |-----------------------|---------------------------------|----------------------------------------------------------------------------------------|
-| `NODE_VERSION`        | `16`                            | Node version with which the assets will be compiled                                    |
+| `NODE_VERSION`        | `"16"`                          | Node version with which the assets will be compiled                                    |
 | `NPM_REGISTRY_DOMAIN` | `"https://npm.pkg.github.com/"` | Domain of the private npm registry                                                     |
 | `PACKAGE_MANAGER`     | `"auto"` <sup>**^1**</sup>      | Package manager. Supported are "yarn" and "npm". Required if no lock file is available |
 | `DEPS_INSTALL`        | `true`                          | Whether or not to install dependencies before compiling                                |

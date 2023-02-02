@@ -5,7 +5,7 @@ on:
     inputs:
       NODE_VERSION:
         description: Node version with which the assets will be compiled.
-        default: 16
+        default: "16"
         required: false
         type: string
       NPM_REGISTRY_DOMAIN:
@@ -60,9 +60,9 @@ jobs:
       NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
       COMPILE_SCRIPT: ${{ inputs.COMPILE_SCRIPT_DEV }} # we'll override if the push is for tag
-      TAG_NAME: ''                                     # we'll override if the push is for tag
-      TAG_BRANCH_NAME: ''                              # we'll override if the push is for tag
-      LOCK_FILE: ''                                    # we'll override after checking files
+      TAG_NAME: ""                                     # we'll override if the push is for tag
+      TAG_BRANCH_NAME: ""                              # we'll override if the push is for tag
+      LOCK_FILE: ""                                    # we'll override after checking files
       PACKAGE_MANAGER: "yarn"                          # we'll override based on env/inputs
       NO_CHANGES: ""                                   # we'll override if no changes to commit
     steps:
@@ -71,7 +71,7 @@ jobs:
         with:
           fetch-depth: 0
           # when current push is a tag, we check out the tag's SHA, we'll create a new branch later
-          ref: ${{ ((github.ref_type == 'tag') && github.sha) || github.ref }}
+          ref: ${{ ((github.ref_type == "tag") && github.sha) || github.ref }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -80,13 +80,13 @@ jobs:
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
 
       - name: Set production environment variables
-        if: ${{ contains(github.ref, 'refs/tags/') }}
+        if: ${{ contains(github.ref, "refs/tags/") }}
         run: |
           echo "TAG_NAME=$(echo ${GITHUB_REF#refs/*/})" >> $GITHUB_ENV
           echo "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_PROD }}" >> $GITHUB_ENV
 
       - name: Set up SSH
-        if: ${{ env.GITHUB_USER_SSH_KEY != '' }}
+        if: ${{ env.GITHUB_USER_SSH_KEY != "" }}
         uses: webfactory/ssh-agent@v0.7.0
         with:
           ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
@@ -100,44 +100,44 @@ jobs:
           mkdir -p ${{ inputs.ASSETS_TARGET_PATHS }}
 
       - name: Git pull on re-run
-        if: ${{ (github.run_attempt > 1) && (github.ref_type != 'tag') }}
+        if: ${{ (github.run_attempt > 1) && (github.ref_type != "tag") }}
         run: git pull
 
       - name: Checkout new branch when running for a tag
-        if: ${{ github.ref_type == 'tag' }}
+        if: ${{ github.ref_type == "tag" }}
         run: |
           git checkout -b bot/compiled-assets/${{ github.sha }}
           echo "TAG_BRANCH_NAME=bot/compiled-assets/${{ github.sha }}" >> $GITHUB_ENV
 
       - name: Try determining package manager by lock file
-        if: ${{ inputs.PACKAGE_MANAGER == 'auto' }}
+        if: ${{ inputs.PACKAGE_MANAGER == "auto" }}
         run: |
           [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] && echo "LOCK_FILE=npm" >> $GITHUB_ENV || echo "No package-lock.json found"
           [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ] && echo "LOCK_FILE=npm" >> $GITHUB_ENV || echo "No npm-shrinkwrap.json found"
           [ -f "${GITHUB_WORKSPACE}/yarn.lock" ] && echo "LOCK_FILE=yarn" >> $GITHUB_ENV || echo "No yarn.lock found"
 
       - name: Warning for fallback package manager
-        if: ${{ (inputs.PACKAGE_MANAGER == 'auto') && (env.LOCK_FILE == '') }}
+        if: ${{ (inputs.PACKAGE_MANAGER == "auto") && (env.LOCK_FILE == "") }}
         run: echo "::warning::PACKAGE_MANAGER input not defined, and no lock file found, using Yarn as default."
 
       - name: Determine package manager
-        if: ${{ (env.LOCK_FILE == 'npm') || (inputs.PACKAGE_MANAGER == 'npm') }}
+        if: ${{ (env.LOCK_FILE == "npm") || (inputs.PACKAGE_MANAGER == "npm") }}
         run: echo "PACKAGE_MANAGER=npm" >> $GITHUB_ENV
 
       - name: Cache npm/Yarn dependencies
         uses: actions/cache@v3
         with:
           path: ~/.deps_cache
-          key: ${{ runner.os }}-node-${{ inputs.NODE_VERSION }}-${{ env.PACKAGE_MANAGER }}-${{ hashFiles('**/package-lock.json', '**/npm-shrinkwrap.json', '**/yarn.lock') }}
+          key: ${{ runner.os }}-node-${{ inputs.NODE_VERSION }}-${{ env.PACKAGE_MANAGER }}-${{ hashFiles("**/package-lock.json", "**/npm-shrinkwrap.json", "**/yarn.lock") }}
 
       - name: Install dependencies
         if: ${{ inputs.DEPS_INSTALL }}
         run: |
-          ${{ ((env.PACKAGE_MANAGER == 'npm') && 'npm config set cache ~/.deps_cache --global') || 'yarn config set cache-folder ~/.deps_cache' }}
-          ${{ ((env.PACKAGE_MANAGER == 'npm') && 'npm install') || 'yarn' }}
+          ${{ ((env.PACKAGE_MANAGER == "npm") && "npm config set cache ~/.deps_cache --global") || "yarn config set cache-folder ~/.deps_cache" }}
+          ${{ ((env.PACKAGE_MANAGER == "npm") && "npm install") || "yarn" }}
 
       - name: Compile assets
-        run: ${{ ((env.PACKAGE_MANAGER == 'npm') && 'npm run') || 'yarn' }} ${{ env.COMPILE_SCRIPT }}
+        run: ${{ ((env.PACKAGE_MANAGER == "npm") && "npm run") || "yarn" }} ${{ env.COMPILE_SCRIPT }}
 
       - name: Git add, commit, push
         run: |
@@ -147,11 +147,11 @@ jobs:
           git commit -m "[BOT] Add compiled assets for #${{ github.ref }}" --no-verify || ((echo "NO_CHANGES=yes" >> $GITHUB_ENV) && (echo "No changes to commit"))
 
       - name: Git push
-        if: ${{ env.NO_CHANGES != 'yes' }}
+        if: ${{ env.NO_CHANGES != "yes" }}
         run: git push
 
       - name: Move tag
-        if: ${{ env.TAG_NAME != '' && env.NO_CHANGES != 'yes' }}
+        if: ${{ env.TAG_NAME != "" && env.NO_CHANGES != "yes" }}
         run: |
           git tag -d ${{ env.TAG_NAME }}
           git push origin :refs/tags/${{ env.TAG_NAME }}
@@ -159,7 +159,7 @@ jobs:
           git push origin --tags
 
       - name: Delete tag branch
-        if: ${{ always() && (env.TAG_BRANCH_NAME != '' && env.NO_CHANGES != 'yes') }}
+        if: ${{ always() && (env.TAG_BRANCH_NAME != "" && env.NO_CHANGES != "yes") }}
         run: |
           git checkout --detach
           git branch -d ${{ env.TAG_BRANCH_NAME }}

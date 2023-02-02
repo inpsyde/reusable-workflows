@@ -22,9 +22,9 @@ jobs:
 
 | Name                  | Default                                                               | Description                                         |
 |-----------------------|-----------------------------------------------------------------------|-----------------------------------------------------|
-| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'`                                       | Domain of the private npm registry                  |
-| `NODE_VERSION`        | 16                                                                    | Node version with which the assets will be compiled |
-| `ESLINT_ARGS`         | `'-o eslint_report.json -f json --ext .js,.jsx,.ts,.tsx ./resources'` | Set of arguments passed to ESLint                   |
+| `NPM_REGISTRY_DOMAIN` | `"https://npm.pkg.github.com/"`                                       | Domain of the private npm registry                  |
+| `NODE_VERSION`        | `"16"`                                                                | Node version with which the assets will be compiled |
+| `ESLINT_ARGS`         | `"-o eslint_report.json -f json --ext .js,.jsx,.ts,.tsx ./resources"` | Set of arguments passed to ESLint                   |
 
 #### Secrets
 
@@ -44,8 +44,8 @@ jobs:
     secrets:
       NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
     with:
-      NODE_VERSION: 14
-      ESLINT_ARGS: './resources --ext .js'
+      NODE_VERSION: "14"
+      ESLINT_ARGS: "./resources --ext .js"
 ```
 
 ## Unit tests JavaScript
@@ -70,9 +70,9 @@ jobs:
 
 | Name                  | Default                                            | Description                                               |
 |-----------------------|----------------------------------------------------|-----------------------------------------------------------|
-| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'`                    | Domain of the private npm registry                        |
-| `NODE_VERSION`        | 16                                                 | Node version with which the unit tests are to be executed |
-| `JEST_ARGS`           | `'--reporters=default --reporters=github-actions'` | Set of arguments passed to Jest                           |
+| `NPM_REGISTRY_DOMAIN` | `"https://npm.pkg.github.com/"`                    | Domain of the private npm registry                        |
+| `NODE_VERSION`        | `"16"`                                             | Node version with which the unit tests are to be executed |
+| `JEST_ARGS`           | `"--reporters=default --reporters=github-actions"` | Set of arguments passed to Jest                           |
 
 **Note**: The default `github-actions` reporter requires Jest 28 or higher.
 
@@ -94,6 +94,6 @@ jobs:
     secrets:
       NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
     with:
-      NODE_VERSION: 14
-      JEST_ARGS: 'my-test --reporters=jest-junit --coverage'
+      NODE_VERSION: "14"
+      JEST_ARGS: "my-test --reporters=jest-junit --coverage"
 ```
