@@ -70,8 +70,6 @@ jobs:
         run: |
           git config --global user.email "${{ secrets.GITHUB_USER_EMAIL }}" 
           git config --global user.name "${{ secrets.GITHUB_USER_NAME }}"
-          git config --global advice.addIgnoredFile false
-          git config --global push.autoSetupRemote true
           
       - name: Set up node
         uses: actions/setup-node@v3
