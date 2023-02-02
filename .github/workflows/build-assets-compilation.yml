@@ -37,10 +37,10 @@ on:
         required: false
       GITHUB_USER_EMAIL:
         description: Email address for Git configuration.
-        required: true
+        required: false
       GITHUB_USER_NAME:
         description: Username for Git configuration.
-        required: true
+        required: false
       GITHUB_USER_SSH_KEY:
         description: Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`.
         required: false
@@ -53,6 +53,8 @@ jobs:
       COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
       NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
+      GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
+      GITHUB_USER_EMAIL: ${{ secrets.GITHUB_USER_EMAIL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -64,6 +66,7 @@ jobs:
           ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
       - name: Setup Git
+        if: ${{ env.GITHUB_USER_EMAIL != '' && env.GITHUB_USER_NAME !) '' }}
         run: |
           git config --global user.email "${{ secrets.GITHUB_USER_EMAIL }}" 
           git config --global user.name "${{ secrets.GITHUB_USER_NAME }}"
