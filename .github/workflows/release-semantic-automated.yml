@@ -93,6 +93,10 @@ jobs:
             exit 1
           fi
 
+      - name: Remove the workflow repository
+        run: |
+          rm -rf workflow-repo
+
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
