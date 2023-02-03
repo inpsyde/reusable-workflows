@@ -1,6 +1,8 @@
 # Release semantic automated
 
 This workflow utilizes the [Semantic Release](https://github.com/semantic-release/semantic-release) package to create a release of a package that uses npm.
+Mind that, in order to use Semantic Release, you need to stick to their convention about commit messages.
+
 You can provide a release.config.js file in your repository to create a custom release that uses the following Semantic Release plugins:
 - git
 - npm
