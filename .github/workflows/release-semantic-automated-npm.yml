@@ -61,9 +61,9 @@ jobs:
         if: ${{ env.HAS_CONFIG == false }}
         run: |
           if [ -z "$MAIN_FILENAME" ]; then
-            FILES_TO_COMMIT='["CHANGELOG.md", "package-lock.json", "package.json", "yarn.lock", "composer.json"]'
+            FILES_TO_COMMIT='["CHANGELOG.md", "package-lock.json", "package.json", "composer.json"]'
           else
-            FILES_TO_COMMIT='["CHANGELOG.md", "package-lock.json", "package.json", "yarn.lock", "composer.json", "'$MAIN_FILENAME'"]'
+            FILES_TO_COMMIT='["CHANGELOG.md", "package-lock.json", "package.json", "composer.json", "'$MAIN_FILENAME'"]'
           fi
           echo "FILES_TO_COMMIT=$(echo $FILES_TO_COMMIT | sed 's/"/\\"/g')" >> $GITHUB_ENV
 
@@ -84,9 +84,10 @@ jobs:
       - name: Compile the release.config.js template
         if: ${{ env.HAS_CONFIG == false }}
         run: |
-          ejs ${GITHUB_WORKSPACE}/workflow-repo/templates/release-semantic-automated/release.config.ejs -o release.config.js branches="${{ env.BRANCHES }}" mainFilename=${{ env.MAIN_FILENAME }} filesToCommit="${{ env.FILES_TO_COMMIT }}"
+          ejs ${GITHUB_WORKSPACE}/workflow-repo/templates/release-semantic-automated-npm/release.config.ejs -o release.config.js branches="${{ env.BRANCHES }}" mainFilename=${{ env.MAIN_FILENAME }} filesToCommit="${{ env.FILES_TO_COMMIT }}"
 
       - name: Check the presence of the configuration file
+        if: ${{ env.HAS_CONFIG == false }}
         run: |
           if [ ! -f "release.config.js" ]; then 
             echo "Configuration file release.config.js does not exist, aborting!" 
@@ -94,6 +95,7 @@ jobs:
           fi
 
       - name: Remove the workflow repository
+        if: ${{ env.HAS_CONFIG == false }}
         run: |
           rm -rf workflow-repo
 
