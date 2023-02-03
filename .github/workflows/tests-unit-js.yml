@@ -10,12 +10,12 @@ on:
         type: string
       NODE_VERSION:
         description: Node version with which the unit tests are to be executed.
-        default: 16
+        default: "16"
         required: false
         type: string
       JEST_ARGS:
         description: Set of arguments passed to Jest.
-        default: '--reporters=default --reporters=github-actions'
+        default: "--reporters=default --reporters=github-actions"
         required: false
         type: string
     secrets:
@@ -43,7 +43,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles("**/package-lock.json") }}
           restore-keys: |
             ${{ runner.os }}-node-
 

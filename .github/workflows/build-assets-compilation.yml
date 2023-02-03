@@ -4,8 +4,8 @@ on:
   workflow_call:
     inputs:
       PHP_VERSION:
-        description: PHP version with which the coding standard analysis is to be executed.
-        default: 7.4
+        description: PHP version with which the assets compilation is to be executed.
+        default: "8.0"
         required: false
         type: string
       NPM_REGISTRY_DOMAIN:
@@ -15,17 +15,17 @@ on:
         type: string
       NODE_VERSION:
         description: Node version with which the assets will be compiled.
-        default: 16
+        default: "16"
         required: false
         type: string
       COMPOSER_ARGS:
         description: Set of arguments passed to Composer.
-        default: '--prefer-dist'
+        default: "--prefer-dist"
         required: false
         type: string
       COMPILE_ASSETS_ARGS:
         description: Set of arguments passed to Composer Asset Compiler.
-        default: '-v --env=root'
+        default: "-v --env=root"
         required: false
         type: string
     secrets:
@@ -35,17 +35,41 @@ on:
       NPM_REGISTRY_TOKEN:
         description: Authentication for the private npm registry.
         required: false
+      GITHUB_USER_EMAIL:
+        description: Email address for the GitHub user configuration.
+        required: false
+      GITHUB_USER_NAME:
+        description: Username for the GitHub user configuration.
+        required: false
+      GITHUB_USER_SSH_KEY:
+        description: Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`.
+        required: false
 
 jobs:
   assets-compilation:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     env:
-      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
+      COMPOSER_AUTH: "${{ secrets.COMPOSER_AUTH_JSON }}"
       NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
+      GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
+      GITHUB_USER_EMAIL: ${{ secrets.GITHUB_USER_EMAIL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Set up SSH
+        if: ${{ env.GITHUB_USER_SSH_KEY != "" }}
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
+
+      - name: Setup Git
+        if: ${{ env.GITHUB_USER_EMAIL != "" && env.GITHUB_USER_NAME != "" }}
+        run: |
+          git config --global user.email "${{ secrets.GITHUB_USER_EMAIL }}" 
+          git config --global user.name "${{ secrets.GITHUB_USER_NAME }}"
 
       - name: Set up node
         uses: actions/setup-node@v3
@@ -69,20 +93,20 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles("**/package-lock.json") }}
           restore-keys: |
             ${{ runner.os }}-node-
 
       - name: Extract package hash into env [DEV]
-        if: ${{ !contains(github.ref, 'refs/tags/') }}
+        if: ${{ !contains(github.ref, "refs/tags/") }}
         run: echo "ASSETS_HASH=$(composer assets-hash)" >> $GITHUB_ENV
 
       - name: Extract tag name into env [PROD]
-        if: ${{ contains(github.ref, 'refs/tags/') }}
+        if: ${{ contains(github.ref, "refs/tags/") }}
         run: echo "TAG_NAME=$(echo ${GITHUB_REF#refs/*/})" >> $GITHUB_ENV
 
       - name: Set ENCORE_ENV to production [PROD]
-        if: ${{ contains(github.ref, 'refs/tags/') }}
+        if: ${{ contains(github.ref, "refs/tags/") }}
         run: echo "ENCORE_ENV=production" >> $GITHUB_ENV
 
       - name: Compile assets
@@ -90,19 +114,19 @@ jobs:
 
       - name: Upload assets artifact [DEV]
         uses: actions/upload-artifact@v3
-        if: ${{ !contains(github.ref, 'refs/tags/') }}
+        if: ${{ !contains(github.ref, "refs/tags/") }}
         with:
           name: assets-${{ env.ASSETS_HASH }}
           path: assets
 
       - name: Zip assets folder [PROD]
         uses: montudor/action-zip@v1
-        if: ${{ contains(github.ref, 'refs/tags/') }}
+        if: ${{ contains(github.ref, "refs/tags/") }}
         with:
           args: zip -qq -r assets-${{ env.TAG_NAME }}.zip assets
 
       - name: Upload release attachment [PROD]
-        if: ${{ contains(github.ref, 'refs/tags/') }}
+        if: ${{ contains(github.ref, "refs/tags/") }}
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}

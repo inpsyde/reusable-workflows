@@ -20,11 +20,11 @@ jobs:
 
 #### Inputs
 
-| Name                  | Default                         | Description                                         |
-|-----------------------|---------------------------------|-----------------------------------------------------|
-| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                  |
-| `NODE_VERSION`        | 16                              | Node version with which the assets will be compiled |
-| `STYLELINT_ARGS`      | `'./resources/**/*.scss'`       | Set of arguments passed to Stylelint                |
+| Name                  | Default                        | Description                                         |
+|-----------------------|--------------------------------|-----------------------------------------------------|
+| `NPM_REGISTRY_DOMAIN` | `"https://npm.pkg.github.com/` | Domain of the private npm registry                  |
+| `NODE_VERSION`        | `"16"`                         | Node version with which the assets will be compiled |
+| `STYLELINT_ARGS`      | `"./resources/**/*.scss"`      | Set of arguments passed to Stylelint                |
 
 #### Secrets
 
@@ -44,6 +44,6 @@ jobs:
     secrets:
       NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
     with:
-      NODE_VERSION: 14
-      STYLELINT_ARGS: './assets/scss/*.scss'
+      NODE_VERSION: "14"
+      STYLELINT_ARGS: "./assets/scss/*.scss"
 ```
