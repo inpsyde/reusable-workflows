@@ -5,7 +5,8 @@ on:
     inputs:
       PLUGIN_MAIN_FILE:
         description: The path/name of the plugin main file.
-        required: true
+        required: false
+        default: './index.php'
         type: string
       PLUGIN_VERSION:
         description: The plugin version.
