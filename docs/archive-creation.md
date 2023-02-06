@@ -1,4 +1,4 @@
-# Build and push assets
+# Create archive
 
 This action can be used to create plugin/theme archives in a controlled and isolated environment via GitHub Actions.
 
