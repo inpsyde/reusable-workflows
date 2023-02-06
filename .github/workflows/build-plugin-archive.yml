@@ -33,7 +33,7 @@ on:
         required: false
         type: string
       EXTRA_PHP_FILE:
-        description: Run a custom php script before creating the release archive.
+        description: Path to a custom php script to run before creating the release archive.
         default: ''
         required: false
         type: string
