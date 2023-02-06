@@ -13,12 +13,12 @@ on:
         type: string
       COMPOSER_ARGS_DEV:
         description: Set of arguments passed to Composer for build setup.
-        default: "--prefer-dist"
+        default: '--prefer-dist'
         required: false
         type: string
       COMPOSER_ARGS:
         description: Set of arguments passed to Composer for production setup.
-        default: "--no-dev --no-scripts --prefer-dist --optimize-autoloader"
+        default: '--no-dev --no-scripts --prefer-dist --optimize-autoloader'
         required: false
         type: string
       NPM_REGISTRY_DOMAIN:
@@ -33,12 +33,12 @@ on:
         type: string
       EXTRA_PHP_FILE:
         description: Run a custom php script before creating the release archive.
-        default: ""
+        default: ''
         required: false
         type: string
       EXTRA_PHP:
         description: Run custom php code before creating the release archive.
-        default: ""
+        default: ''
         required: false
         type: string
     secrets:
@@ -54,7 +54,7 @@ jobs:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     env:
-      COMPOSER_AUTH: "${{ secrets.COMPOSER_AUTH_JSON }}"
+      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
     outputs:
       artifact: ${{ steps.set-artifact-name.outputs.artifact }}
     steps:
@@ -134,18 +134,18 @@ jobs:
           fi
 
       - name: Set up node
-        if: steps.check-for-package.outputs.has_package == "true"
+        if: steps.check-for-package.outputs.has_package == 'true'
         uses: actions/setup-node@v3
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
 
       - name: Cache npm dependencies
-        if: steps.check-for-package.outputs.has_package == "true"
+        if: steps.check-for-package.outputs.has_package == 'true'
         uses: actions/cache@v3
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles("**/package-lock.json") }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
