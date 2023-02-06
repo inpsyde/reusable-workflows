@@ -45,6 +45,9 @@ on:
       COMPOSER_AUTH_JSON:
         description: Authentication for privately hosted packages and repositories as a JSON formatted object.
         required: false
+      NPM_REGISTRY_TOKEN:
+        description: Authentication for the private npm registry.
+        required: false
       ENV_VARS:
         description: Additional environment variables as a JSON formatted object.
         required: false
@@ -55,6 +58,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
     outputs:
       artifact: ${{ steps.set-artifact-name.outputs.artifact }}
     steps:
