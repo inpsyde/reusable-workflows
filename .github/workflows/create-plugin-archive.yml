@@ -94,6 +94,25 @@ jobs:
         with:
           composer-options: ${{ inputs.COMPOSER_ARGS_DEV }}
 
+      - name: Check optional composer build tools
+        id: composer-tools
+        run: |
+          hasDep(){
+            composer show -i -N -D --strict "${1}" 2>&1
+            local EXIT=$?
+            echo "$EXIT"
+          }
+          echo "assets-compiler=$( hasDep inpsyde/composer-assets-compiler )" >> $GITHUB_OUTPUT
+          echo "translation-downloader=$( hasDep inpsyde/wp-translation-downloader )" >> $GITHUB_OUTPUT
+
+      - name: Run Composer Assets Compiler
+        if: steps.composer-tools.outputs.assets-compiler == "0"
+        run: composer compile-assets
+
+      - name: Run WP Translation Downloader
+        if: steps.composer-tools.outputs.translation-downloader == "0"
+        run: composer wp-translation-downloader:download
+
       - name: Install Composer dependencies without dev dependencies
         # ⬑ Now we want to get rid of dev dependencies and most probably skip composer scripts
         uses: ramsey/composer-install@v2
