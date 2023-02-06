@@ -98,7 +98,7 @@ jobs:
         id: composer-tools
         run: |
           hasDep(){
-            composer show -i -N -D --strict "${1}" 2>&1
+            composer show -i -N -D --strict "${1}" >/dev/null 2>&1
             local EXIT=$?
             echo "$EXIT"
           }
