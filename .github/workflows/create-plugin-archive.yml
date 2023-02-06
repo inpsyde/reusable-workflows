@@ -106,11 +106,11 @@ jobs:
           echo "translation-downloader=$( hasDep inpsyde/wp-translation-downloader )" >> $GITHUB_OUTPUT
 
       - name: Run Composer Assets Compiler
-        if: steps.composer-tools.outputs.assets-compiler == "0"
+        if: steps.composer-tools.outputs.assets-compiler == '0'
         run: composer compile-assets
 
       - name: Run WP Translation Downloader
-        if: steps.composer-tools.outputs.translation-downloader == "0"
+        if: steps.composer-tools.outputs.translation-downloader == '0'
         run: composer wp-translation-downloader:download
 
       - name: Install Composer dependencies without dev dependencies
