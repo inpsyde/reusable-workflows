@@ -10,12 +10,12 @@ on:
         type: string
       NODE_VERSION:
         description: Node version with which the static code analysis is to be executed.
-        default: "16"
+        default: 16
         required: false
         type: string
       STYLELINT_ARGS:
         description: Set of arguments passed to Stylelint.
-        default: "./resources/**/*.scss"
+        default: './resources/**/*.scss'
         required: false
         type: string
     secrets:
@@ -46,7 +46,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles("**/package-lock.json") }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 

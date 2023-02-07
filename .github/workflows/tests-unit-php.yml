@@ -10,12 +10,12 @@ on:
         type: string
       COMPOSER_ARGS:
         description: Set of arguments passed to Composer.
-        default: "--prefer-dist"
+        default: '--prefer-dist'
         required: false
         type: string
       PHPUNIT_ARGS:
         description: Set of arguments passed to PHPUnit.
-        default: "--coverage-text"
+        default: '--coverage-text'
         required: false
         type: string
     secrets:
@@ -34,7 +34,7 @@ jobs:
       matrix:
         php-version: ${{ fromJson(inputs.PHP_MATRIX) }}
     env:
-      COMPOSER_AUTH: "${{ secrets.COMPOSER_AUTH_JSON }}"
+      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
