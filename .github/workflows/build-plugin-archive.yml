@@ -94,7 +94,7 @@ jobs:
         uses: shivammathur/setup-php@v2
 
       - name: Install Composer dependencies with dev dependencies
-        # ⬑ The idea is to let composer plugins like assets-compiler/translation downloader execute
+        # ⬑ The idea is to ensure we have non-production tools like composer-assets-compiler and translation downloader available
         uses: ramsey/composer-install@v2
         with:
           composer-options: ${{ inputs.COMPOSER_ARGS_DEV }}
