@@ -8,7 +8,9 @@ To achieve that, the reusable workflow:
 2. executes `inpsyde/composer-assets-compiler` if required & configured by the package
 3. executes `inpsyde/wp-translation-downloader` if required & configured by the package
 4. re-installs composer dependencies without de-dependencies
-5. runs `wp dist-archive` to create the final archive (with builtin support for a `.distignore` file)
+5. Sets current commit hash and plugin version in the plugin's main file
+6. runs `wp dist-archive` to create the final archive (with builtin support for a `.distignore` file)
+7. Uploads it as an artifact for download or further processing
 
 
 ## Simple usage example:
@@ -50,6 +52,12 @@ jobs:
 | `EXTRA_PHP_FILE`      | `""`                                                          | Path to a custom php script to run before creating the release archive. |
 | `EXTRA_PHP`           | `""`                                                          | Run custom php code before creating the release archive.                |
 
+#### A note on `PLUGIN_VERSION`
+
+The workflow will accept any arbitrary string and will use it without validation or sanitization. 
+Adding this would mean reduced flexibility at increased complexity. Adding some sort of standardization/validation
+is encouraged, but should take place in the controlling workflow, where the conventions and requirements of the
+project/team/client are known.
 
 ## Secrets
 
