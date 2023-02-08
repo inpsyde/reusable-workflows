@@ -71,9 +71,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Create plugin basename from specified main file
-        id: basename
-        run: echo "basename=$(basename ${{ inputs.PLUGIN_MAIN_FILE }} .php)" >> $GITHUB_OUTPUT
+      - name: Fetch plugin name from plugin header
+        id: plugin-data
+        run: |
+          PLUGIN_NAME=$(sed -ne 's/\([[:space:]\*]*Plugin Name:[[:space:]]*\)\(.*\)/\2/p' ${{ inputs.PLUGIN_MAIN_FILE }} | xargs )
+          echo "plugin-name=$PLUGIN_NAME" >> $GITHUB_OUTPUT
 
       - name: Set up custom environment variables
         env:
@@ -211,7 +213,7 @@ jobs:
         run: unzip archive.zip -d dist
 
       - id: set-artifact-name
-        run: echo "artifact=${{ steps.basename.outputs.basename }}-${{ inputs.PLUGIN_VERSION }}" >> $GITHUB_OUTPUT
+        run: echo "artifact=${{ steps.plugin-data.outputs.plugin-name }}-${{ inputs.PLUGIN_VERSION }}" >> $GITHUB_OUTPUT
 
       - uses: actions/upload-artifact@v2
         with:
