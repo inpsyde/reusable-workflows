@@ -12,6 +12,11 @@ on:
         description: The plugin version.
         required: true
         type: string
+      PLUGIN_BASENAME:
+        description: The base name of the resulting zip archive. Falls back to the repository name
+        default: ''
+        required: false
+        type: string
       COMPOSER_ARGS_DEV:
         description: Set of arguments passed to Composer for build setup.
         default: '--prefer-dist'
@@ -71,11 +76,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Fetch plugin name from plugin header
+      - name: Setup package base name
         id: plugin-data
         run: |
-          PLUGIN_NAME=$(sed -ne 's/\([[:space:]\*]*Plugin Name:[[:space:]]*\)\(.*\)/\2/p' ${{ inputs.PLUGIN_MAIN_FILE }} | xargs )
-          echo "plugin-name=$PLUGIN_NAME" >> $GITHUB_OUTPUT
+          PLUGIN_BASENAME='${{ inputs.PLUGIN_BASENAME }}'
+          if [ ! -z "$PLUGIN_BASENAME" ]; then
+              echo "plugin-name=$PLUGIN_BASENAME" >> $GITHUB_OUTPUT
+          else
+              echo "plugin-name=${{ github.event.repository.name }}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Set up custom environment variables
         env:
