@@ -1,6 +1,6 @@
-# Create archive
+# Create plugin archive
 
-This action can be used to create plugin/theme archives in a controlled and isolated environment via GitHub Actions.
+This action can be used to create plugin archives in a controlled and isolated environment via GitHub Actions.
 
 To achieve that, the reusable workflow:
 
