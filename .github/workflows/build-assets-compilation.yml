@@ -108,7 +108,7 @@ jobs:
         run: |
           echo "TAG_NAME=$(echo ${GITHUB_REF#refs/*/})" >> $GITHUB_ENV
           echo "BUILD_ENV=production" >> $GITHUB_ENV
-          echo "::warning::The `ENCORE_ENV` variable is deprecated and will be removed soon. Please upgrade to using `BUILD_ENV`."
+          echo "::notice::The `ENCORE_ENV` variable is deprecated and will be removed soon. If you use it, please change it to `BUILD_ENV`."
           echo "ENCORE_ENV=production" >> $GITHUB_ENV
 
       - name: Compile assets
