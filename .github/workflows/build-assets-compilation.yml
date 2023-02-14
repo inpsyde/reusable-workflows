@@ -97,17 +97,19 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Extract package hash into env [DEV]
+      - name: Set environment variables [DEV]
         if: ${{ !contains(github.ref, 'refs/tags/') }}
-        run: echo "ASSETS_HASH=$(composer assets-hash)" >> $GITHUB_ENV
+        run: |
+          echo "ASSETS_HASH=$(composer assets-hash)" >> $GITHUB_ENV
+          echo "BUILD_ENV=dev" >> $GITHUB_ENV
 
-      - name: Extract tag name into env [PROD]
+      - name: Set environment variables [PROD]
         if: ${{ contains(github.ref, 'refs/tags/') }}
-        run: echo "TAG_NAME=$(echo ${GITHUB_REF#refs/*/})" >> $GITHUB_ENV
-
-      - name: Set ENCORE_ENV to production [PROD]
-        if: ${{ contains(github.ref, 'refs/tags/') }}
-        run: echo "ENCORE_ENV=production" >> $GITHUB_ENV
+        run: |
+          echo "TAG_NAME=$(echo ${GITHUB_REF#refs/*/})" >> $GITHUB_ENV
+          echo "BUILD_ENV=production" >> $GITHUB_ENV
+          echo "::notice::The `ENCORE_ENV` variable is deprecated and will be removed soon. If you use it, please change it to `BUILD_ENV`."
+          echo "ENCORE_ENV=production" >> $GITHUB_ENV
 
       - name: Compile assets
         run: composer compile-assets ${{ inputs.COMPILE_ASSETS_ARGS }}
