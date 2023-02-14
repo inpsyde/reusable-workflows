@@ -97,7 +97,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Set env variables [DEV]
+      - name: Set environment variables [DEV]
         if: ${{ !contains(github.ref, 'refs/tags/') }}
         run: |
           echo "ASSETS_HASH=$(composer assets-hash)" >> $GITHUB_ENV
