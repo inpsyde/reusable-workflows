@@ -103,7 +103,7 @@ jobs:
           echo "ASSETS_HASH=$(composer assets-hash)" >> $GITHUB_ENV
           echo "BUILD_ENV=dev" >> $GITHUB_ENV
 
-      - name: Set env variables [PROD]
+      - name: Set environment variables [PROD]
         if: ${{ contains(github.ref, 'refs/tags/') }}
         run: |
           echo "TAG_NAME=$(echo ${GITHUB_REF#refs/*/})" >> $GITHUB_ENV
