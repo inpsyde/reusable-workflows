@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       WORKING_DIRECTORY:
-        description: Set a different working directory for the job.
+        description: The Working Directory.
         default: './'
         required: false
         type: string
