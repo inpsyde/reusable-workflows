@@ -3,6 +3,11 @@ name: Build and push assets
 on:
   workflow_call:
     inputs:
+      WORKING_DIRECTORY:
+        description: Working directory path.
+        default: './'
+        required: false
+        type: string
       NODE_VERSION:
         description: Node version with which the assets will be compiled.
         default: 16
@@ -54,6 +59,9 @@ on:
 
 jobs:
   compile-assets:
+    defaults:
+      run:
+        working-directory: ${{ inputs.WORKING_DIRECTORY }}
     timeout-minutes: 10
     runs-on: ubuntu-latest
     env:

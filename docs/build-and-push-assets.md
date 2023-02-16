@@ -74,6 +74,7 @@ This is not the simplest possible example, but it showcases all the recommendati
 
 | Name                  | Default                         | Description                                                                            |
 |-----------------------|---------------------------------|----------------------------------------------------------------------------------------|
+| `WORKING_DIRECTORY`   | `'./'`                          | Working directory path                                                                 |
 | `NODE_VERSION`        | `16`                            | Node version with which the assets will be compiled                                    |
 | `NPM_REGISTRY_DOMAIN` | `"https://npm.pkg.github.com/"` | Domain of the private npm registry                                                     |
 | `PACKAGE_MANAGER`     | `"auto"` <sup>**^1**</sup>      | Package manager. Supported are "yarn" and "npm". Required if no lock file is available |
