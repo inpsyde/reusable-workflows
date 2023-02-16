@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       WORKING_DIRECTORY:
-        description: The Working Directory.
+        description: Working directory path.
         default: './'
         required: false
         type: string
