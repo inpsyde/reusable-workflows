@@ -211,5 +211,5 @@ The workflow supports a private SSH key passed via the `GITHUB_USER_SSH_KEY` sec
 By passing a key associated with the GitHub user defined in the required `GITHUB_USER_NAME`, the
 workflow can install these packages.
 
-Please note that in such cases it is a good practice not to use a "personal" GitHub user, but an _
-ad-hoc_ "bot" user with an _ad-hoc_ private SSH key used only for the scope.
+Please note that in such cases it is a good practice not to use a "personal" GitHub user, but an 
+_ad-hoc_ "bot" user with an _ad-hoc_ private SSH key used only for the scope.
