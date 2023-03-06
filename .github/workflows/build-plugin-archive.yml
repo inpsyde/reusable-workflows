@@ -63,6 +63,10 @@ jobs:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     env:
+      # Disables symlinking of local path repositories.
+      # During development, symlinking is preferrable.
+      # In resulting builds, you will likely want to ship the actual install location and remove the source directory.
+      COMPOSER_MIRROR_PATH_REPOS: 1
       COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
       NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
     outputs:
