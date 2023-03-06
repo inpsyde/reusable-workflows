@@ -43,20 +43,13 @@ jobs:
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
+          cache: ${{ inputs.PACKAGE_MANAGER }}
 
       - name: Set up problem matchers for Stylelint
         uses: xt0rted/stylelint-problem-matcher@v1
 
-      - name: Cache dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.deps_cache
-          key: ${{ runner.os }}-node-${{ inputs.NODE_VERSION }}-${{ inputs.PACKAGE_MANAGER }}-${{ hashFiles('**/package-lock.json', '**/npm-shrinkwrap.json', '**/yarn.lock') }}
-
       - name: Install dependencies
-        run: |
-          ${{ ((inputs.PACKAGE_MANAGER == 'yarn') && 'yarn config set cache-folder ~/.deps_cache') || 'npm config set cache ~/.deps_cache --global' }}
-          ${{ ((inputs.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm install' }}
+        run: ${{ ((inputs.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm install' }}
 
       - name: Run Stylelint
         run: ./node_modules/.bin/stylelint ${{ inputs.STYLELINT_ARGS }}

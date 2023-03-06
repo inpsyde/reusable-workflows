@@ -43,17 +43,10 @@ jobs:
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
-
-      - name: Cache dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.deps_cache
-          key: ${{ runner.os }}-node-${{ inputs.NODE_VERSION }}-${{ inputs.PACKAGE_MANAGER }}-${{ hashFiles('**/package-lock.json', '**/npm-shrinkwrap.json', '**/yarn.lock') }}
+          cache: ${{ inputs.PACKAGE_MANAGER }}
 
       - name: Install dependencies
-        run: |
-          ${{ ((inputs.PACKAGE_MANAGER == 'yarn') && 'yarn config set cache-folder ~/.deps_cache') || 'npm config set cache ~/.deps_cache --global' }}
-          ${{ ((inputs.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm install' }}
+        run: ${{ ((inputs.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm install' }}
 
       - name: Run Jest
         run: ./node_modules/.bin/jest ${{ inputs.JEST_ARGS }}

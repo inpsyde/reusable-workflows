@@ -73,12 +73,6 @@ jobs:
           # when current push is a tag, we check out the tag's SHA, we'll create a new branch later
           ref: ${{ ((github.ref_type == 'tag') && github.sha) || github.ref }}
 
-      - name: Set up node
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ inputs.NODE_VERSION }}
-          registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
-
       - name: Set production environment variables
         if: ${{ contains(github.ref, 'refs/tags/') }}
         run: |
@@ -124,17 +118,16 @@ jobs:
         if: ${{ (env.LOCK_FILE == 'npm') || (inputs.PACKAGE_MANAGER == 'npm') }}
         run: echo "PACKAGE_MANAGER=npm" >> $GITHUB_ENV
 
-      - name: Cache dependencies
-        uses: actions/cache@v3
+      - name: Set up node
+        uses: actions/setup-node@v3
         with:
-          path: ~/.deps_cache
-          key: ${{ runner.os }}-node-${{ inputs.NODE_VERSION }}-${{ env.PACKAGE_MANAGER }}-${{ hashFiles('**/package-lock.json', '**/npm-shrinkwrap.json', '**/yarn.lock') }}
+          node-version: ${{ inputs.NODE_VERSION }}
+          registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
+          cache: ${{ env.PACKAGE_MANAGER }}
 
       - name: Install dependencies
         if: ${{ ! startsWith( 'no', inputs.DEPS_INSTALL ) }}
-        run: |
-          ${{ ((env.PACKAGE_MANAGER == 'npm') && 'npm config set cache ~/.deps_cache --global') || 'yarn config set cache-folder ~/.deps_cache' }}
-          ${{ ((env.PACKAGE_MANAGER == 'npm') && 'npm install') || 'yarn' }}
+        run: ${{ ((env.PACKAGE_MANAGER == 'npm') && 'npm install') || 'yarn' }}
 
       - name: Compile assets
         run: ${{ ((env.PACKAGE_MANAGER == 'npm') && 'npm run') || 'yarn' }} ${{ env.COMPILE_SCRIPT }}
