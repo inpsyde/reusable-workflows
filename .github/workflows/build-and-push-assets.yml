@@ -3,14 +3,19 @@ name: Build and push assets
 on:
   workflow_call:
     inputs:
-      NPM_REGISTRY_DOMAIN:
-        description: Domain of the private npm registry.
-        default: https://npm.pkg.github.com/
+      WORKING_DIRECTORY:
+        description: Working directory path.
+        default: './'
         required: false
         type: string
       NODE_VERSION:
         description: Node version with which the assets will be compiled.
         default: 16
+        required: false
+        type: string
+      NPM_REGISTRY_DOMAIN:
+        description: Domain of the private npm registry.
+        default: https://npm.pkg.github.com/
         required: false
         type: string
       PACKAGE_MANAGER:
@@ -19,9 +24,9 @@ on:
         default: 'auto'
         required: false
       DEPS_INSTALL:
-        description: Install dependencies before compiling?
-        type: string
-        default: 'yes'
+        description: Whether or not to install dependencies before compiling.
+        type: boolean
+        default: true
         required: false
       COMPILE_SCRIPT_PROD:
         description: Script added to "npm run" or "yarn" to build production assets.
@@ -43,10 +48,10 @@ on:
         description: Authentication for the private npm registry.
         required: false
       GITHUB_USER_EMAIL:
-        description: Email address for Git configuration.
+        description: Email address for the GitHub user configuration.
         required: true
       GITHUB_USER_NAME:
-        description: Username for Git configuration.
+        description: Username for the GitHub user configuration.
         required: true
       GITHUB_USER_SSH_KEY:
         description: Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`.
@@ -54,6 +59,9 @@ on:
 
 jobs:
   compile-assets:
+    defaults:
+      run:
+        working-directory: ${{ inputs.WORKING_DIRECTORY }}
     timeout-minutes: 10
     runs-on: ubuntu-latest
     env:
@@ -126,7 +134,7 @@ jobs:
           cache: ${{ env.PACKAGE_MANAGER }}
 
       - name: Install dependencies
-        if: ${{ ! startsWith( 'no', inputs.DEPS_INSTALL ) }}
+        if: ${{ inputs.DEPS_INSTALL }}
         run: ${{ ((env.PACKAGE_MANAGER == 'npm') && 'npm install') || 'yarn' }}
 
       - name: Compile assets
