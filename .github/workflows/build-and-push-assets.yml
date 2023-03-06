@@ -135,10 +135,10 @@ jobs:
 
       - name: Install dependencies
         if: ${{ inputs.DEPS_INSTALL }}
-        run: ${{ ((env.PACKAGE_MANAGER == 'npm') && 'npm install') || 'yarn' }}
+        run: ${{ ((env.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm install' }}
 
       - name: Compile assets
-        run: ${{ ((env.PACKAGE_MANAGER == 'npm') && 'npm run') || 'yarn' }} ${{ env.COMPILE_SCRIPT }}
+        run: ${{ ((env.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm run' }} ${{ env.COMPILE_SCRIPT }}
 
       - name: Git add, commit, push
         run: |

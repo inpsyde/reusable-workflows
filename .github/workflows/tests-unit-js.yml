@@ -19,8 +19,8 @@ on:
         required: false
         type: string
       PACKAGE_MANAGER:
-        description: Package manager with which the dependencies should be installed (`npm` or `yarn`).
-        default: 'npm'
+        description: Package manager with which the dependencies should be installed (`npm` or `yarn` (default)).
+        default: 'yarn'
         required: false
         type: string
     secrets:
