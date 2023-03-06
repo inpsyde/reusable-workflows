@@ -20,12 +20,12 @@ jobs:
 
 #### Inputs
 
-| Name                  | Default                         | Description                                                                       |
-|-----------------------|---------------------------------|-----------------------------------------------------------------------------------|
-| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                |
-| `NODE_VERSION`        | 16                              | Node version with which the assets will be compiled                               |
-| `STYLELINT_ARGS`      | `'./resources/**/*.scss'`       | Set of arguments passed to Stylelint                                              |
-| `PACKAGE_MANAGER`     | `npm`                           | Package manager with which the dependencies should be installed (`npm` or `yarn`) |
+| Name                  | Default                       | Description                                                                       |
+|-----------------------|-------------------------------|-----------------------------------------------------------------------------------|
+| `NPM_REGISTRY_DOMAIN` | `https://npm.pkg.github.com/` | Domain of the private npm registry                                                |
+| `NODE_VERSION`        | 16                            | Node version with which the assets will be compiled                               |
+| `STYLELINT_ARGS`      | `'./resources/**/*.scss'`     | Set of arguments passed to Stylelint                                              |
+| `PACKAGE_MANAGER`     | `yarn`                        | Package manager with which the dependencies should be installed (`npm` or `yarn`) |
 
 #### Secrets
 
