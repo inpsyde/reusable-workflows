@@ -3,9 +3,9 @@ name: Build and push assets
 on:
   workflow_call:
     inputs:
-      WORKING_DIRECTORY:
-        description: Working directory path.
-        default: './'
+      NPM_REGISTRY_DOMAIN:
+        description: Domain of the private npm registry.
+        default: https://npm.pkg.github.com/
         required: false
         type: string
       NODE_VERSION:
@@ -13,9 +13,9 @@ on:
         default: 16
         required: false
         type: string
-      NPM_REGISTRY_DOMAIN:
-        description: Domain of the private npm registry.
-        default: https://npm.pkg.github.com/
+      WORKING_DIRECTORY:
+        description: Working directory path.
+        default: './'
         required: false
         type: string
       PACKAGE_MANAGER:
