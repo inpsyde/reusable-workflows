@@ -228,7 +228,7 @@ jobs:
       - id: set-artifact-name
         run: echo "artifact=${{ steps.plugin-data.outputs.plugin-name }}-${{ inputs.PLUGIN_VERSION }}" >> $GITHUB_OUTPUT
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.set-artifact-name.outputs.artifact }}
           path: dist/*
