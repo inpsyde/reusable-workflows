@@ -33,8 +33,13 @@ on:
         required: false
         type: string
       NODE_VERSION:
-        description: Node version with which the unit tests are to be executed.
+        description: Node version to use for asset compilation.
         default: 16
+        required: false
+        type: string
+      PHP_VERSION:
+        description: PHP version to use during packaging.
+        default: 8.2
         required: false
         type: string
       EXTRA_PHP_FILE:
@@ -107,6 +112,8 @@ jobs:
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
 
       - name: Install Composer dependencies with dev dependencies
         # ⬑ The idea is to ensure we have non-production tools like composer-assets-compiler and translation downloader available
