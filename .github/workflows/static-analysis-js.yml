@@ -18,6 +18,11 @@ on:
         default: '-o eslint_report.json -f json --ext .js,.jsx,.ts,.tsx ./resources'
         required: false
         type: string
+      PACKAGE_MANAGER:
+        description: Package manager with which the dependencies should be installed (`npm` or `yarn`).
+        default: 'yarn'
+        required: false
+        type: string
     secrets:
       NPM_REGISTRY_TOKEN:
         description: Authentication for the private npm registry.
@@ -38,17 +43,10 @@ jobs:
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
+          cache: ${{ inputs.PACKAGE_MANAGER }}
 
-      - name: Cache npm dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install npm dependencies
-        run: npm install
+      - name: Install dependencies
+        run: ${{ ((inputs.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm install' }}
 
       - name: Run ESLint
         run: ./node_modules/.bin/eslint ${{ inputs.ESLINT_ARGS }}

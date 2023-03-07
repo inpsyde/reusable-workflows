@@ -18,6 +18,11 @@ on:
         default: './resources/**/*.scss'
         required: false
         type: string
+      PACKAGE_MANAGER:
+        description: Package manager with which the dependencies should be installed (`npm` or `yarn`).
+        default: 'yarn'
+        required: false
+        type: string
     secrets:
       NPM_REGISTRY_TOKEN:
         description: Authentication for the private npm registry.
@@ -38,20 +43,13 @@ jobs:
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
+          cache: ${{ inputs.PACKAGE_MANAGER }}
 
       - name: Set up problem matchers for Stylelint
         uses: xt0rted/stylelint-problem-matcher@v1
 
-      - name: Cache npm dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install npm dependencies
-        run: npm install
+      - name: Install dependencies
+        run: ${{ ((inputs.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm install' }}
 
       - name: Run Stylelint
         run: ./node_modules/.bin/stylelint ${{ inputs.STYLELINT_ARGS }}

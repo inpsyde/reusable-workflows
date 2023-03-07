@@ -3,9 +3,9 @@ name: Build and push assets
 on:
   workflow_call:
     inputs:
-      WORKING_DIRECTORY:
-        description: Working directory path.
-        default: './'
+      NPM_REGISTRY_DOMAIN:
+        description: Domain of the private npm registry.
+        default: https://npm.pkg.github.com/
         required: false
         type: string
       NODE_VERSION:
@@ -13,15 +13,15 @@ on:
         default: 16
         required: false
         type: string
-      NPM_REGISTRY_DOMAIN:
-        description: Domain of the private npm registry.
-        default: "https://npm.pkg.github.com/"
+      WORKING_DIRECTORY:
+        description: Working directory path.
+        default: './'
         required: false
         type: string
       PACKAGE_MANAGER:
-        description: Package manager. Supported are "yarn" and "npm".
+        description: Package manager with which the dependencies should be installed (`npm` or `yarn`).
         type: string
-        default: "auto"
+        default: 'auto'
         required: false
       DEPS_INSTALL:
         description: Whether or not to install dependencies before compiling.
@@ -31,16 +31,16 @@ on:
       COMPILE_SCRIPT_PROD:
         description: Script added to "npm run" or "yarn" to build production assets.
         type: string
-        default: "encore prod"
+        default: 'encore prod'
         required: false
       COMPILE_SCRIPT_DEV:
         description: Script added to "npm run" or "yarn" to build development assets.
         type: string
-        default: "encore dev"
+        default: 'encore dev'
         required: false
       ASSETS_TARGET_PATHS:
         description: Target path(s) for compiled assets.
-        default: "./assets"
+        default: './assets'
         required: false
         type: string
     secrets:
@@ -71,8 +71,8 @@ jobs:
       TAG_NAME: ''                                     # we'll override if the push is for tag
       TAG_BRANCH_NAME: ''                              # we'll override if the push is for tag
       LOCK_FILE: ''                                    # we'll override after checking files
-      PACKAGE_MANAGER: "yarn"                          # we'll override based on env/inputs
-      NO_CHANGES: ""                                   # we'll override if no changes to commit
+      PACKAGE_MANAGER: 'yarn'                          # we'll override based on env/inputs
+      NO_CHANGES: ''                                   # we'll override if no changes to commit
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -80,12 +80,6 @@ jobs:
           fetch-depth: 0
           # when current push is a tag, we check out the tag's SHA, we'll create a new branch later
           ref: ${{ ((github.ref_type == 'tag') && github.sha) || github.ref }}
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ inputs.NODE_VERSION }}
-          registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
 
       - name: Set production environment variables
         if: ${{ contains(github.ref, 'refs/tags/') }}
@@ -132,20 +126,19 @@ jobs:
         if: ${{ (env.LOCK_FILE == 'npm') || (inputs.PACKAGE_MANAGER == 'npm') }}
         run: echo "PACKAGE_MANAGER=npm" >> $GITHUB_ENV
 
-      - name: Cache npm/Yarn dependencies
-        uses: actions/cache@v3
+      - name: Set up node
+        uses: actions/setup-node@v3
         with:
-          path: ~/.deps_cache
-          key: ${{ runner.os }}-node-${{ inputs.NODE_VERSION }}-${{ env.PACKAGE_MANAGER }}-${{ hashFiles('**/package-lock.json', '**/npm-shrinkwrap.json', '**/yarn.lock') }}
+          node-version: ${{ inputs.NODE_VERSION }}
+          registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
+          cache: ${{ env.PACKAGE_MANAGER }}
 
       - name: Install dependencies
         if: ${{ inputs.DEPS_INSTALL }}
-        run: |
-          ${{ ((env.PACKAGE_MANAGER == 'npm') && 'npm config set cache ~/.deps_cache --global') || 'yarn config set cache-folder ~/.deps_cache' }}
-          ${{ ((env.PACKAGE_MANAGER == 'npm') && 'npm install') || 'yarn' }}
+        run: ${{ ((env.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm install' }}
 
       - name: Compile assets
-        run: ${{ ((env.PACKAGE_MANAGER == 'npm') && 'npm run') || 'yarn' }} ${{ env.COMPILE_SCRIPT }}
+        run: ${{ ((env.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm run' }} ${{ env.COMPILE_SCRIPT }}
 
       - name: Git add, commit, push
         run: |
