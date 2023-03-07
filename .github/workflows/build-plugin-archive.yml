@@ -113,7 +113,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: ${{ inputs.PHP_VERSION }}
 
       - name: Install Composer dependencies with dev dependencies
         # ⬑ The idea is to ensure we have non-production tools like composer-assets-compiler and translation downloader available
