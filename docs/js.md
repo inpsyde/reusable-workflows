@@ -26,6 +26,7 @@ jobs:
 | `NODE_VERSION`        | 16                                                                    | Node version with which the assets will be compiled                               |
 | `ESLINT_ARGS`         | `'-o eslint_report.json -f json --ext .js,.jsx,.ts,.tsx ./resources'` | Set of arguments passed to ESLint                                                 |
 | `PACKAGE_MANAGER`     | `yarn`                                                                | Package manager with which the dependencies should be installed (`npm` or `yarn`) |
+| `NODE_OPTIONS`        | `''`                                                                  | Space-separated list of command-line Node options                                 |
 
 #### Secrets
 
