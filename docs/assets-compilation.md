@@ -27,6 +27,7 @@ jobs:
 | `NODE_VERSION`        | 16                            | Node version with which the assets will be compiled             |
 | `COMPOSER_ARGS`       | `'--prefer-dist'`             | Set of arguments passed to Composer                             |
 | `COMPILE_ASSETS_ARGS` | `'-v --env=root'`             | Set of arguments passed to Composer Asset Compiler              |
+| `NODE_OPTIONS`        | `''`                          | Space-separated list of command-line Node options               |
 
 #### Secrets
 

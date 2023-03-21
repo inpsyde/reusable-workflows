@@ -44,7 +44,7 @@ on:
         required: false
         type: string
       NODE_OPTIONS:
-        description: Options for NodeJS Environment.
+        description: Space-separated list of command-line Node options.
         type: string
         default: ''
         required: false

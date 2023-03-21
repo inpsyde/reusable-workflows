@@ -82,7 +82,7 @@ This is not the simplest possible example, but it showcases all the recommendati
 | `COMPILE_SCRIPT_PROD` | `'encore prod'`               | Script added to `npm run` or `yarn` to build production assets                         |
 | `COMPILE_SCRIPT_DEV`  | `'encore dev'`                | Script added to `npm run` or `yarn` to build development assets                        |
 | `ASSETS_TARGET_PATHS` | `'./assets'`                  | Target path(s) for compiled assets                                                     |
-| `NODE_OPTIONS`        | `''`                          | Options for NodeJS Environment                                                         |
+| `NODE_OPTIONS`        | `''`                          | Space-separated list of command-line Node options                                      |
 
 <sup>**^1**</sup> `PACKAGE_MANAGER` defaults to "auto" because it tries to determine the package
 manager by looking at lock file (e.g. presence of `yarn.lock` means _Yarn_, `npm-shrinkwrap.json`
