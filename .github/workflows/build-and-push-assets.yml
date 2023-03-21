@@ -43,6 +43,11 @@ on:
         default: './assets'
         required: false
         type: string
+      NODE_OPTIONS:
+        description: Options for NodeJS Environment.
+        type: string
+        default: ''
+        required: false
     secrets:
       NPM_REGISTRY_TOKEN:
         description: Authentication for the private npm registry.
@@ -65,7 +70,7 @@ jobs:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     env:
-      NODE_OPTIONS: "--max_old_space_size=8000"
+      NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
       NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
       COMPILE_SCRIPT: ${{ inputs.COMPILE_SCRIPT_DEV }} # we'll override if the push is for tag
