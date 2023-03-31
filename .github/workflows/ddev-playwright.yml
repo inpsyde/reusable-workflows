@@ -1,0 +1,112 @@
+name: Run Playwright tests via DDEV
+
+on:
+  workflow_call:
+    inputs:
+      PHP_VERSION:
+        description: PHP version which will override the version set in the DDEV config.
+        required: false
+        type: string
+      NODE_VERSION:
+        description: Node.js version which will override the version set in the DDEV config.
+        required: false
+        type: string
+      DDEV_ORCHESTRATE_CMD:
+        description: The command for setting up the DDEV website, such as 'ddev orchestrate' from inpsyde/ddev-wordpress-plugin-template.
+        required: false
+        type: string
+      PLAYWRIGHT_INSTALL_CMD:
+        description: The command for installing Playwright and its deps, such as 'ddev pw-install' from inpsyde/ddev-wordpress-plugin-template.
+        required: true
+        type: string
+      PLAYWRIGHT_RUN_CMD:
+        description: The command for running Playwright tests, such as 'ddev pw test' from inpsyde/ddev-wordpress-plugin-template.
+        required: true
+        type: string
+    secrets:
+      COMPOSER_AUTH_JSON:
+        description: Authentication for privately hosted packages and repositories as a JSON formatted object.
+        required: false
+      NPM_REGISTRY_TOKEN:
+        description: Authentication for the private npm registry.
+        required: false
+      ENV_VARS:
+        description: Additional environment variables as a JSON formatted object.
+        required: false
+      DDEV_ENV_VARS:
+        description: Additional environment variables for DDEV as a JSON formatted object.
+        required: false
+
+jobs:
+  ddev-playwright:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    env:
+      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+    outputs:
+      artifact: ${{ steps.set-artifact-name.outputs.artifact }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up custom environment variables
+        env:
+          ENV_VARS: ${{ secrets.ENV_VARS }}
+        if: env.ENV_VARS
+        uses: actions/github-script@v6
+        with:
+          script: |
+            JSON
+              .parse(process.env.ENV_VARS)
+              .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
+
+      - uses: jonaseberle/github-action-setup-ddev@v1
+        with:
+          autostart: false
+
+      - name: Set up DDEV environment variables
+        env:
+          ENV_VARS: ${{ secrets.DDEV_ENV_VARS }}
+        if: env.ENV_VARS
+        uses: actions/github-script@v6
+        with:
+          script: |
+            JSON
+              .parse(process.env.ENV_VARS)
+              .forEach(envVar => {
+                core.setSecret(envVar.name);
+                core.setSecret(envVar.value);
+                exec.exec('ddev config --web-environment-add="' + envVar.name + '=' + envVar.value + '"');
+              });
+
+      - name: Add COMPOSER_AUTH into DDEV
+        env:
+          COMPOSER_AUTH_JSON: '${{ secrets.COMPOSER_AUTH_JSON }}'
+        run: echo '${{ env.COMPOSER_AUTH_JSON }}' > $GITHUB_WORKSPACE/auth.json
+        if: env.COMPOSER_AUTH_JSON
+      - name: Add NODE_AUTH_TOKEN into DDEV
+        env:
+          NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+        run: ddev config --web-environment-add="NODE_AUTH_TOKEN=${{ env.NPM_REGISTRY_TOKEN }}"
+        if: env.NPM_REGISTRY_TOKEN
+
+      - name: Configure DDEV PHP version
+        run: ddev config --php-version ${{ inputs.PHP_VERSION }}
+        if: inputs.PHP_VERSION
+      - name: Configure DDEV Node.js version
+        run: ddev config --nodejs-version ${{ inputs.NODE_VERSION }}
+        if: inputs.NODE_VERSION
+
+      - name: Start DDEV
+        run: ddev start
+
+      - name: Orchestrate DDEV
+        run: ${{ inputs.DDEV_ORCHESTRATE_CMD }}
+        if: inputs.DDEV_ORCHESTRATE_CMD
+
+      - name: Install Playwright
+        run: ${{ inputs.PLAYWRIGHT_INSTALL_CMD }}
+
+      - name: Run Playwright
+        run: ${{ inputs.PLAYWRIGHT_RUN_CMD }}
