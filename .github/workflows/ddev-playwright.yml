@@ -1,4 +1,4 @@
-name: Run Playwright tests via DDEV
+name: Run Playwright tests using DDEV
 
 on:
   workflow_call:
@@ -16,11 +16,11 @@ on:
         required: false
         type: string
       PLAYWRIGHT_INSTALL_CMD:
-        description: The command for installing Playwright and its deps, such as 'ddev pw-install' from inpsyde/ddev-wordpress-plugin-template.
+        description: The command for installing Playwright and its deps, such as 'ddev pw-install-host' from inpsyde/ddev-wordpress-plugin-template.
         required: true
         type: string
       PLAYWRIGHT_RUN_CMD:
-        description: The command for running Playwright tests, such as 'ddev pw test' from inpsyde/ddev-wordpress-plugin-template.
+        description: The command for running Playwright tests, such as 'ddev pw-host test' from inpsyde/ddev-wordpress-plugin-template.
         required: true
         type: string
     secrets:
