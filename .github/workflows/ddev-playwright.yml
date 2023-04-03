@@ -23,6 +23,16 @@ on:
         description: The command for running Playwright tests, such as 'ddev pw-host test' from inpsyde/ddev-wordpress-plugin-template.
         required: true
         type: string
+      NGROK_START_CMD:
+        default: 'vendor/bin/ddev-share'
+        description: The command for starting Ngrok, such as ddev-share from inpsyde/ddev-tools.
+        required: false
+        type: string
+      BASEURL_ENV_NAME:
+        default: 'BASEURL'
+        description: The name of the env variable with the base URL for Playwright. Used for overwriting it with the URL from Ngrok.
+        required: false
+        type: string
     secrets:
       COMPOSER_AUTH_JSON:
         description: Authentication for privately hosted packages and repositories as a JSON formatted object.
@@ -36,6 +46,9 @@ on:
       DDEV_ENV_VARS:
         description: Additional environment variables for DDEV as a JSON formatted object.
         required: false
+      NGROK_AUTH_TOKEN:
+        description: The auth token for Ngrok. If not provided, skips Ngrok.
+        required: false
 
 jobs:
   ddev-playwright:
@@ -44,6 +57,7 @@ jobs:
     env:
       COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
       NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      NGROK: ${{ secrets.NGROK_AUTH_TOKEN != '' }}
     outputs:
       artifact: ${{ steps.set-artifact-name.outputs.artifact }}
     steps:
@@ -104,6 +118,24 @@ jobs:
       - name: Orchestrate DDEV
         run: ${{ inputs.DDEV_ORCHESTRATE_CMD }}
         if: inputs.DDEV_ORCHESTRATE_CMD
+
+      - name: Install Ngrok
+        run: curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list && sudo apt update && sudo apt install ngrok
+        if: env.NGROK != 'false'
+
+      - name: Add Ngrok auth token
+        env:
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+        run: ngrok config add-authtoken ${{ env.NGROK_AUTH_TOKEN }}
+        if: env.NGROK != 'false'
+
+      - name: Start Ngrok
+        run: ${{ inputs.NGROK_START_CMD }}
+        if: env.NGROK != 'false'
+
+      - name: Get Ngrok URL and save in env
+        run: echo "${{ inputs.BASEURL_ENV_NAME }}=https://$( curl http://127.0.0.1:4040/api/tunnels | jq -r '.tunnels[0].public_url' | awk -F'^http[s]?://' '{print $2}' )" >> $GITHUB_ENV
+        if: env.NGROK != 'false'
 
       - name: Install Playwright
         run: ${{ inputs.PLAYWRIGHT_INSTALL_CMD }}
