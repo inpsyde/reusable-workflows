@@ -36,8 +36,8 @@ jobs:
       NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
       ENV_VARS: >-
         [
-          {"name": "SOME_USERNAME", "value": "user1"},
-          {"name": "SOME_PASSWORD", "value": "pass123"}
+          {"name": "SOME_USERNAME", "value": "${{ secrets.SOME_USERNAME }}"},
+          {"name": "SOME_PASSWORD", "value": "${{ secrets.SOME_PASSWORD }}"}
         ]
       DDEV_ENV_VARS: >-
         [
