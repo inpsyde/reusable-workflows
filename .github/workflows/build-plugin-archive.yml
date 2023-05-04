@@ -39,7 +39,7 @@ on:
         type: string
       PHP_VERSION:
         description: PHP version to use during packaging.
-        default: 8.2
+        default: "8.0"
         required: false
         type: string
       EXTRA_PHP_FILE:
