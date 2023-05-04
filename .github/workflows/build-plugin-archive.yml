@@ -9,7 +9,7 @@ on:
         default: './index.php'
         type: string
       PLUGIN_VERSION:
-        description: The plugin version.
+        description: The new plugin version.
         required: true
         type: string
       PLUGIN_BASENAME:
