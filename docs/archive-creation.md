@@ -55,10 +55,10 @@ jobs:
 
 #### A note on `PLUGIN_VERSION`
 
-The workflow will accept any arbitrary string and will use it without validation or sanitization. 
-Adding this would mean reduced flexibility at increased complexity. Adding some sort of standardization/validation
-is encouraged, but should take place in the controlling workflow, where the conventions and requirements of the
-project/team/client are known.
+The workflow will accept any arbitrary string and will use it without validation or sanitization.
+Adding this would mean reduced flexibility at increased complexity. Adding standardization/validation
+is encouraged but should take place in the controlling workflow, where the conventions and requirements
+of the project/team/client are known.
 
 ## Secrets
 
