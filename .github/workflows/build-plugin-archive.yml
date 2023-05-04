@@ -123,7 +123,7 @@ jobs:
         with:
           composer-options: ${{ inputs.COMPOSER_ARGS_DEV }}
 
-      - name: Check optional composer build tools
+      - name: Check optional Composer build tools
         id: composer-tools
         run: |
           hasDep(){
