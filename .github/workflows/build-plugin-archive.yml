@@ -168,15 +168,7 @@ jobs:
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
-
-      - name: Cache npm dependencies
-        if: steps.check-for-package.outputs.has_package == 'true'
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+          cache: ${{ inputs.PACKAGE_MANAGER }}
 
       #
       # Package metadata
