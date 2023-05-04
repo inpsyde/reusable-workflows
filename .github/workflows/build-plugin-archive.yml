@@ -188,13 +188,6 @@ jobs:
       # Archive tooling
       #
 
-      - name: Install WP-CLI
-        run: |
-          mkdir ~/wp-cli && cd ~/wp-cli
-          curl -L https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar --output wp
-          chmod +x wp
-          sudo ln -s ~/wp-cli/wp /usr/local/bin/wp
-
       - name: Install dist-archive command
         run: wp package install wp-cli/dist-archive-command
 
