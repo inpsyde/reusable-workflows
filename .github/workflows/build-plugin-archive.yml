@@ -85,7 +85,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup package base name
+      - name: Setup plugin base name
         id: plugin-data
         run: |
           PLUGIN_BASENAME='${{ inputs.PLUGIN_BASENAME }}'
