@@ -86,9 +86,10 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Setup plugin base name
+        env:
+          PLUGIN_BASENAME: ${{ inputs.PLUGIN_BASENAME }}
         id: plugin-data
         run: |
-          PLUGIN_BASENAME='${{ inputs.PLUGIN_BASENAME }}'
           if [ ! -z "$PLUGIN_BASENAME" ]; then
               echo "plugin-name=$PLUGIN_BASENAME" >> $GITHUB_OUTPUT
           else
