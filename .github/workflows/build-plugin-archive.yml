@@ -219,10 +219,13 @@ jobs:
       - name: Unzip archive to dist/
         run: unzip archive.zip -d dist
 
-      - id: set-artifact-name
+      - name: Set artifact name
+        id: set-artifact-name
         run: echo "artifact=${{ steps.plugin-data.outputs.plugin-name }}-${{ inputs.PLUGIN_VERSION }}" >> $GITHUB_OUTPUT
 
-      - uses: actions/upload-artifact@v3
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.set-artifact-name.outputs.artifact }}
           path: dist/*
