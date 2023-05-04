@@ -115,6 +115,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.PHP_VERSION }}
+          tools: wp-cli
 
       - name: Install Composer dependencies with dev dependencies
         # ⬑ The idea is to ensure we have non-production tools like composer-assets-compiler and translation downloader available
