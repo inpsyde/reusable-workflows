@@ -17,11 +17,6 @@ on:
         default: ''
         required: false
         type: string
-      COMPOSER_ARGS_DEV:
-        description: Set of arguments passed to Composer for build setup.
-        default: '--prefer-dist'
-        required: false
-        type: string
       COMPOSER_ARGS:
         description: Set of arguments passed to Composer for production setup.
         default: '--no-dev --no-scripts --prefer-dist --optimize-autoloader'
@@ -116,7 +111,7 @@ jobs:
         # ⬑ The idea is to ensure we have non-production tools like composer-assets-compiler and translation downloader available
         uses: ramsey/composer-install@v2
         with:
-          composer-options: ${{ inputs.COMPOSER_ARGS_DEV }}
+          composer-options: --prefer-dist
 
       - name: Check optional Composer build tools
         id: composer-tools
