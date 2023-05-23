@@ -50,7 +50,7 @@ jobs:
 | `NODE_VERSION`        | `"16"`                                                        | Node version with which the assets will be compiled.                               |
 | `NPM_REGISTRY_DOMAIN` | `"https://npm.pkg.github.com/"`                               | Domain of the private npm registry.                                                |
 | `EXTRA_PHP_FILE`      | `""`                                                          | Path to a custom php script to run before creating the release archive.            |
-| `EXTRA_PHP`           | `""`                                                          | Run custom php code before creating the release archive.                           |
+| `PRE_SCRIPT`          | `""`                                                          | Run custom shell code before creating the release archive.                         |
 | `PACKAGE_MANAGER`     | `"yarn"`                                                      | Package manager with which the dependencies should be installed (`npm` or `yarn`). |
 
 #### A note on `PLUGIN_VERSION`

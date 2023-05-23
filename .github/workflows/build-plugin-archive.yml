@@ -37,13 +37,8 @@ on:
         default: "8.0"
         required: false
         type: string
-      EXTRA_PHP_FILE:
-        description: Path to a custom php script to run before creating the release archive.
-        default: ''
-        required: false
-        type: string
-      EXTRA_PHP:
-        description: Run custom php code before creating the release archive.
+      PRE_SCRIPT:
+        description: Run custom shell code before creating the release archive.
         default: ''
         required: false
         type: string
@@ -166,24 +161,12 @@ jobs:
       - name: Install dist-archive command
         run: wp package install wp-cli/dist-archive-command
 
-      - name: Create dist-archive php parameters from inputs
-        id: dist-archive
+      - name: Execute custom code before archive creation
         run: |
-          PARAMS=""
-          FILE='${{ inputs.EXTRA_PHP_FILE }}'
-          CODE=$(cat <<'EOF'
-          ${{ inputs.EXTRA_PHP }}
-          EOF
-          )
-          if [ ! -z "$FILE" ]; then
-            PARAMS+="--require=$FILE "
-          fi
-          if [ ! -z "$CODE" ]; then
-            PARAMS+="--exec=${CODE@Q} "
-          fi
-          echo "params=${PARAMS}" >> $GITHUB_OUTPUT
+            ${{ inputs.EXTRA_PHP_FILE }}
+
       - name: Run wp-cli command
-        run: wp dist-archive . ./archive.zip ${{ steps.dist-archive.outputs.params }} --plugin-dirname=${{ steps.plugin-data.outputs.plugin-name }}
+        run: wp dist-archive . ./archive.zip --plugin-dirname=${{ steps.plugin-data.outputs.plugin-name }}
 
         # GitHub Action artifacts would otherwise produce a zip within a zip
       - name: Unzip archive to dist/
