@@ -45,7 +45,7 @@ jobs:
 |-----------------------|---------------------------------------------------------------|------------------------------------------------------------------------------------|
 | `PLUGIN_MAIN_FILE`    | `"./index.php"`                                               | The path/name of the plugin main file.                                             |
 | `PLUGIN_VERSION`      | -                                                             | The plugin version.                                                                |
-| `PLUGIN_BASENAME`     | `""`                                                          | The base name of the resulting zip archive. Falls back to the repository name.     |
+| `ARCHIVE_NAME`        | `""`                                                          | The base name of the resulting zip archive. Falls back to the repository name.     |
 | `COMPOSER_ARGS_DEV`   | `'--prefer-dist'`                                             | Set of arguments passed to Composer for build setup.                               |
 | `COMPOSER_ARGS`       | `'--no-dev --no-scripts --prefer-dist --optimize-autoloader'` | Set of arguments passed to Composer for production setup.                          |
 | `NODE_VERSION`        | `"16"`                                                        | Node version with which the assets will be compiled.                               |

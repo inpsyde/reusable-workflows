@@ -12,7 +12,7 @@ on:
         description: The new plugin version.
         required: true
         type: string
-      PLUGIN_BASENAME:
+      ARCHIVE_NAME:
         description: The base name of the resulting zip archive. Falls back to the repository name.
         default: ''
         required: false
@@ -87,11 +87,11 @@ jobs:
 
       - name: Setup plugin base name
         env:
-          PLUGIN_BASENAME: ${{ inputs.PLUGIN_BASENAME }}
+          ARCHIVE_NAME: ${{ inputs.ARCHIVE_NAME }}
         id: plugin-data
         run: |
-          if [ ! -z "$PLUGIN_BASENAME" ]; then
-              echo "plugin-name=$PLUGIN_BASENAME" >> $GITHUB_OUTPUT
+          if [ ! -z "$ARCHIVE_NAME" ]; then
+              echo "plugin-name=$ARCHIVE_NAME" >> $GITHUB_OUTPUT
           else
               echo "plugin-name=${{ github.event.repository.name }}" >> $GITHUB_OUTPUT
           fi
