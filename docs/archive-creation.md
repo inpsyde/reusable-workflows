@@ -31,8 +31,7 @@ jobs:
     with:
       PLUGIN_MAIN_FILE: ./my-plugin.php
       PLUGIN_VERSION: ${{ inputs.PACKAGE_VERSION }}
-      #EXTRA_PHP_FILE: ./config/archive.php
-      EXTRA_PHP: |
+      PRE_SCRIPT: |
         echo 'hello world!';
 
 ```
