@@ -52,6 +52,11 @@ on:
         default: ''
         required: false
         type: string
+      PACKAGE_MANAGER:
+          description: Package manager with which the dependencies should be installed (`npm` or `yarn`).
+          default: 'yarn'
+          required: false
+          type: string
     secrets:
       COMPOSER_AUTH_JSON:
         description: Authentication for privately hosted packages and repositories as a JSON formatted object.
@@ -69,7 +74,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # Disables symlinking of local path repositories.
-      # During development, symlinking is preferrable.
+      # During development, symlinking is preferable.
       # In resulting builds, you will likely want to ship the actual install location and remove the source directory.
       COMPOSER_MIRROR_PATH_REPOS: 1
       COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
@@ -153,6 +158,7 @@ jobs:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
           cache: ${{ inputs.PACKAGE_MANAGER }}
+
       - name: Add commit hash to plugin header
         env:
           GIT_SHA: ${{ steps.git.outputs.sha_short }}
@@ -191,7 +197,6 @@ jobs:
       - name: Set artifact name
         id: set-artifact-name
         run: echo "artifact=${{ steps.plugin-data.outputs.plugin-name }}-${{ inputs.PLUGIN_VERSION }}" >> $GITHUB_OUTPUT
-
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
