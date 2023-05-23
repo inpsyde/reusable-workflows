@@ -81,9 +81,9 @@ jobs:
         id: plugin-data
         run: |
           if [ ! -z "$ARCHIVE_NAME" ]; then
-              echo "plugin-name=$ARCHIVE_NAME" >> $GITHUB_OUTPUT
+              echo "archive-name=$ARCHIVE_NAME" >> $GITHUB_OUTPUT
           else
-              echo "plugin-name=${{ github.event.repository.name }}" >> $GITHUB_OUTPUT
+              echo "archive-name=${{ github.event.repository.name }}" >> $GITHUB_OUTPUT
           fi
 
       - name: Set up custom environment variables
@@ -156,8 +156,8 @@ jobs:
 
       - name: Set plugin version header
         env:
-          PACKAGE_VERSION: ${{ github.event.inputs.packageVersion }}
-        run: 'sed -Ei "s/Version: .*/Version: ${PACKAGE_VERSION}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
+            PLUGIN_VERSION: ${{ inputs.PLUGIN_VERSION }}
+        run: 'sed -Ei "s/Version: .*/Version: ${PLUGIN_VERSION}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
       - name: Install dist-archive command
         run: wp package install wp-cli/dist-archive-command
 
@@ -166,7 +166,7 @@ jobs:
             ${{ inputs.EXTRA_PHP_FILE }}
 
       - name: Run wp-cli command
-        run: wp dist-archive . ./archive.zip --plugin-dirname=${{ steps.plugin-data.outputs.plugin-name }}
+        run: wp dist-archive . ./archive.zip --plugin-dirname=${{ steps.plugin-data.outputs.archive-name }}
 
         # GitHub Action artifacts would otherwise produce a zip within a zip
       - name: Unzip archive to dist/
@@ -174,7 +174,7 @@ jobs:
 
       - name: Set artifact name
         id: set-artifact-name
-        run: echo "artifact=${{ steps.plugin-data.outputs.plugin-name }}-${{ inputs.PLUGIN_VERSION }}" >> $GITHUB_OUTPUT
+        run: echo "artifact=${{ steps.plugin-data.outputs.archive-name }}-${{ inputs.PLUGIN_VERSION }}" >> $GITHUB_OUTPUT
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
