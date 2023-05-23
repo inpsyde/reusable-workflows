@@ -77,11 +77,6 @@ jobs:
     outputs:
       artifact: ${{ steps.set-artifact-name.outputs.artifact }}
     steps:
-
-      #
-      # Project setup
-      #
-
       - name: Checkout
         uses: actions/checkout@v3
 
@@ -106,11 +101,6 @@ jobs:
             JSON
               .parse(process.env.ENV_VARS)
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
-
-      #
-      # PHP dependencies
-      #
-
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -147,12 +137,6 @@ jobs:
         uses: ramsey/composer-install@v2
         with:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
-
-
-      #
-      # JS environment. Only for setting up node/npm versions. Actual tasks should be run at project level
-      #
-
       - name: Check for package.json
         id: check-for-package
         run: |
@@ -169,11 +153,6 @@ jobs:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
           cache: ${{ inputs.PACKAGE_MANAGER }}
-
-      #
-      # Package metadata
-      #
-
       - name: Add commit hash to plugin header
         env:
           GIT_SHA: ${{ steps.git.outputs.sha_short }}
@@ -183,11 +162,6 @@ jobs:
         env:
           PACKAGE_VERSION: ${{ github.event.inputs.packageVersion }}
         run: 'sed -Ei "s/Version: .*/Version: ${PACKAGE_VERSION}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
-
-      #
-      # Archive tooling
-      #
-
       - name: Install dist-archive command
         run: wp package install wp-cli/dist-archive-command
 
@@ -207,11 +181,6 @@ jobs:
             PARAMS+="--exec=${CODE@Q} "
           fi
           echo "params=${PARAMS}" >> $GITHUB_OUTPUT
-
-      #
-      # Archive/Artifact creation
-      #
-
       - name: Run wp-cli command
         run: wp dist-archive . ./archive.zip ${{ steps.dist-archive.outputs.params }} --plugin-dirname=${{ steps.plugin-data.outputs.plugin-name }}
 
