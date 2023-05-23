@@ -29,7 +29,7 @@ jobs:
     secrets:
       COMPOSER_AUTH_JSON: ${{ secrets.PACKAGIST_AUTH_JSON }}
     with:
-      PLUGIN_MAIN_FILE: ./my-plugin.php
+      PLUGIN_MAIN_FILE: my-plugin.php
       PLUGIN_VERSION: ${{ inputs.PACKAGE_VERSION }}
       PRE_SCRIPT: |
         echo 'hello world!';
@@ -42,7 +42,7 @@ jobs:
 
 | Name                  | Default                                                       | Description                                                                        |
 |-----------------------|---------------------------------------------------------------|------------------------------------------------------------------------------------|
-| `PLUGIN_MAIN_FILE`    | `"./index.php"`                                               | The path/name of the plugin main file.                                             |
+| `PLUGIN_MAIN_FILE`    | `"index.php"`                                                 | The name of the plugin main file.                                                  |
 | `PLUGIN_VERSION`      | -                                                             | The plugin version.                                                                |
 | `ARCHIVE_NAME`        | `""`                                                          | The base name of the resulting zip archive. Falls back to the repository name.     |
 | `COMPOSER_ARGS`       | `'--no-dev --no-scripts --prefer-dist --optimize-autoloader'` | Set of arguments passed to Composer for production setup.                          |
