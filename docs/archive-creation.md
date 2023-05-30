@@ -45,7 +45,7 @@ jobs:
 | `PLUGIN_MAIN_FILE`    | `"index.php"`                                                 | The name of the plugin main file.                                                  |
 | `PLUGIN_VERSION`      | -                                                             | The plugin version.                                                                |
 | `ARCHIVE_NAME`        | `""`                                                          | The base name of the resulting zip archive. Falls back to the repository name.     |
-| `COMPOSER_ARGS`       | `'--no-dev --no-scripts --prefer-dist --optimize-autoloader'` | Set of arguments passed to Composer for production setup.                          |
+| `COMPOSER_ARGS`       | `'--no-dev --no-scripts --prefer-dist --optimize-autoloader'` | Set of arguments passed to Composer.                                               |
 | `NODE_VERSION`        | `"16"`                                                        | Node version with which the assets will be compiled.                               |
 | `NPM_REGISTRY_DOMAIN` | `"https://npm.pkg.github.com/"`                               | Domain of the private npm registry.                                                |
 | `EXTRA_PHP_FILE`      | `""`                                                          | Path to a custom php script to run before creating the release archive.            |

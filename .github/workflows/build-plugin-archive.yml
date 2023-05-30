@@ -18,7 +18,7 @@ on:
         required: false
         type: string
       COMPOSER_ARGS:
-        description: Set of arguments passed to Composer for production setup.
+        description: Set of arguments passed to Composer.
         default: '--no-dev --no-scripts --prefer-dist --optimize-autoloader'
         required: false
         type: string
@@ -96,14 +96,15 @@ jobs:
             JSON
               .parse(process.env.ENV_VARS)
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
+
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.PHP_VERSION }}
           tools: wp-cli
 
-      - name: Install Composer dependencies with dev dependencies
-        # ⬑ The idea is to ensure we have non-production tools like composer-assets-compiler and translation downloader available
+      - name: Install Composer dependencies
+        # ⬑ The idea is to ensure we have non-production tools like Composer Asset Compiler and WordPress Translation Downloader available
         uses: ramsey/composer-install@v2
         with:
           composer-options: --prefer-dist
@@ -119,11 +120,11 @@ jobs:
           echo "assets-compiler=$( hasDep inpsyde/composer-assets-compiler )" >> $GITHUB_OUTPUT
           echo "translation-downloader=$( hasDep inpsyde/wp-translation-downloader )" >> $GITHUB_OUTPUT
 
-      - name: Run Composer Assets Compiler
+      - name: Run Composer Asset Compiler
         if: steps.composer-tools.outputs.assets-compiler == '0'
         run: composer compile-assets
 
-      - name: Run WP Translation Downloader
+      - name: Run WordPress Translation Downloader
         if: steps.composer-tools.outputs.translation-downloader == '0'
         run: composer wp-translation-downloader:download
 
@@ -132,6 +133,7 @@ jobs:
         uses: ramsey/composer-install@v2
         with:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
+
       - name: Check for package.json
         id: check-for-package
         run: |
@@ -158,6 +160,7 @@ jobs:
         env:
             PLUGIN_VERSION: ${{ inputs.PLUGIN_VERSION }}
         run: 'sed -Ei "s/Version: .*/Version: ${PLUGIN_VERSION}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
+
       - name: Install dist-archive command
         run: wp package install wp-cli/dist-archive-command
 
@@ -165,7 +168,7 @@ jobs:
         run: |
             ${{ inputs.EXTRA_PHP_FILE }}
 
-      - name: Run wp-cli command
+      - name: Run WP-CLI command
         run: wp dist-archive . ./archive.zip --plugin-dirname=${{ steps.plugin-data.outputs.archive-name }}
 
         # GitHub Action artifacts would otherwise produce a zip within a zip
