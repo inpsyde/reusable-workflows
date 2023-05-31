@@ -166,7 +166,7 @@ jobs:
 
       - name: Execute custom code before archive creation
         run: |
-            ${{ inputs.EXTRA_PHP_FILE }}
+            ${{ inputs.PRE_SCRIPT }}
 
       - name: Run WP-CLI command
         run: wp dist-archive . ./archive.zip --plugin-dirname=${{ steps.plugin-data.outputs.archive-name }}
