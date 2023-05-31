@@ -153,7 +153,7 @@ jobs:
 
       - name: Add commit hash to plugin header
         env:
-          GIT_SHA: ${{ steps.git.outputs.sha_short }}
+          GIT_SHA: ${{ GITHUB_SHA }}
         run: 'sed -Ei "s/SHA: .*/SHA: ${GIT_SHA}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
 
       - name: Set plugin version header
