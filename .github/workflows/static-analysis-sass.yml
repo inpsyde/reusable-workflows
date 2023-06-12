@@ -58,4 +58,4 @@ jobs:
         run: ${{ ((inputs.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm install' }}
 
       - name: Run Stylelint
-        run: ./node_modules/.bin/stylelint ${{ inputs.STYLELINT_ARGS }}
+        run: ./node_modules/.bin/stylelint "${{ inputs.STYLELINT_ARGS }}"
