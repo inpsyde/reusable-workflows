@@ -140,7 +140,7 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: assets-${{ env.TAG_NAME }}.zip
           tag: ${{ github.ref }}
-          overwrite: true
+          # Release description fallback which will not be enforced due "overwrite: false" (default).
           body: |
             # ${{ env.TAG_NAME }}
             Compiled assets available in `assets-${{ env.TAG_NAME }}.zip`.
