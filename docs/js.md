@@ -2,7 +2,7 @@
 
 ## Static code analysis
 
-> **:warning: This workflow is deprecated and will be replaced by the static-wp-scripts-qa.yml workflow.**
+> **:warning: This workflow is deprecated and will be replaced by the wp-scripts-lint-js.yml workflow.**
 
 This workflow runs [ESLint](https://eslint.org/). It does so by executing the binary in
 the `./node_modules/.bin/` folder.
