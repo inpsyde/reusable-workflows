@@ -1,4 +1,4 @@
-name: Static WP Scripts Quality Assurance
+name: WP Scripts lint markdown
 
 on:
   workflow_call:
@@ -51,9 +51,3 @@ jobs:
 
       - name: Run lint markdown docs
         run: ./node_modules/.bin/wp-scripts lint-md-docs docs/**/*.md
-
-      - name: Run lint styles
-        run: ./node_modules/.bin/wp-scripts lint-style resources/{css,scss}/**/*.{css,scss}
-
-      - name: Run lint scripts
-        run: ./node_modules/.bin/wp-scripts lint-js resources/{ts,js}/**/*.{js,jsx,ts,tsx}
