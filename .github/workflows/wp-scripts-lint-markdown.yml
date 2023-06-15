@@ -55,4 +55,4 @@ jobs:
         run: ${{ ((inputs.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm install' }}
 
       - name: Run lint markdown docs
-        run: ./node_modules/.bin/wp-scripts ${{ inputs.LINT_ARGS }}
+        run: ./node_modules/.bin/wp-scripts lint-md-docs ${{ inputs.LINT_ARGS }}
