@@ -56,4 +56,4 @@ jobs:
         run: ./node_modules/.bin/wp-scripts lint-style resources/{css,scss}/**/*.{css,scss}
 
       - name: Run lint scripts
-        run: ./node_modules/.bin/wp-scripts lint-js resources/{ts,js}/**/*{js,jsx,ts,tsx}
+        run: ./node_modules/.bin/wp-scripts lint-js resources/{ts,js}/**/*.{js,jsx,ts,tsx}
