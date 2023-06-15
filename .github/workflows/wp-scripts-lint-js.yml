@@ -49,5 +49,5 @@ jobs:
       - name: Install dependencies
         run: ${{ ((inputs.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm install' }}
 
-      - name: Run lint markdown docs
-        run: ./node_modules/.bin/wp-scripts lint-md-docs docs/**/*.md
+      - name: Run lint scripts
+        run: ./node_modules/.bin/wp-scripts lint-js resources/{ts,js}/**/* --ext .js,.jsx,.ts,.tsx
