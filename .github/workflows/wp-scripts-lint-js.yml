@@ -50,4 +50,4 @@ jobs:
         run: ${{ ((inputs.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm install' }}
 
       - name: Run lint scripts
-        run: ./node_modules/.bin/wp-scripts lint-js --ext js,jsx,ts,tsx resources/**/*
+        run: ./node_modules/.bin/wp-scripts lint-js --ext .js,.jsx,.ts,.tsx resources/**/*
