@@ -1,4 +1,4 @@
-name: Static code analysis JavaScript
+name: Static WP Scripts Quality Assurance
 
 on:
   workflow_call:
@@ -11,11 +11,6 @@ on:
       NODE_VERSION:
         description: Node version with which the static code analysis is to be executed.
         default: 16
-        required: false
-        type: string
-      ESLINT_ARGS:
-        description: Set of arguments passed to ESLint.
-        default: '-o eslint_report.json -f json --ext .js,.jsx,.ts,.tsx ./resources'
         required: false
         type: string
       PACKAGE_MANAGER:
@@ -34,16 +29,13 @@ on:
         required: false
 
 jobs:
-  static-analysis-js:
+  static-wp-scripts-qa:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     env:
       NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
       NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
     steps:
-      - name: Deprecated warning
-        run: echo "::warning::This workflow is deprecated and will be replaced by the static-wp-scripts-qa.yml workflow."
-
       - name: Checkout
         uses: actions/checkout@v3
 
@@ -57,11 +49,11 @@ jobs:
       - name: Install dependencies
         run: ${{ ((inputs.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm install' }}
 
-      - name: Run ESLint
-        run: ./node_modules/.bin/eslint ${{ inputs.ESLINT_ARGS }}
-        continue-on-error: true
+      - name: Run lint markdown docs
+        run: ./node_modules/.bin/wp-scripts lint-md-docs docs/**/*.md
 
-      - name: Annotate ESLint report
-        uses: ataylorme/eslint-annotate-action@v2
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run lint styles
+        run: ./node_modules/.bin/wp-scripts lint-style resources/{css,scss}/**/*.{css,scss}
+
+      - name: Run lint scripts
+        run: ./node_modules/.bin/wp-scripts lint-js resources/{ts,js}/**/*{js,jsx,ts,tsx}

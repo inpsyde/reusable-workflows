@@ -41,6 +41,9 @@ jobs:
       NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
       NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
     steps:
+      - name: Deprecated warning
+        run: echo "::warning::This workflow is deprecated and will be replaced by the static-wp-scripts-qa.yml workflow."
+
       - name: Checkout
         uses: actions/checkout@v3
 
