@@ -9,12 +9,12 @@ This contains 3 workflows for linting "styles" (`stylelint`), "scripts" (`eslint
 name: Front-Office QA
 on: [push]
 jobs:
-  wp-scripts-js:
-    uses: inpsyde/reusable-workflows/.github/workflows/wp-scripts-js.yml@main
-  wp-scripts-style:
-    uses: inpsyde/reusable-workflows/.github/workflows/wp-scripts-style.yml@main
-  wp-scripts-markdown:
-    uses: inpsyde/reusable-workflows/.github/workflows/wp-scripts-markdown.yml@main
+  wp-scripts-lint-js:
+    uses: inpsyde/reusable-workflows/.github/workflows/wp-scripts-lint-js.yml@main
+  wp-scripts-lint-style:
+    uses: inpsyde/reusable-workflows/.github/workflows/wp-scripts-lint-style.yml@main
+  wp-scripts-lint-markdown:
+    uses: inpsyde/reusable-workflows/.github/workflows/wp-scripts-lint-markdown.yml@main
 ```
 
 ### Configuration parameters
@@ -41,8 +41,8 @@ name: Front-Office QA
 on:
   pull_request:
 jobs:
-  wp-scripts-js:
-    uses: inpsyde/reusable-workflows/.github/workflows/static-wp-scripts-js.yml@main
+  wp-scripts-lint-js:
+    uses: inpsyde/reusable-workflows/.github/workflows/wp-scripts-lint-js.yml@main
     secrets:
       NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
     with:
