@@ -23,6 +23,11 @@ on:
         type: string
         default: ''
         required: false
+      LINT_ARGS:
+        description: Set of arguments passed to wp-script lint-style.
+        default: 'resources/**/*.{css,scss}'
+        required: false
+        type: string
     secrets:
       NPM_REGISTRY_TOKEN:
         description: Authentication for the private npm registry.
@@ -50,4 +55,4 @@ jobs:
         run: ${{ ((inputs.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm install' }}
 
       - name: Run lint styles
-        run: ./node_modules/.bin/wp-scripts lint-style resources/**/*.{css,scss}
+        run: ./node_modules/.bin/wp-scripts lint-style ${{ inputs.LINT_ARGS }}

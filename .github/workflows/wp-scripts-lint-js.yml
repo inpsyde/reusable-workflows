@@ -23,6 +23,11 @@ on:
         type: string
         default: ''
         required: false
+      LINT_ARGS:
+        description: Set of arguments passed to wp-script lint-js.
+        default: 'resources/ts/**/*'
+        required: false
+        type: string
     secrets:
       NPM_REGISTRY_TOKEN:
         description: Authentication for the private npm registry.
@@ -50,4 +55,4 @@ jobs:
         run: ${{ ((inputs.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm install' }}
 
       - name: Run lint scripts
-        run: ./node_modules/.bin/wp-scripts lint-js --ext .js,.jsx,.ts,.tsx resources/**/*
+        run: ./node_modules/.bin/wp-scripts lint-js ${{ inputs.LINT_ARGS }}
