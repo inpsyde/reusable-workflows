@@ -29,17 +29,17 @@ on:
         required: false
         type: string
       ESLINT_ARGS:
-        description: An object containing tool name mapped to arguments passed to wp-script lint-js.
+        description: Set of arguments passed to wp-script lint-js.
         default: ''
         required: false
         type: string
       STYLELINT_ARGS:
-        description: An object containing tool name mapped to arguments passed to wp-script lint-*.
+        description: Set of arguments passed to wp-script lint-style.
         default: ''
         required: false
         type: string
       MARKDOWNLINT_ARGS:
-        description: An object containing tool name mapped to arguments passed to wp-script lint-*.
+        description: Set of arguments passed to wp-script lint-md-docs.
         default: '--ignore LICENSE.md --ignore node_modules'
         required: false
         type: string
