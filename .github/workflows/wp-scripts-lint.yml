@@ -40,7 +40,7 @@ on:
         type: string
       MARKDOWNLINT_ARGS:
         description: An object containing tool name mapped to arguments passed to wp-script lint-*.
-        default: ''
+        default: '--ignore LICENSE.md --ignore node_modules'
         required: false
         type: string
     secrets:
