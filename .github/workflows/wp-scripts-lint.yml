@@ -1,0 +1,82 @@
+name: WP Scripts lint
+
+on:
+  workflow_call:
+    inputs:
+      NPM_REGISTRY_DOMAIN:
+        description: Domain of the private npm registry.
+        default: https://npm.pkg.github.com/
+        required: false
+        type: string
+      NODE_VERSION:
+        description: Node version with which the static code analysis is to be executed.
+        default: 16
+        required: false
+        type: string
+      PACKAGE_MANAGER:
+        description: Package manager with which the dependencies should be installed (`npm` or `yarn`).
+        default: 'yarn'
+        required: false
+        type: string
+      NODE_OPTIONS:
+        description: Space-separated list of command-line Node options.
+        type: string
+        default: ''
+        required: false
+      LINT_TOOLS:
+        description: An array of tools supported by wp-scripts lint-*. Supported are "js", "style" and "md-docs".
+        default: '["js", "style", "md-docs"]'
+        required: false
+        type: string
+      ESLINT_ARGS:
+        description: An object containing tool name mapped to arguments passed to wp-script lint-js.
+        default: ''
+        required: false
+        type: string
+      STYLELINT_ARGS:
+        description: An object containing tool name mapped to arguments passed to wp-script lint-*.
+        default: ''
+        required: false
+        type: string
+      MARKDOWNLINT_ARGS:
+        description: An object containing tool name mapped to arguments passed to wp-script lint-*.
+        default: ''
+        required: false
+        type: string
+    secrets:
+      NPM_REGISTRY_TOKEN:
+        description: Authentication for the private npm registry.
+        required: false
+
+jobs:
+  static-wp-scripts-qa:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ inputs.NODE_VERSION }}
+          registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
+          cache: ${{ inputs.PACKAGE_MANAGER }}
+
+      - name: Install dependencies
+        run: ${{ ((inputs.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm install' }}
+
+      - name: Run lint scripts
+        if: contains(fromJSON(${{ inputs.LINT_TOOLS }}), 'js')
+        run: ./node_modules/.bin/wp-scripts lint-js ${{ inputs.ESLINT_ARGS }}
+
+      - name: Run lint style
+        if: contains(fromJSON(${{ inputs.LINT_TOOLS }}), 'style')
+        run: ./node_modules/.bin/wp-scripts lint-style ${{ inputs.STYLELINT_ARGS }}
+
+      - name: Run lint markdown
+        if: contains(fromJSON(${{ inputs.LINT_TOOLS }}), 'md-docs')
+        run: ./node_modules/.bin/wp-scripts lint-md-docs ${{ inputs.MARKDOWNLINT_ARGS }}
