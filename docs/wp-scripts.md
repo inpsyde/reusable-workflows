@@ -10,7 +10,7 @@ library. It does so by executing the `wp-scripts` binary in the `./node_modules/
 **Simplest possible example:**
 
 ```yml
-name: Front-Office QA
+name: Static code analysis assets
 on: [push]
 jobs:
   wp-scripts-lint:
