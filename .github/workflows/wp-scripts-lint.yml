@@ -83,7 +83,7 @@ jobs:
         if: contains(fromJSON(${{ inputs.LINT_TOOLS }}), 'style')
         run: ./node_modules/.bin/wp-scripts lint-style ${{ inputs.STYLELINT_ARGS }}
 
-      - name: Lint style files
+      - name: Lint markdown files
         if: contains(fromJSON(${{ inputs.LINT_TOOLS }}), 'md-docs')
         run: ./node_modules/.bin/wp-scripts lint-md-docs ${{ inputs.MARKDOWNLINT_ARGS }}
 
