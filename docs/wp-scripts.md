@@ -1,4 +1,4 @@
-# Reusable workflows – WordPress Scripts
+# Reusable workflows – `@wordpress/scripts`
 
 ## Lint
 
