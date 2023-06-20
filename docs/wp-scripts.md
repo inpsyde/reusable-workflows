@@ -33,7 +33,7 @@ jobs:
 | `MARKDOWNLINT_ARGS`     | `'--ignore LICENSE.md --ignore node_modules'` | Set of arguments passed to `wp-script lint-md-docs`                               |
 | `PACKAGE_JSONLINT_ARGS` | `''`                                          | Set of arguments passed to `wp-scripts lint-pkg-json`                             |
 
-> :info: **By default, "lint-pkg-jso" is not part of the `LINT_TOOLS` input.**
+> :info: **By default, "pkg-json" is not part of the `LINT_TOOLS` input.**
 
 #### Secrets
 
