@@ -44,8 +44,8 @@ on:
         default: '--ignore LICENSE.md --ignore node_modules'
         required: false
         type: string
-      PACKAGE_JSON_ARGS:
-        description: Set of arguments passed to wp-script lint-pkg-json.
+      PACKAGE_JSONLINT_ARGS:
+        description: Set of arguments passed to `wp-script lint-pkg-json`.
         default: ''
         required: false
         type: string
@@ -89,4 +89,4 @@ jobs:
 
       - name: Run lint package.json
         if: contains(fromJSON(${{ inputs.LINT_TOOLS }}), 'pkg-json')
-        run: ./node_modules/.bin/wp-scripts lint-pkg-json ${{ inputs.PACKAGE_JSON_ARGS }}
+        run: ./node_modules/.bin/wp-scripts lint-pkg-json ${{ inputs.PACKAGE_JSONLINT_ARGS }}
