@@ -41,7 +41,7 @@ on:
         type: string
       MARKDOWNLINT_ARGS:
         description: Set of arguments passed to `wp-script lint-md-docs`.
-        default: '--ignore LICENSE.md --ignore node_modules'
+        default: '--ignore LICENSE.md'
         required: false
         type: string
       PACKAGE_JSONLINT_ARGS:
