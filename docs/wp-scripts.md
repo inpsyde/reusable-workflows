@@ -44,7 +44,7 @@ jobs:
 **Example with configuration parameters:**
 
 ```yml
-name: Front-Office QA
+name: Static code analysis assets
 on:
   pull_request:
 jobs:
