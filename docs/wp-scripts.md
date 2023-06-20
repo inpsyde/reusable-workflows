@@ -21,17 +21,17 @@ jobs:
 
 #### Inputs
 
-| Name                    | Default                                       | Description                                                                       |
-|-------------------------|-----------------------------------------------|-----------------------------------------------------------------------------------|
-| `NPM_REGISTRY_DOMAIN`   | `https://npm.pkg.github.com/`                 | Domain of the private npm registry                                                |
-| `NODE_VERSION`          | 16                                            | Node version with which the assets will be compiled                               |
-| `PACKAGE_MANAGER`       | `yarn`                                        | Package manager with which the dependencies should be installed (`npm` or `yarn`) |
-| `NODE_OPTIONS`          | `''`                                          | Space-separated list of command-line Node options                                 |
-| `LINT_TOOLS`            | `'["js", "style", "md-docs"]'`                | Array of checks to be executed by @wordpress/scripts                              |
-| `ESLINT_ARGS`           | `'--format stylish'`                          | Set of arguments passed to `wp-script lint-js`                                    |
-| `STYLELINT_ARGS`        | `'--formatter github'`                        | Set of arguments passed to `wp-script lint-style`                                 |
-| `MARKDOWNLINT_ARGS`     | `'--ignore LICENSE.md --ignore node_modules'` | Set of arguments passed to `wp-script lint-md-docs`                               |
-| `PACKAGE_JSONLINT_ARGS` | `''`                                          | Set of arguments passed to `wp-scripts lint-pkg-json`                             |
+| Name                    | Default                        | Description                                                                       |
+|-------------------------|--------------------------------|-----------------------------------------------------------------------------------|
+| `NPM_REGISTRY_DOMAIN`   | `https://npm.pkg.github.com/`  | Domain of the private npm registry                                                |
+| `NODE_VERSION`          | 16                             | Node version with which the assets will be compiled                               |
+| `PACKAGE_MANAGER`       | `yarn`                         | Package manager with which the dependencies should be installed (`npm` or `yarn`) |
+| `NODE_OPTIONS`          | `''`                           | Space-separated list of command-line Node options                                 |
+| `LINT_TOOLS`            | `'["js", "style", "md-docs"]'` | Array of checks to be executed by @wordpress/scripts                              |
+| `ESLINT_ARGS`           | `'--format stylish'`           | Set of arguments passed to `wp-script lint-js`                                    |
+| `STYLELINT_ARGS`        | `'--formatter github'`         | Set of arguments passed to `wp-script lint-style`                                 |
+| `MARKDOWNLINT_ARGS`     | `'--ignore LICENSE.md`         | Set of arguments passed to `wp-script lint-md-docs`                               |
+| `PACKAGE_JSONLINT_ARGS` | `''`                           | Set of arguments passed to `wp-scripts lint-pkg-json`                             |
 
 > :info: **By default, "pkg-json" is not part of the `LINT_TOOLS` input.**
 
