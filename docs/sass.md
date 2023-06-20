@@ -2,7 +2,7 @@
 
 ## Static code analysis
 
-> **:warning: This workflow is deprecated and will be replaced by the wp-scripts-lint.yml workflow.**
+> **:warning: This workflow is deprecated and will be replaced by the `@wordpress/scripts` workflow (`wp-scripts-lint.yml`) in the future.**
 
 This workflow runs [Stylelint](https://stylelint.io/). It does so by executing the binary in
 the `./node_modules/.bin/` folder.
