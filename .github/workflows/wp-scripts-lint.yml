@@ -24,7 +24,7 @@ on:
         default: ''
         required: false
       LINT_TOOLS:
-        description: An array of tools supported by wp-scripts lint-*. Supported are "js", "style" and "md-docs".
+        description: Array of checks to be executed by @wordpress/scripts.
         default: '["js", "style", "md-docs"]'
         required: false
         type: string
