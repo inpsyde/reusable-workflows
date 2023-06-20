@@ -2,7 +2,10 @@
 
 ## Lint
 
-This reusable workflow contains internally support for linting "styles" (`stylelint`), "scripts" (`eslint`) and markdown files (`markdownlint`) by executing the `@wordpress/scripts` executable `wp-scripts`.
+This workflow runs [ESLint](https://eslint.org/), [Stylelint](https://stylelint.io/),
+and [markdownlint](https://github.com/DavidAnson/markdownlint) wrapped in the
+the [`@wordpress/scripts`](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-scripts/)
+library. It does so by executing the `wp-scripts` binary in the `./node_modules/.bin/` folder.
 
 **Simplest possible example:**
 
