@@ -34,7 +34,7 @@ on:
         required: false
 
 jobs:
-  static-code-analysis-sass:
+  static-analysis-sass:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     env:
