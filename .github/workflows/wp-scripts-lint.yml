@@ -30,12 +30,12 @@ on:
         type: string
       ESLINT_ARGS:
         description: Set of arguments passed to wp-script lint-js.
-        default: ''
+        default: '--format stylish'
         required: false
         type: string
       STYLELINT_ARGS:
         description: Set of arguments passed to wp-script lint-style.
-        default: ''
+        default: '--formatter github'
         required: false
         type: string
       MARKDOWNLINT_ARGS:
