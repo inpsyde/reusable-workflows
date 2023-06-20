@@ -25,6 +25,7 @@ on:
         required: false
       LINT_TOOLS:
         description: Array of checks to be executed by @wordpress/scripts.
+        # [!] Note: "pkg-json" is not included by default. This is currently internally reviewed.
         default: '["js", "style", "md-docs"]'
         required: false
         type: string
@@ -41,6 +42,11 @@ on:
       MARKDOWNLINT_ARGS:
         description: Set of arguments passed to wp-script lint-md-docs.
         default: '--ignore LICENSE.md --ignore node_modules'
+        required: false
+        type: string
+      PACKAGE_JSON_ARGS:
+        description: Set of arguments passed to wp-script lint-pkg-json.
+        default: ''
         required: false
         type: string
     secrets:
@@ -80,3 +86,7 @@ jobs:
       - name: Run lint markdown
         if: contains(fromJSON(${{ inputs.LINT_TOOLS }}), 'md-docs')
         run: ./node_modules/.bin/wp-scripts lint-md-docs ${{ inputs.MARKDOWNLINT_ARGS }}
+
+      - name: Run lint package.json
+        if: contains(fromJSON(${{ inputs.LINT_TOOLS }}), 'pkg-json')
+        run: ./node_modules/.bin/wp-scripts lint-pkg-json ${{ inputs.PACKAGE_JSON_ARGS }}
