@@ -31,7 +31,7 @@ on:
         type: string
       ESLINT_ARGS:
         description: Set of arguments passed to `wp-script lint-js`.
-        default: '--format stylish'
+        default: ''
         required: false
         type: string
       STYLELINT_ARGS:
