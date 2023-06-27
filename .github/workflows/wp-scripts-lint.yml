@@ -79,17 +79,17 @@ jobs:
         run: ${{ ((inputs.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm install' }}
 
       - name: Lint script files
-        if: contains(fromJSON(${{ inputs.LINT_TOOLS }}), 'js')
+        if: ${{ contains(fromJSON(inputs.LINT_TOOLS), 'js') }}
         run: ./node_modules/.bin/wp-scripts lint-js ${{ inputs.ESLINT_ARGS }}
 
       - name: Lint style files
-        if: contains(fromJSON(${{ inputs.LINT_TOOLS }}), 'style')
+        if: ${{ contains(fromJSON(inputs.LINT_TOOLS), 'style') }}
         run: ./node_modules/.bin/wp-scripts lint-style ${{ inputs.STYLELINT_ARGS }}
 
       - name: Lint markdown files
-        if: contains(fromJSON(${{ inputs.LINT_TOOLS }}), 'md-docs')
+        if: ${{ contains(fromJSON(inputs.LINT_TOOLS), 'md-docs') }}
         run: ./node_modules/.bin/wp-scripts lint-md-docs ${{ inputs.MARKDOWNLINT_ARGS }}
 
       - name: Lint `package.json` files
-        if: contains(fromJSON(${{ inputs.LINT_TOOLS }}), 'pkg-json')
+        if: ${{ contains(fromJSON(inputs.LINT_TOOLS), 'pkg-json') }}
         run: ./node_modules/.bin/wp-scripts lint-pkg-json ${{ inputs.PACKAGE_JSONLINT_ARGS }}
