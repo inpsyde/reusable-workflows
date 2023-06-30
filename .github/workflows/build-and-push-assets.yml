@@ -48,6 +48,15 @@ on:
         type: string
         default: ''
         required: false
+      MAIN_BRANCH_NAME:
+        description: Main repository branch ("main" or "master" usually).
+        type: string
+        required: true
+      RELEASE_BRANCH_NAME:
+        description: Branch name where consequentially tags are moved.
+        type: string
+        default: ''
+        required: true
     secrets:
       NPM_REGISTRY_TOKEN:
         description: Authentication for the private npm registry.
@@ -60,10 +69,36 @@ on:
         required: true
       GITHUB_USER_SSH_KEY:
         description: Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`.
-        required: false
+        required: false # it's required if we need to bypass branch protection
 
 jobs:
+  checks:
+    runs-on: ubuntu-latest
+    outputs:
+      is_development_branch_last_commit: ${{ github.sha == steps.detect_development_branch_last_commit.outputs.development_branch_last_commit && 'yes' || 'no' }}
+      is_moved_tag: ${{ (github.ref_type == 'tag' && contains(steps.detect_tag_annotation.outputs.tag_annotation, github.workflow)) && 'yes' || 'no' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.MAIN_BRANCH_NAME }} # it is not possible to get tag annotation from detached state https://github.com/actions/runner/issues/712
+
+      - name: Find last commit
+        id: detect_development_branch_last_commit
+        run: |
+          echo "development_branch_last_commit=$(git --no-pager log -n 1 --pretty=tformat:'%H')" >> "$GITHUB_OUTPUT"
+
+      - name: Find tag message
+        id: detect_tag_annotation
+        if: ${{ github.ref_type == 'tag' }}
+        run: |
+          echo $(git --no-pager tag -l --format='%(contents)' ${{ github.ref_name }})
+          echo "tag_annotation=$(git --no-pager tag -l --format='%(contents)' ${{ github.ref_name }})" >> "$GITHUB_OUTPUT"
+
   compile-assets:
+    needs: checks
+    if: ${{ github.ref_type == 'branch' || (github.ref_type == 'tag' && needs.checks.outputs.is_moved_tag == 'no') }}
     defaults:
       run:
         working-directory: ${{ inputs.WORKING_DIRECTORY }}
@@ -78,20 +113,12 @@ jobs:
       TAG_BRANCH_NAME: ''                              # we'll override if the push is for tag
       LOCK_FILE: ''                                    # we'll override after checking files
       PACKAGE_MANAGER: 'yarn'                          # we'll override based on env/inputs
-      NO_CHANGES: ''                                   # we'll override if no changes to commit
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          # when current push is a tag, we check out the tag's SHA, we'll create a new branch later
-          ref: ${{ ((github.ref_type == 'tag') && github.sha) || github.ref }}
-
-      - name: Set production environment variables
-        if: ${{ contains(github.ref, 'refs/tags/') }}
-        run: |
-          echo "TAG_NAME=$(echo ${GITHUB_REF#refs/*/})" >> $GITHUB_ENV
-          echo "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_PROD }}" >> $GITHUB_ENV
+          ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
       - name: Set up SSH
         if: ${{ env.GITHUB_USER_SSH_KEY != '' }}
@@ -105,17 +132,40 @@ jobs:
           git config --global user.name "${{ secrets.GITHUB_USER_NAME }}"
           git config --global advice.addIgnoredFile false
           git config --global push.autoSetupRemote true
-          mkdir -p ${{ inputs.ASSETS_TARGET_PATHS }}
 
-      - name: Git pull on re-run
-        if: ${{ (github.run_attempt > 1) && (github.ref_type != 'tag') }}
-        run: git pull
+      - name: Set branch environment variables
+        if: ${{ github.ref_type == 'branch' }}
+        run: |
+          echo "BUILT_BRANCH_NAME=${{ github.ref_name }}-built" >> $GITHUB_ENV
 
-      - name: Checkout new branch when running for a tag
+      - name: Set tag environment variables
         if: ${{ github.ref_type == 'tag' }}
+        run: |
+          echo "TAG_NAME=$(echo ${GITHUB_REF#refs/*/})" >> $GITHUB_ENV
+          echo "COMPILE_SCRIPT=${{ env.COMPILE_SCRIPT_PROD }}" >> $GITHUB_ENV
+
+      - name: Checkout and merge the built branch
+        if: ${{ github.ref_type == 'branch' }}
+        run: |
+          git checkout ${{ env.BUILT_BRANCH_NAME }} || git checkout -b ${{ env.BUILT_BRANCH_NAME }}
+          git merge ${{ github.ref_name }}
+
+      - name: Checkout and merge the release branch
+        if: ${{ github.ref_type == 'tag' && needs.checks.outputs.is_development_branch_last_commit == 'yes' && inputs.RELEASE_BRANCH_NAME != ''}}
+        run: |
+          git checkout ${{ inputs.MAIN_BRANCH_NAME }}
+          git checkout ${{ inputs.RELEASE_BRANCH_NAME }} || git checkout -b ${{ inputs.RELEASE_BRANCH_NAME }}
+          git merge ${{ inputs.MAIN_BRANCH_NAME }}
+
+      - name: Checkout temporary tag branch
+        if: ${{ github.ref_type == 'tag' && (needs.checks.outputs.is_development_branch_last_commit == 'no' || inputs.RELEASE_BRANCH_NAME == '') }}
         run: |
           git checkout -b bot/compiled-assets/${{ github.sha }}
           echo "TAG_BRANCH_NAME=bot/compiled-assets/${{ github.sha }}" >> $GITHUB_ENV
+
+      - name: Prepare directories
+        run: |
+          mkdir -p ${{ env.ASSETS_TARGET_PATHS }}
 
       - name: Try determining package manager by lock file
         if: ${{ inputs.PACKAGE_MANAGER == 'auto' }}
@@ -150,23 +200,20 @@ jobs:
         run: |
           declare -a TARGET_PATHS_ARRAY=(${{ inputs.ASSETS_TARGET_PATHS }})
           for path in "${TARGET_PATHS_ARRAY[@]}"; do git add -f "${path}/*"; done
-          git add ./*.json && git add ./*.lock
-          git commit -m "[BOT] Add compiled assets for #${{ github.ref }}" --no-verify || ((echo "NO_CHANGES=yes" >> $GITHUB_ENV) && (echo "No changes to commit"))
-
-      - name: Git push
-        if: ${{ env.NO_CHANGES != 'yes' }}
-        run: git push
+          git add -A
+          git commit -m "[BUILD] ${{ github.sha }}" --no-verify || echo "No changes to commit"
+          git push
 
       - name: Move tag
-        if: ${{ env.TAG_NAME != '' && env.NO_CHANGES != 'yes' }}
+        if: ${{ github.ref_type == 'tag' }}
         run: |
           git tag -d ${{ env.TAG_NAME }}
           git push origin :refs/tags/${{ env.TAG_NAME }}
-          git tag ${{ env.TAG_NAME }}
+          git tag -a -m "[RELEASE] ${{ github.sha }} // Released by '${{ github.workflow }}'" ${{ env.TAG_NAME }}
           git push origin --tags
 
-      - name: Delete tag branch
-        if: ${{ always() && (env.TAG_BRANCH_NAME != '' && env.NO_CHANGES != 'yes') }}
+      - name: Delete temporary tag branch
+        if: ${{ always() && (env.TAG_BRANCH_NAME != '') }}
         run: |
           git checkout --detach
           git branch -d ${{ env.TAG_BRANCH_NAME }}
