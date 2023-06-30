@@ -62,6 +62,7 @@ via [inputs](#inputs).
 - It is recommended for calling workflows to
   use ["paths" settings](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#example-including-paths)
   to avoid running the workflow when no asset sources are changed.
+- You should avoid `paths` rules to keep build branches in sync. 
 
 ## Simple usage example:
 
@@ -73,14 +74,6 @@ on:
   push:
     tags: ['*']
     branches: ['*']
-    paths:
-      - '**workflows/build-and-push-assets.yml' # the workflow file itself
-      - '**.ts'
-      - '**.scss'
-      - '**.js'
-      - '**package.json'
-      - '**tsconfig.json'
-      - '**yarn.lock'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -186,7 +179,7 @@ the release branch contains linear development history with all tags.
 
 > What version should I use for Composer?
 
-For tags you can use the regular version. Tags always contains compiled assets.
+For tags, you can use the regular version. Tags always contains compiled assets.
 
 For branches instead of `dev-main` you should use `dev-main-built` (the same for other branches).
 
@@ -222,3 +215,11 @@ workflow can install these packages.
 
 Please note that in such cases it is a good practice not to use a "personal" GitHub user, but an 
 _ad-hoc_ "bot" user with an _ad-hoc_ private SSH key used only for the scope.
+
+---
+
+> What if I want to change the main branch?
+
+The best is don't do it unless you know merging the new main branch into the build branches
+gets to valid result. If it not the case you should delete manually
+`{{old_main_branch}}-built` branch and provide new value for `RELEASE_BRANCH_NAME` input.
