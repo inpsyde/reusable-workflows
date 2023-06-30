@@ -165,7 +165,7 @@ jobs:
 
       - name: Prepare directories
         run: |
-          mkdir -p ${{ env.ASSETS_TARGET_PATHS }}
+          mkdir -p ${{ inputs.ASSETS_TARGET_PATHS }}
 
       - name: Try determining package manager by lock file
         if: ${{ inputs.PACKAGE_MANAGER == 'auto' }}
