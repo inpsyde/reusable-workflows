@@ -97,7 +97,7 @@ then `PACKAGE_MANAGER` input is required**.
 | `GITHUB_USER_EMAIL`   | Email address for the GitHub user configuration                              |
 | `GITHUB_USER_NAME`    | Username for the GitHub user configuration                                   |
 | `GITHUB_USER_SSH_KEY` | Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME` |
-| `ENV_VARS`           | Additional environment variables as a JSON formatted object                              |
+| `ENV_VARS`            | Additional environment variables as a JSON formatted object                  |
 
 ## FAQ
 
