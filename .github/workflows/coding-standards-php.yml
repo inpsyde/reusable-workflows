@@ -27,6 +27,9 @@ on:
       COMPOSER_AUTH_JSON:
         description: Authentication for privately hosted packages and repositories as a JSON formatted object.
         required: false
+      ENV_VARS:
+        description: Additional environment variables as a JSON formatted object.
+        required: false
 
 jobs:
   coding-standards-php:
@@ -37,6 +40,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Set up custom environment variables
+        env:
+          ENV_VARS: ${{ secrets.ENV_VARS }}
+        if: ${{ env.ENV_VARS }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            JSON
+              .parse(process.env.ENV_VARS)
+              .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
