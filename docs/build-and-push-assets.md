@@ -137,7 +137,7 @@ jobs:
       GITHUB_USER_EMAIL: ${{ secrets.INPSYDE_BOT_EMAIL }}
       GITHUB_USER_NAME: ${{ secrets.INPSYDE_BOT_USER }}
       ENV_VARS: >-
-        [{"name":"EXAMPLE_USERNAME", "value":"deploybot"}]
+        [{"name":"EXAMPLE_USERNAME", "value":"${{ secrets.USERNAME }}"}]
 ```
 
 ---

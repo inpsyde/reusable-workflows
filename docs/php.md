@@ -46,7 +46,7 @@ jobs:
     secrets:
       COMPOSER_AUTH_JSON: ${{ secrets.COMPOSER_AUTH_JSON }}
       ENV_VARS: >-
-        [{"name":"EXAMPLE_USERNAME", "value":"deploybot"}]
+        [{"name":"EXAMPLE_USERNAME", "value":"${{ secrets.USERNAME }}"}]
     with:
       PHPCS_ARGS: '--report=summary'
 ```
@@ -99,7 +99,7 @@ jobs:
     secrets:
       COMPOSER_AUTH_JSON: ${{ secrets.COMPOSER_AUTH_JSON }}
       ENV_VARS: >-
-        [{"name":"EXAMPLE_USERNAME", "value":"deploybot"}]
+        [{"name":"EXAMPLE_USERNAME", "value":"${{ secrets.USERNAME }}"}]
     with:
       PSALM_ARGS: '--threads=3'
 ```
@@ -151,7 +151,7 @@ jobs:
     secrets:
       COMPOSER_AUTH_JSON: ${{ secrets.COMPOSER_AUTH_JSON }}
       ENV_VARS: >-
-        [{"name":"EXAMPLE_USERNAME", "value":"deploybot"}, {"name":"EXAMPLE_TOKEN", "value":"${{ secrets.EXAMPLE_TOKEN }}"}]
+        [{"name":"EXAMPLE_USERNAME", "value":"${{ secrets.USERNAME }}"}]
     with:
       PHP_MATRIX: >-
         ["7.4", "8.0", "8.1"]
@@ -203,7 +203,7 @@ jobs:
     secrets:
       COMPOSER_AUTH_JSON: ${{ secrets.COMPOSER_AUTH_JSON }}
       ENV_VARS: >-
-        [{"name":"EXAMPLE_USERNAME", "value":"deploybot"}]
+        [{"name":"EXAMPLE_USERNAME", "value":"${{ secrets.USERNAME }}"}]
     with:
       PHP_MATRIX: >-
         ["7.4", "8.0", "8.1"]

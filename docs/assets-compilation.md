@@ -54,7 +54,7 @@ jobs:
       COMPOSER_AUTH_JSON: ${{ secrets.COMPOSER_AUTH_JSON }}
       NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       ENV_VARS: >-
-        [{"name":"EXAMPLE_USERNAME", "value":"deploybot"}]
+        [{"name":"EXAMPLE_USERNAME", "value":"${{ secrets.USERNAME }}"}]
     with:
       COMPILE_ASSETS_ARGS: '-vv --env=root'
       NPM_REGISTRY_DOMAIN: 'https://registry.example.com/'

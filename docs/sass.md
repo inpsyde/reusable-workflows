@@ -49,7 +49,7 @@ jobs:
     secrets:
       NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       ENV_VARS: >-
-        [{"name":"EXAMPLE_USERNAME", "value":"deploybot"}]
+        [{"name":"EXAMPLE_USERNAME", "value":"${{ secrets.USERNAME }}"}]
     with:
       NODE_VERSION: 14
       STYLELINT_ARGS: './assets/scss/*.scss'
