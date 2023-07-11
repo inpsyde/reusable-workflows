@@ -37,9 +37,10 @@ jobs:
 
 #### Secrets
 
-| Name                 | Description                                 |
-|----------------------|---------------------------------------------|
-| `NPM_REGISTRY_TOKEN` | Authentication for the private npm registry |
+| Name                 | Description                                                 |
+|----------------------|-------------------------------------------------------------|
+| `NPM_REGISTRY_TOKEN` | Authentication for the private npm registry                 |
+| `ENV_VARS`           | Additional environment variables as a JSON formatted object |
 
 **Example with configuration parameters:**
 
@@ -52,6 +53,8 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/wp-scripts-lint-js.yml@main
     secrets:
       NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      ENV_VARS: >-
+        [{"name":"EXAMPLE_USERNAME", "value":"deploybot"}]
     with:
       NODE_VERSION: 18
       ESLINT_ARGS: '-o eslint_report.json -f json'

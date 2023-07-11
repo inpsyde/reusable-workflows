@@ -32,6 +32,9 @@ on:
       NPM_REGISTRY_TOKEN:
         description: Authentication for the private npm registry.
         required: false
+      ENV_VARS:
+        description: Additional environment variables as a JSON formatted object.
+        required: false
 
 jobs:
   static-analysis-sass:
@@ -46,6 +49,17 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Set up custom environment variables
+        env:
+          ENV_VARS: ${{ secrets.ENV_VARS }}
+        if: ${{ env.ENV_VARS }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            JSON
+              .parse(process.env.ENV_VARS)
+              .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
       - name: Set up node
         uses: actions/setup-node@v3

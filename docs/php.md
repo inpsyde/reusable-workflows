@@ -32,6 +32,7 @@ jobs:
 | Name                 | Description                                                                              |
 |----------------------|------------------------------------------------------------------------------------------|
 | `COMPOSER_AUTH_JSON` | Authentication for privately hosted packages and repositories as a JSON formatted object |
+| `ENV_VARS`           | Additional environment variables as a JSON formatted object                              |
 
 **Example with configuration parameters:**
 
@@ -44,6 +45,8 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/coding-standards-php.yml@main
     secrets:
       COMPOSER_AUTH_JSON: ${{ secrets.COMPOSER_AUTH_JSON }}
+      ENV_VARS: >-
+        [{"name":"EXAMPLE_USERNAME", "value":"deploybot"}]
     with:
       PHPCS_ARGS: '--report=summary'
 ```
@@ -82,6 +85,7 @@ jobs:
 | Name                 | Description                                                                              |
 |----------------------|------------------------------------------------------------------------------------------|
 | `COMPOSER_AUTH_JSON` | Authentication for privately hosted packages and repositories as a JSON formatted object |
+| `ENV_VARS`           | Additional environment variables as a JSON formatted object                              |
 
 **Example with configuration parameters:**
 
@@ -94,6 +98,8 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/static-analysis-php.yml@main
     secrets:
       COMPOSER_AUTH_JSON: ${{ secrets.COMPOSER_AUTH_JSON }}
+      ENV_VARS: >-
+        [{"name":"EXAMPLE_USERNAME", "value":"deploybot"}]
     with:
       PSALM_ARGS: '--threads=3'
 ```
@@ -183,6 +189,7 @@ jobs:
 | Name                 | Description                                                                              |
 |----------------------|------------------------------------------------------------------------------------------|
 | `COMPOSER_AUTH_JSON` | Authentication for privately hosted packages and repositories as a JSON formatted object |
+| `ENV_VARS`           | Additional environment variables as a JSON formatted object                              |
 
 **Example with configuration parameters:**
 
@@ -195,6 +202,8 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/lint-php.yml@main
     secrets:
       COMPOSER_AUTH_JSON: ${{ secrets.COMPOSER_AUTH_JSON }}
+      ENV_VARS: >-
+        [{"name":"EXAMPLE_USERNAME", "value":"deploybot"}]
     with:
       PHP_MATRIX: >-
         ["7.4", "8.0", "8.1"]

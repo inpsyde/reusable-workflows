@@ -38,6 +38,7 @@ jobs:
 | `GITHUB_USER_EMAIL`   | Email address for the GitHub user configuration                                          |
 | `GITHUB_USER_NAME`    | Username for the GitHub user configuration                                               |
 | `GITHUB_USER_SSH_KEY` | Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`             |
+| `ENV_VARS`            | Additional environment variables as a JSON formatted object                              |
 
 **Example with configuration parameters:**
 
@@ -52,6 +53,8 @@ jobs:
     secrets:
       COMPOSER_AUTH_JSON: ${{ secrets.COMPOSER_AUTH_JSON }}
       NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      ENV_VARS: >-
+        [{"name":"EXAMPLE_USERNAME", "value":"deploybot"}]
     with:
       COMPILE_ASSETS_ARGS: '-vv --env=root'
       NPM_REGISTRY_DOMAIN: 'https://registry.example.com/'

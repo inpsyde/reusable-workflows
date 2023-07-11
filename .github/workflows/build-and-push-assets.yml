@@ -61,6 +61,9 @@ on:
       GITHUB_USER_SSH_KEY:
         description: Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`.
         required: false
+      ENV_VARS:
+        description: Additional environment variables as a JSON formatted object.
+        required: false
 
 jobs:
   compile-assets:
@@ -86,6 +89,17 @@ jobs:
           fetch-depth: 0
           # when current push is a tag, we check out the tag's SHA, we'll create a new branch later
           ref: ${{ ((github.ref_type == 'tag') && github.sha) || github.ref }}
+
+      - name: Set up custom environment variables
+        env:
+          ENV_VARS: ${{ secrets.ENV_VARS }}
+        if: ${{ env.ENV_VARS }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            JSON
+              .parse(process.env.ENV_VARS)
+              .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
       - name: Set production environment variables
         if: ${{ contains(github.ref, 'refs/tags/') }}

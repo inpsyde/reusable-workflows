@@ -32,9 +32,10 @@ jobs:
 
 #### Secrets
 
-| Name                 | Description                                 |
-|----------------------|---------------------------------------------|
-| `NPM_REGISTRY_TOKEN` | Authentication for the private npm registry |
+| Name                 | Description                                                 |
+|----------------------|-------------------------------------------------------------|
+| `NPM_REGISTRY_TOKEN` | Authentication for the private npm registry                 |
+| `ENV_VARS`           | Additional environment variables as a JSON formatted object |
 
 **Example with configuration parameters:**
 
@@ -47,6 +48,8 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/static-analysis-js.yml@main
     secrets:
       NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      ENV_VARS: >-
+        [{"name":"EXAMPLE_USERNAME", "value":"deploybot"}]
     with:
       NODE_VERSION: 14
       ESLINT_ARGS: './resources --ext .js'
@@ -83,9 +86,10 @@ jobs:
 
 #### Secrets
 
-| Name                 | Description                                 |
-|----------------------|---------------------------------------------|
-| `NPM_REGISTRY_TOKEN` | Authentication for the private npm registry |
+| Name                 | Description                                                 |
+|----------------------|-------------------------------------------------------------|
+| `NPM_REGISTRY_TOKEN` | Authentication for the private npm registry                 |
+| `ENV_VARS`           | Additional environment variables as a JSON formatted object |
 
 **Example with configuration parameters:**
 
@@ -98,6 +102,8 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/tests-unit-js.yml@main
     secrets:
       NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      ENV_VARS: >-
+        [{"name":"EXAMPLE_USERNAME", "value":"deploybot"}]
     with:
       NODE_VERSION: 14
       JEST_ARGS: 'my-test --reporters=jest-junit --coverage'
