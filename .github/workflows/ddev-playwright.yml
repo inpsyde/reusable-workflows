@@ -83,6 +83,9 @@ jobs:
       - uses: jonaseberle/github-action-setup-ddev@v1
         with:
           autostart: false
+      
+      - name: Add CI env var inside DDEV
+        run: ddev config --web-environment-add="CI=true"
 
       - name: Set up DDEV environment variables
         env:
