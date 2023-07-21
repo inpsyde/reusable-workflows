@@ -107,7 +107,10 @@ jobs:
       - name: Add NODE_AUTH_TOKEN into DDEV
         env:
           NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
-        run: ddev config --web-environment-add="NODE_AUTH_TOKEN=${{ env.NPM_REGISTRY_TOKEN }}"
+        run: |
+            ddev config --web-environment-add="NODE_AUTH_TOKEN=${{ env.NPM_REGISTRY_TOKEN }}"
+            ddev npm config set @inpsyde:registry 'https://npm.pkg.github.com'
+            ddev npm config set //npm.pkg.github.com/:_authToken ${{ secrets.NPM_REGISTRY_TOKEN }}
         if: env.NPM_REGISTRY_TOKEN
 
       - name: Configure DDEV PHP version
