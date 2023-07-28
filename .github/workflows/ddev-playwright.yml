@@ -111,7 +111,6 @@ jobs:
         env:
           NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
         run: |
-            ddev config --web-environment-add="NODE_AUTH_TOKEN=${{ env.NPM_REGISTRY_TOKEN }}"; exit 0
             cat <<EOF > $GITHUB_WORKSPACE/.npmrc
             //npm.pkg.github.com/:_authToken=${{env.NPM_REGISTRY_TOKEN}}
             @inpsyde:registry=https://npm.pkg.github.com/
