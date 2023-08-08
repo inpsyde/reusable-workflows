@@ -98,10 +98,8 @@ jobs:
 
       - name: Install dependencies [yarn]
         if: ${{ inputs.PACKAGE_MANAGER }} == "yarn" }}
-        env:
-          NODE_CACHE_MODE: ${{ env.NODE_CACHE_MODE }}
         run: |
-          if [[ ${{ NODE_CACHE_MODE }} == '']] then
+          if [[ "${{ env.NODE_CACHE_MODE }}" == '']] then
             yarn
           else
             yarn --frozen-lockfile
@@ -109,10 +107,8 @@ jobs:
 
       - name: Install dependencies [npm]
         if: ${{ inputs.PACKAGE_MANAGER }} == "npm" }}
-        env:
-          NODE_CACHE_MODE: ${{ env.NODE_CACHE_MODE }}
         run: |
-          if [[ ${{ NODE_CACHE_MODE }} == '']] then
+          if [[ "${{ env.NODE_CACHE_MODE }}" == '']] then
               npm install
           else
               npm ci
