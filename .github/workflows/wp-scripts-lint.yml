@@ -85,9 +85,9 @@ jobs:
 
       - name: Setup node cache mode
         run: |
-          [ ${{ inputs.PACKAGE_MANAGER }} == "npm" ] && [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] && echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV || echo "No package-lock.json found"
-          [ ${{ inputs.PACKAGE_MANAGER }} == "npm" ] && [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ] && echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV || echo "No npm-shrinkwrap.json found"
-          [ ${{ inputs.PACKAGE_MANAGER }} == "yarn" ] && [ -f "${GITHUB_WORKSPACE}/yarn.lock" ] && echo "NODE_CACHE_MODE=yarn" >> $GITHUB_ENV || echo "No yarn.lock found"
+          [ "${{ inputs.PACKAGE_MANAGER }}" == "npm" ] && [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] && echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV || echo "No package-lock.json found"
+          [ "${{ inputs.PACKAGE_MANAGER }}" == "npm" ] && [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ] && echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV || echo "No npm-shrinkwrap.json found"
+          [ "${{ inputs.PACKAGE_MANAGER }}" == "yarn" ] && [ -f "${GITHUB_WORKSPACE}/yarn.lock" ] && echo "NODE_CACHE_MODE=yarn" >> $GITHUB_ENV || echo "No yarn.lock found"
 
       - name: Set up node
         uses: actions/setup-node@v3
@@ -97,7 +97,7 @@ jobs:
           cache: ${{ env.NODE_CACHE_MODE }}
 
       - name: Install dependencies [yarn]
-        if: ${{ inputs.PACKAGE_MANAGER }} == "yarn" }}
+        if: ${{ inputs.PACKAGE_MANAGER == "yarn" }}
         run: |
           if [ "${{ env.NODE_CACHE_MODE }}" == '']; then
             yarn
@@ -106,7 +106,7 @@ jobs:
           fi
 
       - name: Install dependencies [npm]
-        if: ${{ inputs.PACKAGE_MANAGER }} == "npm" }}
+        if: ${{ inputs.PACKAGE_MANAGER == "npm" }}
         run: |
           if [ "${{ env.NODE_CACHE_MODE }}" == '']; then
               npm install
