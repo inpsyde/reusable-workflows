@@ -84,10 +84,10 @@ jobs:
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
       - name: Setup node cache mode
-        run: |          
-          [ ${{ inputs.PACKAGE_MANAGER }} == "npm" && -f "${GITHUB_WORKSPACE}/package-lock.json" ] && echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV || echo "No package-lock.json found"
-          [ ${{ inputs.PACKAGE_MANAGER }} == "npm" && -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ] && echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV || echo "No npm-shrinkwrap.json found"
-          [ ${{ inputs.PACKAGE_MANAGER }} == "yarn" &&-f "${GITHUB_WORKSPACE}/yarn.lock" ] && echo "NODE_CACHE_MODE=yarn" >> $GITHUB_ENV || echo "No yarn.lock found"
+        run: |
+          [ ${{ inputs.PACKAGE_MANAGER }} == "npm" ] && [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] && echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV || echo "No package-lock.json found"
+          [ ${{ inputs.PACKAGE_MANAGER }} == "npm" ] && [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ] && echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV || echo "No npm-shrinkwrap.json found"
+          [ ${{ inputs.PACKAGE_MANAGER }} == "yarn" ] && [ -f "${GITHUB_WORKSPACE}/yarn.lock" ] && echo "NODE_CACHE_MODE=yarn" >> $GITHUB_ENV || echo "No yarn.lock found"
 
       - name: Set up node
         uses: actions/setup-node@v3
