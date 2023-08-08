@@ -91,6 +91,8 @@ jobs:
             echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV
           elif [[ ${{ inputs.PACKAGE_MANAGER }} == "npm" && -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ]]; then
             echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV
+          else
+            echo "No .lock files were found. Using no NODE_CACHE_MODE"
           fi
 
       - name: Set up node
