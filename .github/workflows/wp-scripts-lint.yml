@@ -96,22 +96,22 @@ jobs:
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
           cache: ${{ env.NODE_CACHE_MODE }}
 
-      - name: Install dependencies [yarn]
-        if: ${{ inputs.PACKAGE_MANAGER == 'yarn' }}
+      - name: Install dependencies
         run: |
-          if [[ "${{ env.NODE_CACHE_MODE }}" == "" ]]; then
-            yarn
+          if [[ "${{ inputs.PACKAGE_MANAGER }}" == "yarn" ]]; then
+            if [[ "${{ env.NODE_CACHE_MODE }}" == "" ]]; then
+              yarn
+            else
+              yarn --frozen-lockfile
+            fi
+          elif  [[ "${{ inputs.PACKAGE_MANAGER }}" == "npm" ]]; then
+            if [[ "${{ env.NODE_CACHE_MODE }}" == "" ]]; then
+                npm install
+            else
+                npm ci
+            fi
           else
-            yarn --frozen-lockfile
-          fi
-
-      - name: Install dependencies [npm]
-        if: ${{ inputs.PACKAGE_MANAGER == 'npm' }}
-        run: |
-          if [[ "${{ env.NODE_CACHE_MODE }}" == "" ]]; then
-              npm install
-          else
-              npm ci
+            echo "PACKAGE_MANAGER ${{ inputs.PACKAGE_MANAGER }} is not supported by this workflow."
           fi
 
       - name: Lint script files
