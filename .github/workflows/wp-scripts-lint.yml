@@ -97,22 +97,24 @@ jobs:
           cache: ${{ env.NODE_CACHE_MODE }}
 
       - name: Install dependencies
-        run: |
-          if [[ "${{ inputs.PACKAGE_MANAGER }}" == "yarn" ]]; then
-            if [[ "${{ env.NODE_CACHE_MODE }}" == "" ]]; then
-              yarn
-            else
-              yarn --frozen-lockfile
-            fi
-          elif  [[ "${{ inputs.PACKAGE_MANAGER }}" == "npm" ]]; then
-            if [[ "${{ env.NODE_CACHE_MODE }}" == "" ]]; then
-                npm install
-            else
-                npm ci
-            fi
-          else
-            echo "PACKAGE_MANAGER ${{ inputs.PACKAGE_MANAGER }} is not supported by this workflow."
-          fi
+        run: ${{ inputs.PACKAGE_MANAGER }}
+      #- name: Install dependencies
+      #  run: |
+      #    if [[ "${{ inputs.PACKAGE_MANAGER }}" == "yarn" ]]; then
+      #      if [[ "${{ env.NODE_CACHE_MODE }}" == "" ]]; then
+      #        yarn
+      #      else
+      #        yarn --frozen-lockfile
+      #      fi
+      #    elif  [[ "${{ inputs.PACKAGE_MANAGER }}" == "npm" ]]; then
+      #      if [[ "${{ env.NODE_CACHE_MODE }}" == "" ]]; then
+      #          npm install
+      #      else
+      #          npm ci
+      #      fi
+      #    else
+      #      echo "PACKAGE_MANAGER ${{ inputs.PACKAGE_MANAGER }} is not supported by this workflow."
+      #    fi
 
       - name: Lint script files
         if: ${{ contains(fromJSON(inputs.LINT_TOOLS), 'js') }}
