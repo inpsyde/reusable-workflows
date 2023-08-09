@@ -101,9 +101,6 @@ jobs:
           ARGS: ${{ env.NODE_CACHE_MODE == 'yarn' && '--frozen-lockfile' || env.NODE_CACHE_MODE == 'npm' && 'ci' || 'install' }}
         run: ${{ format('{0} {1}', inputs.PACKAGE_MANAGER, env.ARGS) }}
 
-      #- name: Install dependencies
-      #  run: ${{ env.INSTALL_NPM_DEPS_CMD }}
-
       - name: Lint script files
         if: ${{ contains(fromJSON(inputs.LINT_TOOLS), 'js') }}
         run: ./node_modules/.bin/wp-scripts lint-js ${{ inputs.ESLINT_ARGS }}
