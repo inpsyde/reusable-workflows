@@ -3,14 +3,19 @@ name: WP Scripts lint
 on:
   workflow_call:
     inputs:
-      NPM_REGISTRY_DOMAIN:
-        description: Domain of the private npm registry.
-        default: https://npm.pkg.github.com/
-        required: false
+      NODE_OPTIONS:
+        description: Space-separated list of command-line Node options.
         type: string
+        default: ''
+        required: false
       NODE_VERSION:
         description: Node version with which the static code analysis is to be executed.
         default: 16
+        required: false
+        type: string
+      NPM_REGISTRY_DOMAIN:
+        description: Domain of the private npm registry.
+        default: https://npm.pkg.github.com/
         required: false
         type: string
       PACKAGE_MANAGER:
@@ -18,11 +23,6 @@ on:
         default: 'yarn'
         required: false
         type: string
-      NODE_OPTIONS:
-        description: Space-separated list of command-line Node options.
-        type: string
-        default: ''
-        required: false
       LINT_TOOLS:
         description: Array of checks to be executed by @wordpress/scripts.
         # [!] Note: "pkg-json" is not included by default. This is currently internally reviewed.
@@ -85,9 +85,13 @@ jobs:
 
       - name: Setup node cache mode
         run: |
-          [[ "${{ inputs.PACKAGE_MANAGER }}" == 'npm' ]] && [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] && echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV || echo "No package-lock.json found"
-          [[ "${{ inputs.PACKAGE_MANAGER }}" == 'npm' ]] && [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ] && echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV || echo "No npm-shrinkwrap.json found"
-          [[ "${{ inputs.PACKAGE_MANAGER }}" == 'yarn' ]] && [ -f "${GITHUB_WORKSPACE}/yarn.lock" ] && echo "NODE_CACHE_MODE=yarn" >> $GITHUB_ENV || echo "No yarn.lock found"
+          if [ "${{ inputs.PACKAGE_MANAGER }}" == 'npm' ] && { [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ]; }; then
+            echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV
+          elif [ "${{ inputs.PACKAGE_MANAGER }}" == 'yarn' ] && [ -f "${GITHUB_WORKSPACE}/yarn.lock" ]; then
+            echo "NODE_CACHE_MODE=yarn" >> $GITHUB_ENV
+          else
+            echo "No lock files found or unknown package manager"
+          fi
 
       - name: Set up node
         uses: actions/setup-node@v3
