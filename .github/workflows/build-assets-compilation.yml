@@ -91,13 +91,13 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
-      - name: Setup Git
+      - name: Set up Git
         if: ${{ env.GITHUB_USER_EMAIL != '' && env.GITHUB_USER_NAME != '' }}
         run: |
           git config --global user.email "${{ secrets.GITHUB_USER_EMAIL }}" 
           git config --global user.name "${{ secrets.GITHUB_USER_NAME }}"
 
-      - name: Setup node cache mode
+      - name: Set up node cache mode
         run: |
           if [ "${{ inputs.PACKAGE_MANAGER }}" == 'npm' ] && { [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ]; }; then
             echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV
@@ -137,7 +137,7 @@ jobs:
         run: |
           echo "TAG_NAME=$(echo ${GITHUB_REF#refs/*/})" >> $GITHUB_ENV
           echo "BUILD_ENV=production" >> $GITHUB_ENV
-          echo "::notice::The `ENCORE_ENV` variable is deprecated and will be removed soon. If you use it, please change it to `BUILD_ENV`."
+          echo "::notice::The ENCORE_ENV variable is deprecated and will be removed soon. If you use it, please change it to BUILD_ENV."
           echo "ENCORE_ENV=production" >> $GITHUB_ENV
 
       - name: Compile assets

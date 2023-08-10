@@ -12,7 +12,6 @@ To achieve that, the reusable workflow:
 6. Runs `wp dist-archive` to create the final archive (with builtin support for a `.distignore` file)
 7. Uploads it as an artifact for download or further processing
 
-
 ## Simple usage example:
 
 ```yml
@@ -42,15 +41,16 @@ jobs:
 
 | Name                  | Default                                                       | Description                                                                       |
 |-----------------------|---------------------------------------------------------------|-----------------------------------------------------------------------------------|
-| `PLUGIN_MAIN_FILE`    | `"index.php"`                                                 | The name of the plugin main file                                                  |
-| `PLUGIN_VERSION`      | -                                                             | The plugin version                                                                |
-| `ARCHIVE_NAME`        | `""`                                                          | The base name of the resulting zip archive. Falls back to the repository name     |
-| `COMPOSER_ARGS`       | `'--no-dev --no-scripts --prefer-dist --optimize-autoloader'` | Set of arguments passed to Composer                                               |
+| `NODE_OPTIONS`        | `''`                                                          | Space-separated list of command-line Node options                                 |
 | `NODE_VERSION`        | `"16"`                                                        | Node version with which the assets will be compiled                               |
 | `NPM_REGISTRY_DOMAIN` | `"https://npm.pkg.github.com/"`                               | Domain of the private npm registry                                                |
-| `EXTRA_PHP_FILE`      | `""`                                                          | Path to a custom php script to run before creating the release archive            |
-| `PRE_SCRIPT`          | `""`                                                          | Run custom shell code before creating the release archive                         |
 | `PACKAGE_MANAGER`     | `"yarn"`                                                      | Package manager with which the dependencies should be installed (`npm` or `yarn`) |
+| `COMPOSER_ARGS`       | `'--no-dev --no-scripts --prefer-dist --optimize-autoloader'` | Set of arguments passed to Composer                                               |
+| `PHP_VERSION`         | `"8.0"`                                                       | PHP version to use during packaging                                               |
+| `ARCHIVE_NAME`        | `""`                                                          | The base name of the resulting zip archive. Falls back to the repository name     |
+| `PLUGIN_MAIN_FILE`    | `"index.php"`                                                 | The name of the plugin main file                                                  |
+| `PLUGIN_VERSION`      | -                                                             | The plugin version                                                                |
+| `PRE_SCRIPT`          | `""`                                                          | Run custom shell code before creating the release archive                         |
 
 #### A note on `PLUGIN_VERSION`
 
@@ -63,6 +63,6 @@ of the project/team/client are known.
 
 | Name                 | Description                                                                              |
 |----------------------|------------------------------------------------------------------------------------------|
-| `NPM_REGISTRY_TOKEN` | Authentication for the private npm registry                                              |
 | `COMPOSER_AUTH_JSON` | Authentication for privately hosted packages and repositories as a JSON formatted object |
+| `NPM_REGISTRY_TOKEN` | Authentication for the private npm registry                                              |
 | `ENV_VARS`           | Additional environment variables as a JSON formatted object                              |
