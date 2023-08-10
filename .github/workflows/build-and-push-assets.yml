@@ -3,14 +3,24 @@ name: Build and push assets
 on:
   workflow_call:
     inputs:
+      NODE_OPTIONS:
+        description: Space-separated list of command-line Node options.
+        type: string
+        default: ''
+        required: false
+      NODE_VERSION:
+        description: Node version with which the static code analysis is to be executed.
+        default: 16
+        required: false
+        type: string
       NPM_REGISTRY_DOMAIN:
         description: Domain of the private npm registry.
         default: https://npm.pkg.github.com/
         required: false
         type: string
-      NODE_VERSION:
-        description: Node version with which the assets will be compiled.
-        default: 16
+      PACKAGE_MANAGER:
+        description: Package manager with which the dependencies should be installed (`npm` or `yarn`).
+        default: 'yarn'
         required: false
         type: string
       WORKING_DIRECTORY:
@@ -18,11 +28,6 @@ on:
         default: './'
         required: false
         type: string
-      PACKAGE_MANAGER:
-        description: Package manager with which the dependencies should be installed (`npm` or `yarn`).
-        type: string
-        default: 'auto'
-        required: false
       DEPS_INSTALL:
         description: Whether or not to install dependencies before compiling.
         type: boolean
@@ -43,11 +48,6 @@ on:
         default: './assets'
         required: false
         type: string
-      NODE_OPTIONS:
-        description: Space-separated list of command-line Node options.
-        type: string
-        default: ''
-        required: false
     secrets:
       NPM_REGISTRY_TOKEN:
         description: Authentication for the private npm registry.
@@ -75,6 +75,7 @@ jobs:
     env:
       NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
       NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      NODE_CACHE_MODE: ''
       GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
       COMPILE_SCRIPT: ${{ inputs.COMPILE_SCRIPT_DEV }} # we'll override if the push is for tag
       TAG_NAME: ''                                     # we'll override if the push is for tag
@@ -113,7 +114,7 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
-      - name: Setup Git
+      - name: Set up Git
         run: |
           git config --global user.email "${{ secrets.GITHUB_USER_EMAIL }}" 
           git config --global user.name "${{ secrets.GITHUB_USER_NAME }}"
@@ -131,31 +132,27 @@ jobs:
           git checkout -b bot/compiled-assets/${{ github.sha }}
           echo "TAG_BRANCH_NAME=bot/compiled-assets/${{ github.sha }}" >> $GITHUB_ENV
 
-      - name: Try determining package manager by lock file
-        if: ${{ inputs.PACKAGE_MANAGER == 'auto' }}
+      - name: Set up node cache mode
         run: |
-          [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] && echo "LOCK_FILE=npm" >> $GITHUB_ENV || echo "No package-lock.json found"
-          [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ] && echo "LOCK_FILE=npm" >> $GITHUB_ENV || echo "No npm-shrinkwrap.json found"
-          [ -f "${GITHUB_WORKSPACE}/yarn.lock" ] && echo "LOCK_FILE=yarn" >> $GITHUB_ENV || echo "No yarn.lock found"
-
-      - name: Warning for fallback package manager
-        if: ${{ (inputs.PACKAGE_MANAGER == 'auto') && (env.LOCK_FILE == '') }}
-        run: echo "::warning::PACKAGE_MANAGER input not defined, and no lock file found, using Yarn as default."
-
-      - name: Determine package manager
-        if: ${{ (env.LOCK_FILE == 'npm') || (inputs.PACKAGE_MANAGER == 'npm') }}
-        run: echo "PACKAGE_MANAGER=npm" >> $GITHUB_ENV
+          if [ "${{ inputs.PACKAGE_MANAGER }}" == 'npm' ] && { [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ]; }; then
+            echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV
+          elif [ "${{ inputs.PACKAGE_MANAGER }}" == 'yarn' ] && [ -f "${GITHUB_WORKSPACE}/yarn.lock" ]; then
+            echo "NODE_CACHE_MODE=yarn" >> $GITHUB_ENV
+          else
+            echo "No lock files found or unknown package manager"
+          fi
 
       - name: Set up node
         uses: actions/setup-node@v3
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
-          cache: ${{ env.PACKAGE_MANAGER }}
+          cache: ${{ env.NODE_CACHE_MODE }}
 
       - name: Install dependencies
-        if: ${{ inputs.DEPS_INSTALL }}
-        run: ${{ ((env.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm install' }}
+        env:
+          ARGS: ${{ env.NODE_CACHE_MODE == 'yarn' && '--frozen-lockfile' || env.NODE_CACHE_MODE == 'npm' && 'ci' || 'install' }}
+        run: ${{ format('{0} {1}', inputs.PACKAGE_MANAGER, env.ARGS) }}
 
       - name: Compile assets
         run: ${{ ((env.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm run' }} ${{ env.COMPILE_SCRIPT }}
