@@ -3,6 +3,41 @@ name: Create plugin archive
 on:
   workflow_call:
     inputs:
+      NODE_OPTIONS:
+        description: Space-separated list of command-line Node options.
+        type: string
+        default: ''
+        required: false
+      NODE_VERSION:
+        description: Node version with which the static code analysis is to be executed.
+        default: 16
+        required: false
+        type: string
+      NPM_REGISTRY_DOMAIN:
+        description: Domain of the private npm registry.
+        default: https://npm.pkg.github.com/
+        required: false
+        type: string
+      PACKAGE_MANAGER:
+        description: Package manager with which the dependencies should be installed (`npm` or `yarn`).
+        default: 'yarn'
+        required: false
+        type: string
+      COMPOSER_ARGS:
+        description: Set of arguments passed to Composer.
+        default: '--no-dev --no-scripts --prefer-dist --optimize-autoloader'
+        required: false
+        type: string
+      PHP_VERSION:
+        description: PHP version to use during packaging.
+        default: "8.0"
+        required: false
+        type: string
+      ARCHIVE_NAME:
+        description: The base name of the resulting zip archive. Falls back to the repository name.
+        default: ''
+        required: false
+        type: string
       PLUGIN_MAIN_FILE:
         description: The name of the main plugin file.
         required: false
@@ -12,41 +47,11 @@ on:
         description: The new plugin version.
         required: true
         type: string
-      ARCHIVE_NAME:
-        description: The base name of the resulting zip archive. Falls back to the repository name.
-        default: ''
-        required: false
-        type: string
-      COMPOSER_ARGS:
-        description: Set of arguments passed to Composer.
-        default: '--no-dev --no-scripts --prefer-dist --optimize-autoloader'
-        required: false
-        type: string
-      NPM_REGISTRY_DOMAIN:
-        description: Domain of the private npm registry.
-        default: https://npm.pkg.github.com/
-        required: false
-        type: string
-      NODE_VERSION:
-        description: Node version to use for asset compilation.
-        default: 16
-        required: false
-        type: string
-      PHP_VERSION:
-        description: PHP version to use during packaging.
-        default: "8.0"
-        required: false
-        type: string
       PRE_SCRIPT:
         description: Run custom shell code before creating the release archive.
         default: ''
         required: false
         type: string
-      PACKAGE_MANAGER:
-          description: Package manager with which the dependencies should be installed (`npm` or `yarn`).
-          default: 'yarn'
-          required: false
-          type: string
     secrets:
       COMPOSER_AUTH_JSON:
         description: Authentication for privately hosted packages and repositories as a JSON formatted object.
@@ -63,12 +68,14 @@ jobs:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     env:
+      NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      NODE_CACHE_MODE: ''
+      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
       # Disables symlinking of local path repositories.
       # During development, symlinking is preferable.
       # In resulting builds, you will likely want to ship the actual install location and remove the source directory.
       COMPOSER_MIRROR_PATH_REPOS: 1
-      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
-      NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
     outputs:
       artifact: ${{ steps.set-artifact-name.outputs.artifact }}
     steps:
@@ -96,6 +103,16 @@ jobs:
             JSON
               .parse(process.env.ENV_VARS)
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
+
+      - name: Setup node cache mode
+        run: |
+          if [ "${{ inputs.PACKAGE_MANAGER }}" == 'npm' ] && { [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ]; }; then
+            echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV
+          elif [ "${{ inputs.PACKAGE_MANAGER }}" == 'yarn' ] && [ -f "${GITHUB_WORKSPACE}/yarn.lock" ]; then
+            echo "NODE_CACHE_MODE=yarn" >> $GITHUB_ENV
+          else
+            echo "No lock files found or unknown package manager"
+          fi
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -149,7 +166,7 @@ jobs:
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
-          cache: ${{ inputs.PACKAGE_MANAGER }}
+          cache: ${{ env.NODE_CACHE_MODE }}
 
       - name: Add commit hash to plugin header
         env:
