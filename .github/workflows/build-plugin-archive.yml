@@ -137,20 +137,6 @@ jobs:
           echo "assets-compiler=$( hasDep inpsyde/composer-assets-compiler )" >> $GITHUB_OUTPUT
           echo "translation-downloader=$( hasDep inpsyde/wp-translation-downloader )" >> $GITHUB_OUTPUT
 
-      - name: Run Composer Asset Compiler
-        if: steps.composer-tools.outputs.assets-compiler == '0'
-        run: composer compile-assets
-
-      - name: Run WordPress Translation Downloader
-        if: steps.composer-tools.outputs.translation-downloader == '0'
-        run: composer wp-translation-downloader:download
-
-      - name: Install Composer dependencies without dev dependencies
-        # ⬑ Now we want to get rid of dev dependencies and most probably skip composer scripts
-        uses: ramsey/composer-install@v2
-        with:
-          composer-options: ${{ inputs.COMPOSER_ARGS }}
-
       - name: Check for package.json
         id: check-for-package
         run: |
@@ -167,6 +153,20 @@ jobs:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
           cache: ${{ env.NODE_CACHE_MODE }}
+
+      - name: Run Composer Asset Compiler
+        if: steps.composer-tools.outputs.assets-compiler == '0' && steps.check-for-package.outputs.has_package == 'true'
+        run: composer compile-assets
+
+      - name: Run WordPress Translation Downloader
+        if: steps.composer-tools.outputs.translation-downloader == '0'
+        run: composer wp-translation-downloader:download
+
+      - name: Install Composer dependencies without dev dependencies
+        # ⬑ Now we want to get rid of dev dependencies and most probably skip composer scripts
+        uses: ramsey/composer-install@v2
+        with:
+          composer-options: ${{ inputs.COMPOSER_ARGS }}
 
       - name: Add commit hash to plugin header
         env:
