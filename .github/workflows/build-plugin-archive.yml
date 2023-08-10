@@ -82,7 +82,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup plugin base name
+      - name: Set up plugin base name
         env:
           ARCHIVE_NAME: ${{ inputs.ARCHIVE_NAME }}
         id: plugin-data
@@ -104,7 +104,7 @@ jobs:
               .parse(process.env.ENV_VARS)
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
-      - name: Setup node cache mode
+      - name: Set up node cache mode
         run: |
           if [ "${{ inputs.PACKAGE_MANAGER }}" == 'npm' ] && { [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ]; }; then
             echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV
