@@ -51,6 +51,7 @@ jobs:
 | `PLUGIN_MAIN_FILE`    | `"index.php"`                                                 | The name of the plugin main file                                                  |
 | `PLUGIN_VERSION`      | -                                                             | The plugin version                                                                |
 | `PRE_SCRIPT`          | `""`                                                          | Run custom shell code before creating the release archive                         |
+| `COMPILE_ASSETS_ARGS` | `'-v --env=root'`                                             | Set of arguments passed to Composer Asset Compiler                                |
 
 #### A note on `PLUGIN_VERSION`
 

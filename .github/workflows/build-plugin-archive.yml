@@ -52,6 +52,11 @@ on:
         default: ''
         required: false
         type: string
+      COMPILE_ASSETS_ARGS:
+        description: Set of arguments passed to Composer Asset Compiler.
+        default: '-v --env=root'
+        required: false
+        type: string
     secrets:
       COMPOSER_AUTH_JSON:
         description: Authentication for privately hosted packages and repositories as a JSON formatted object.
@@ -156,7 +161,7 @@ jobs:
 
       - name: Run Composer Asset Compiler
         if: steps.composer-tools.outputs.assets-compiler == '0' && steps.check-for-package.outputs.has_package == 'true'
-        run: composer compile-assets
+        run: composer compile-assets ${{ inputs.COMPILE_ASSETS_ARGS }}
 
       - name: Run WordPress Translation Downloader
         if: steps.composer-tools.outputs.translation-downloader == '0'
