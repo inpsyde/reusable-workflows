@@ -3,9 +3,14 @@ name: Assets compilation
 on:
   workflow_call:
     inputs:
-      PHP_VERSION:
-        description: PHP version with which the assets compilation is to be executed.
-        default: "8.0"
+      NODE_OPTIONS:
+        description: Space-separated list of command-line Node options.
+        type: string
+        default: ''
+        required: false
+      NODE_VERSION:
+        description: Node version with which the static code analysis is to be executed.
+        default: 16
         required: false
         type: string
       NPM_REGISTRY_DOMAIN:
@@ -13,9 +18,14 @@ on:
         default: https://npm.pkg.github.com/
         required: false
         type: string
-      NODE_VERSION:
-        description: Node version with which the assets will be compiled.
-        default: 16
+      PACKAGE_MANAGER:
+        description: Package manager with which the dependencies should be installed (`npm` or `yarn`).
+        default: 'yarn'
+        required: false
+        type: string
+      PHP_VERSION:
+        description: PHP version with which the assets compilation is to be executed.
+        default: "8.0"
         required: false
         type: string
       COMPOSER_ARGS:
@@ -28,11 +38,6 @@ on:
         default: '-v --env=root'
         required: false
         type: string
-      NODE_OPTIONS:
-        description: Space-separated list of command-line Node options.
-        type: string
-        default: ''
-        required: false
     secrets:
       COMPOSER_AUTH_JSON:
         description: Authentication for privately hosted packages and repositories as a JSON formatted object.
@@ -58,9 +63,10 @@ jobs:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     env:
-      NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
       COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
+      NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
       NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      NODE_CACHE_MODE: ''
       GITHUB_USER_EMAIL: ${{ secrets.GITHUB_USER_EMAIL }}
       GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
       GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
@@ -91,11 +97,22 @@ jobs:
           git config --global user.email "${{ env.GITHUB_USER_EMAIL }}"
           git config --global user.name "${{ env.GITHUB_USER_NAME }}"
 
+      - name: Set up node cache mode
+        run: |
+          if [ "${{ inputs.PACKAGE_MANAGER }}" == 'npm' ] && { [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ]; }; then
+            echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV
+          elif [ "${{ inputs.PACKAGE_MANAGER }}" == 'yarn' ] && [ -f "${GITHUB_WORKSPACE}/yarn.lock" ]; then
+            echo "NODE_CACHE_MODE=yarn" >> $GITHUB_ENV
+          else
+            echo "No lock files found or unknown package manager"
+          fi
+
       - name: Set up node
         uses: actions/setup-node@v3
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
+          cache: ${{ env.NODE_CACHE_MODE }}
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -109,14 +126,6 @@ jobs:
         with:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
 
-      - name: Cache npm dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
       - name: Set environment variables [DEV]
         if: ${{ !contains(github.ref, 'refs/tags/') }}
         run: |
@@ -128,7 +137,7 @@ jobs:
         run: |
           echo "TAG_NAME=$(echo ${GITHUB_REF#refs/*/})" >> $GITHUB_ENV
           echo "BUILD_ENV=production" >> $GITHUB_ENV
-          echo "::notice::The `ENCORE_ENV` variable is deprecated and will be removed soon. If you use it, please change it to `BUILD_ENV`."
+          echo "::notice::The ENCORE_ENV variable is deprecated and will be removed soon. If you use it, please change it to BUILD_ENV."
           echo "ENCORE_ENV=production" >> $GITHUB_ENV
 
       - name: Compile assets
