@@ -34,10 +34,10 @@ on:
         required: false
       GITHUB_USER_EMAIL:
         description: Email address for the GitHub user configuration.
-        required: true
+        required: false
       GITHUB_USER_NAME:
         description: Username for the GitHub user configuration.
-        required: true
+        required: false
       GITHUB_USER_SSH_KEY:
         description: Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`.
         required: false
