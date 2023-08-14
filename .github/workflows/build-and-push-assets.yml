@@ -48,6 +48,11 @@ on:
         default: './assets'
         required: false
         type: string
+      DRY_RUN:
+        description: Compile the assets but do not push them to the repository.
+        default: false
+        required: false
+        type: boolean
     secrets:
       NPM_REGISTRY_TOKEN:
         description: Authentication for the private npm registry.
@@ -160,6 +165,7 @@ jobs:
         run: ${{ ((env.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm run' }} ${{ env.COMPILE_SCRIPT }}
 
       - name: Git add, commit, push
+        if: ${{ env.DRY_RUN != 'true' }}
         run: |
           declare -a TARGET_PATHS_ARRAY=(${{ inputs.ASSETS_TARGET_PATHS }})
           for path in "${TARGET_PATHS_ARRAY[@]}"; do git add -f "${path}/*"; done
@@ -171,7 +177,7 @@ jobs:
         run: git push
 
       - name: Move tag
-        if: ${{ env.TAG_NAME != '' && env.NO_CHANGES != 'yes' }}
+        if: ${{ env.TAG_NAME != '' && env.NO_CHANGES != 'yes' && env.DRY_RUN != 'true' }}
         run: |
           git tag -d ${{ env.TAG_NAME }}
           git push origin :refs/tags/${{ env.TAG_NAME }}
@@ -179,7 +185,7 @@ jobs:
           git push origin --tags
 
       - name: Delete tag branch
-        if: ${{ always() && (env.TAG_BRANCH_NAME != '' && env.NO_CHANGES != 'yes') }}
+        if: ${{ always() && (env.TAG_BRANCH_NAME != '' && env.NO_CHANGES != 'yes' && env.DRY_RUN != 'true') }}
         run: |
           git checkout --detach
           git branch -d ${{ env.TAG_BRANCH_NAME }}

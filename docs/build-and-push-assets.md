@@ -83,6 +83,7 @@ This is not the simplest possible example, but it showcases all the recommendati
 | `COMPILE_SCRIPT_PROD` | `'encore prod'`               | Script added to `npm run` or `yarn` to build production assets                    |
 | `COMPILE_SCRIPT_DEV`  | `'encore dev'`                | Script added to `npm run` or `yarn` to build development assets                   |
 | `ASSETS_TARGET_PATHS` | `'./assets'`                  | Target path(s) for compiled assets                                                |
+| `DRY_RUN`             | `false`                       | Compile the assets but do not push them to the repository                         |
 
 ## Secrets
 
@@ -162,7 +163,7 @@ same as the two commits would have been made as a single commit including both.
 ---
 
 > Does the workflow mess up the git history or add noise to it? How do we know which "compilation"
-commit belongs to which "real" commit?
+> commit belongs to which "real" commit?
 
 As a side effect of using the
 recommended [concurrency settings] (https://docs.github.com/en/actions/using-jobs/using-concurrency)
@@ -177,7 +178,7 @@ start with the prefix `[BOT]`, it would be quite easy to ignore them without any
 ---
 
 > When using commit-precise Composer version constraints like `dev-master#a1bcde`, is there a risk
-of referencing a commit that has no compiled assets?
+> of referencing a commit that has no compiled assets?
 
 Yes. However, commit-accurate version constraints are not recommended (especially in production),
 are usually temporary, and are objectively rare. And in the unlikely event that we need to maintain
@@ -203,7 +204,7 @@ complexity required to do so was not deemed worthwhile.
 ---
 
 > I use the `git+ssh` protocol for dependencies in `package.json`. How can I use it with this
-workflow?
+> workflow?
 
 The workflow supports a private SSH key passed via the `GITHUB_USER_SSH_KEY` secret.
 
