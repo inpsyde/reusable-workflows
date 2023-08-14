@@ -162,8 +162,7 @@ same as the two commits would have been made as a single commit including both.
 
 ---
 
-> Does the workflow mess up the git history or add noise to it? How do we know which "compilation"
-> commit belongs to which "real" commit?
+> Does the workflow mess up the git history or add noise to it? How do we know which "compilation" commit belongs to which "real" commit?
 
 As a side effect of using the
 recommended [concurrency settings] (https://docs.github.com/en/actions/using-jobs/using-concurrency)
@@ -177,8 +176,7 @@ start with the prefix `[BOT]`, it would be quite easy to ignore them without any
 
 ---
 
-> When using commit-precise Composer version constraints like `dev-master#a1bcde`, is there a risk
-> of referencing a commit that has no compiled assets?
+> When using commit-precise Composer version constraints like `dev-master#a1bcde`, is there a risk of referencing a commit that has no compiled assets?
 
 Yes. However, commit-accurate version constraints are not recommended (especially in production),
 are usually temporary, and are objectively rare. And in the unlikely event that we need to maintain
