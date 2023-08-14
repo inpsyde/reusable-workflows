@@ -201,8 +201,7 @@ complexity required to do so was not deemed worthwhile.
 
 ---
 
-> I use the `git+ssh` protocol for dependencies in `package.json`. How can I use it with this
-> workflow?
+> I use the `git+ssh` protocol for dependencies in `package.json`. How can I use it with this workflow?
 
 The workflow supports a private SSH key passed via the `GITHUB_USER_SSH_KEY` secret.
 
