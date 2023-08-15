@@ -28,11 +28,6 @@ on:
         default: './'
         required: false
         type: string
-      DEPS_INSTALL:
-        description: Whether or not to install dependencies before compiling.
-        type: boolean
-        default: true
-        required: false
       COMPILE_SCRIPT_PROD:
         description: Script added to "npm run" or "yarn" to build production assets.
         type: string
