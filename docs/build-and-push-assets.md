@@ -79,7 +79,6 @@ This is not the simplest possible example, but it showcases all the recommendati
 | `NPM_REGISTRY_DOMAIN` | `https://npm.pkg.github.com/` | Domain of the private npm registry                                                |
 | `PACKAGE_MANAGER`     | `yarn`                        | Package manager with which the dependencies should be installed (`npm` or `yarn`) |
 | `WORKING_DIRECTORY`   | `'./'`                        | Working directory path                                                            |
-| `DEPS_INSTALL`        | `true`                        | Whether or not to install dependencies before compiling                           |
 | `COMPILE_SCRIPT_PROD` | `'encore prod'`               | Script added to `npm run` or `yarn` to build production assets                    |
 | `COMPILE_SCRIPT_DEV`  | `'encore dev'`                | Script added to `npm run` or `yarn` to build development assets                   |
 | `ASSETS_TARGET_PATHS` | `'./assets'`                  | Target path(s) for compiled assets                                                |
