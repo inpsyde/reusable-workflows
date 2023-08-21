@@ -67,6 +67,6 @@ jobs:
 ---
 **Note**
 
-The Stylelint [requires quotes](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-scripts/#lint-style) around glob pattern.
+Stylelint [requires quotes](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-scripts/#lint-style) around file glob patterns.
 
 ---
