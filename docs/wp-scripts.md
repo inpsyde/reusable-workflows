@@ -61,5 +61,5 @@ jobs:
     with:
       NODE_VERSION: 18
       ESLINT_ARGS: '-o eslint_report.json -f json'
-      STYLELINT_ARGS: './resources/**/*.scss'
+      STYLELINT_ARGS: './resources/**/*.scs'
 ```
