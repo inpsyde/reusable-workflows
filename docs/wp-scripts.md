@@ -61,5 +61,12 @@ jobs:
     with:
       NODE_VERSION: 18
       ESLINT_ARGS: '-o eslint_report.json -f json'
-      STYLELINT_ARGS: './resources/**/*.scss'
+      STYLELINT_ARGS: '"./resources/**/*.scss" --formatter github'
 ```
+
+---
+**Note**
+
+Stylelint [requires quotes](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-scripts/#lint-style) around file glob patterns.
+
+---
