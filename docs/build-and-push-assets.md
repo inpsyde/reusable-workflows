@@ -75,7 +75,7 @@ This is not the simplest possible example, but it showcases all the recommendati
 | Name                  | Default                       | Description                                                                       |
 |-----------------------|-------------------------------|-----------------------------------------------------------------------------------|
 | `NODE_OPTIONS`        | `''`                          | Space-separated list of command-line Node options                                 |
-| `NODE_VERSION`        | 16                            | Node version with which the assets will be compiled                               |
+| `NODE_VERSION`        | `18`                          | Node version with which the assets will be compiled                               |
 | `NPM_REGISTRY_DOMAIN` | `https://npm.pkg.github.com/` | Domain of the private npm registry                                                |
 | `PACKAGE_MANAGER`     | `yarn`                        | Package manager with which the dependencies should be installed (`npm` or `yarn`) |
 | `WORKING_DIRECTORY`   | `'./'`                        | Working directory path                                                            |
