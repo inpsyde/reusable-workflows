@@ -173,7 +173,7 @@ on:
   push:
   pull_request:
 jobs:
-  lint-php:
+  tests-unit-php:
     strategy:
       matrix:
         php: ["7.4", "8.0", "8.1"]
