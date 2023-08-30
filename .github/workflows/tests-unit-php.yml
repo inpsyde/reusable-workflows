@@ -36,11 +36,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
-      PHP_VERSION: >-
-        ["${{ inputs.PHP_VERSION }}"]
     strategy:
       matrix:
-        php-version: ${{ inputs.PHP_MATRIX && fromJSON(inputs.PHP_MATRIX) || fromJSON(env.PHP_VERSION) }}
+        php-version: ${{ inputs.PHP_MATRIX && fromJSON(inputs.PHP_MATRIX) || [env.PHP_VERSION] }}
     steps:
       - name: Deprecation warning
         if: ${{ inputs.PHP_MATRIX }}
