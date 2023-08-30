@@ -200,20 +200,13 @@ jobs:
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
           cache: ${{ env.PACKAGE_MANAGER }}
 
-      - name: Set up PHP
+      - name: Install WP CLI
         if: ${{ inputs.INSTALL_WP_CLI }}
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.PHP_VERSION }}
-          tools: composer
+          tools: wp-cli
           coverage: none
-
-      - name: Set up WP CLI
-        if: ${{ inputs.INSTALL_WP_CLI }}
-        run: |
-          curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
-          chmod +x wp-cli.phar
-          sudo mv wp-cli.phar /usr/local/bin/wp
 
       - name: Install dependencies
         if: ${{ inputs.DEPS_INSTALL }}
