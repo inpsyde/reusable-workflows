@@ -103,8 +103,9 @@ jobs:
         id: detect_tag_annotation
         if: ${{ github.ref_type == 'tag' }}
         run: |
-          echo $(git --no-pager tag -l --format='%(contents)' ${{ github.ref_name }})
-          echo "tag_annotation=$(git --no-pager tag -l --format='%(contents)' ${{ github.ref_name }})" >> "$GITHUB_OUTPUT"
+          echo "LAST_TAG_FIRST_LINE_CONTENT=$(git --no-pager tag -l --format='%(contents)' ${{ github.ref_name }}) | head -n 1" >> $GITHUB_ENV
+          echo "${{ env.LAST_TAG_FIRST_LINE_CONTENT }}"
+          echo "tag_annotation=${{ env.LAST_TAG_FIRST_LINE_CONTENT }}" >> "$GITHUB_OUTPUT"
 
   compile-assets:
     needs: checks
