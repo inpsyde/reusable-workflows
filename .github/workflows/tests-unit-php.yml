@@ -39,7 +39,8 @@ jobs:
       PHP_VERSION: >-
         ["${{ inputs.PHP_VERSION }}"]
     strategy:
-      php-version: ${{ inputs.PHP_MATRIX && fromJSON(inputs.PHP_MATRIX) || fromJSON(env.PHP_VERSION) }}
+      matrix:
+        php-version: ${{ inputs.PHP_MATRIX && fromJSON(inputs.PHP_MATRIX) || fromJSON(env.PHP_VERSION) }}
     steps:
       - name: Deprecation warning
         if: ${{ inputs.PHP_MATRIX }}
