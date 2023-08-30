@@ -42,7 +42,7 @@ jobs:
     steps:
       - name: Deprecation warning
         if: ${{ inputs.PHP_MATRIX }}
-        run: echo "::warning::The inputs.PHP_MATRIX is deprecated and only the first item in the list is being used. Please use inputs.PHP_VERSION with a matrix in your consuming workflow in future."
+        run: echo "::warning::The inputs.PHP_MATRIX is deprecated and will be removed in future. Please use inputs.PHP_VERSION with a matrix in your consuming workflow."
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -61,6 +61,9 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
+          # This is check is being used to support inputs.PHP_MATRIX to run the strategy.matrix
+          # inside of this reusable-workflow and also support inputs.PHP_VERSION and configuration
+          # of a strategy.matrix in the calling workflow.
           php-version: ${{ matrix.php-version != 'custom' && matrix.php-version || inputs.PHP_VERSION }}
 
       - name: Set up problem matchers for PHPUnit

@@ -41,10 +41,13 @@ jobs:
     runs-on: ubuntu-latest
     env:
       COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
+    strategy:
+      matrix:
+        php-version: ${{ inputs.PHP_MATRIX && fromJSON(inputs.PHP_MATRIX) || fromJson('["custom"]') }}
     steps:
       - name: Deprecation warning
         if: ${{ inputs.PHP_MATRIX }}
-        run: echo "::warning::The inputs.PHP_MATRIX is deprecated and only the first item in the list is being used. Please use inputs.PHP_VERSION with a matrix in your consuming workflow in future."
+        run: echo "::warning::The inputs.PHP_MATRIX is deprecated and will be removed in future. Please use inputs.PHP_VERSION with a matrix in your consuming workflow."
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -62,10 +65,11 @@ jobs:
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
-        env:
-          PHP_VERSION: ${{ inputs.PHP_MATRIX && fromJSON(inputs.PHP_MATRIX)[0] || inputs.PHP_VERSION }}
         with:
-          php-version: ${{ env.PHP_VERSION }}
+          # This is check is being used to support inputs.PHP_MATRIX to run the strategy.matrix
+          # inside of this reusable-workflow and also support inputs.PHP_VERSION and configuration
+          # of a strategy.matrix in the calling workflow.
+          php-version: ${{ matrix.php-version != 'custom' && matrix.php-version || inputs.PHP_VERSION }}
           tools: cs2pr, parallel-lint
           coverage: none
 
