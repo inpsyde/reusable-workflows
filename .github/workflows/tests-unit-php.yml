@@ -34,53 +34,15 @@ jobs:
   tests-unit-php:
     timeout-minutes: 5
     runs-on: ubuntu-latest
-    if: ${{ !inputs.PHP_MATRIX }}
-    env:
-      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Set up custom environment variables
-        env:
-          ENV_VARS: ${{ secrets.ENV_VARS }}
-        if: ${{ env.ENV_VARS }}
-        uses: actions/github-script@v6
-        with:
-          script: |
-            JSON
-              .parse(process.env.ENV_VARS)
-              .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
-
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ inputs.PHP_VERSION }}
-
-      - name: Set up problem matchers for PHPUnit
-        run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
-
-      - name: Install Composer dependencies
-        uses: ramsey/composer-install@v2
-        with:
-          composer-options: ${{ inputs.COMPOSER_ARGS }}
-
-      - name: Run PHPUnit
-        run: ./vendor/bin/phpunit ${{ inputs.PHPUNIT_ARGS }}
-
-  deprecated-tests-unit-php:
-    timeout-minutes: 5
-    runs-on: ubuntu-latest
-    if: ${{ inputs.PHP_MATRIX }}
     env:
       COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
     strategy:
       matrix:
-        php-version: ${{ fromJSON(inputs.PHP_MATRIX) }}
+        php-version: ${{ inputs.PHP_MATRIX && fromJSON(inputs.PHP_MATRIX) || fromJson('["custom"]') }}
     steps:
       - name: Deprecation warning
         if: ${{ inputs.PHP_MATRIX }}
-        run: echo "::warning::The inputs.PHP_MATRIX is deprecated and will be removed in future. Please use inputs.PHP_VERSION with a matrix in your consuming workflow."
+        run: echo "::warning::The inputs.PHP_MATRIX is deprecated and only the first item in the list is being used. Please use inputs.PHP_VERSION with a matrix in your consuming workflow in future."
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -99,7 +61,10 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-version }}
+          # This is check is being used to support inputs.PHP_MATRIX to run the strategy.matrix
+          # inside of this reusable-workflow and also support inputs.PHP_VERSION and configuration
+          # of a strategy.matrix in the calling workflow.
+          php-version: ${{ matrix.php-version != 'custom' && matrix.php-version || inputs.PHP_VERSION }}
 
       - name: Set up problem matchers for PHPUnit
         run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
