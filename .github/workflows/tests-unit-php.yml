@@ -36,6 +36,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
+      PHP_VERSION: >-
+        ["${{ inputs.PHP_VERSION }}"]
+    strategy:
+      php-version: ${{ inputs.PHP_MATRIX && fromJSON(inputs.PHP_MATRIX) || fromJSON(env.PHP_VERSION) }}
     steps:
       - name: Deprecation warning
         if: ${{ inputs.PHP_MATRIX }}
@@ -57,10 +61,8 @@ jobs:
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
-        env:
-          PHP_VERSION: ${{ inputs.PHP_MATRIX && fromJSON(inputs.PHP_MATRIX)[0] || inputs.PHP_VERSION }}
         with:
-          php-version: ${{ env.PHP_VERSION }}
+          php-version: ${{ matrix.php-version }}
 
       - name: Set up problem matchers for PHPUnit
         run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
