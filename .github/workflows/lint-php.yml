@@ -9,7 +9,7 @@ on:
         required: false
         type: string
       PHP_MATRIX:
-        description: [deprecated] Matrix of PHP versions as a JSON formatted object.
+        description: deprecated - Matrix of PHP versions as a JSON formatted object.
         required: false
         type: string
       COMPOSER_ARGS:
