@@ -76,7 +76,7 @@ jobs:
       COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
     strategy:
       matrix:
-        php-version: ${{ inputs.PHP_MATRIX }}
+        php-version: ${{ fromJSON(inputs.PHP_MATRIX) }}
     steps:
       - name: Deprecation warning
         if: ${{ inputs.PHP_MATRIX }}
