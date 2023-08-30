@@ -5,6 +5,7 @@ on:
     inputs:
       PHP_VERSION:
         description: PHP version with which the assets compilation is to be executed.
+        default: '8.0'
         required: false
         type: string
       PHP_MATRIX:
@@ -37,7 +38,7 @@ jobs:
       COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
     strategy:
       matrix:
-        php-version: ${{ inputs.PHP_MATRIX && fromJSON(inputs.PHP_MATRIX) || fromJson('["8.0"]') }}
+        php-version: ${{ inputs.PHP_MATRIX && fromJSON(inputs.PHP_MATRIX) || fromJson('["custom"]') }}
     steps:
       - name: Deprecation warning
         if: ${{ inputs.PHP_MATRIX }}
@@ -60,7 +61,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ inputs.PHP_VERSION || matrix.php-version }}
+          php-version: ${{ matrix.php-version != 'custom' && matrix.php-version || inputs.PHP_VERSION }}
 
       - name: Set up problem matchers for PHPUnit
         run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
