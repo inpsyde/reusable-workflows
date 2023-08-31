@@ -21,12 +21,12 @@ jobs:
 
 #### Inputs
 
-| Name            | Default                                                  | Description                                                           |
-|-----------------|----------------------------------------------------------|-----------------------------------------------------------------------|
-| `PHP_VERSION`   | `"8.0"`                                                  | PHP version with which the coding standard analysis is to be executed |
-| `COMPOSER_ARGS` | `'--prefer-dist'`                                        | Set of arguments passed to Composer                                   |
-| `PHPCS_ARGS`    | `'--report-full --report-checkstyle=./phpcs-report.xml'` | Set of arguments passed to PHP_CodeSniffer                            |
-| `CS2PR_ARGS`    | `'--graceful-warnings ./phpcs-report.xml'`               | Set of arguments passed to cs2pr                                      |
+| Name            | Default                                                  | Description                                     |
+|-----------------|----------------------------------------------------------|-------------------------------------------------|
+| `PHP_VERSION`   | `"8.0"`                                                  | PHP version with which the scripts are executed |
+| `COMPOSER_ARGS` | `'--prefer-dist'`                                        | Set of arguments passed to Composer             |
+| `PHPCS_ARGS`    | `'--report-full --report-checkstyle=./phpcs-report.xml'` | Set of arguments passed to PHP_CodeSniffer      |
+| `CS2PR_ARGS`    | `'--graceful-warnings ./phpcs-report.xml'`               | Set of arguments passed to cs2pr                |
 
 #### Secrets
 
@@ -77,11 +77,11 @@ jobs:
 
 #### Inputs
 
-| Name            | Default                               | Description                                                       |
-|-----------------|---------------------------------------|-------------------------------------------------------------------|
-| `PHP_VERSION`   | `"8.0"`                               | PHP version with which the static code analysis is to be executed |
-| `COMPOSER_ARGS` | `'--prefer-dist'`                     | Set of arguments passed to Composer                               |
-| `PSALM_ARGS`    | `'--output-format=github --no-cache'` | Set of arguments passed to Psalm                                  |
+| Name            | Default                               | Description                                     |
+|-----------------|---------------------------------------|-------------------------------------------------|
+| `PHP_VERSION`   | `"8.0"`                               | PHP version with which the scripts are executed |
+| `COMPOSER_ARGS` | `'--prefer-dist'`                     | Set of arguments passed to Composer             |
+| `PSALM_ARGS`    | `'--output-format=github --no-cache'` | Set of arguments passed to Psalm                |
 
 #### Secrets
 
@@ -134,7 +134,7 @@ jobs:
 | Name            | Default             | Description                                                              |
 |-----------------|---------------------|--------------------------------------------------------------------------|
 | `PHP_MATRIX`    | `["8.0"]`           | :warning: deprecated - Matrix of PHP versions as a JSON formatted object |
-| `PHP_VERSION`   | `"8.0"`             | PHP version with which the coding standard analysis is to be executed    |
+| `PHP_VERSION`   | `"8.0"`             | PHP version with which the scripts are executed                          |
 | `COMPOSER_ARGS` | `'--prefer-dist'`   | Set of arguments passed to Composer                                      |
 | `PHPUNIT_ARGS`  | `'--coverage-text'` | Set of arguments passed to PHPUnit                                       |
 
@@ -206,7 +206,7 @@ jobs:
 | Name                    | Default                                 | Description                                                              |
 |-------------------------|-----------------------------------------|--------------------------------------------------------------------------|
 | `PHP_MATRIX`            | `["8.0"]`                               | :warning: deprecated - Matrix of PHP versions as a JSON formatted object |
-| `PHP_VERSION`           | `"8.0"`                                 | PHP version with which the coding standard analysis is to be executed    |
+| `PHP_VERSION`           | `"8.0"`                                 | PHP version with which the scripts are executed                          |
 | `COMPOSER_ARGS`         | `'--prefer-dist'`                       | Set of arguments passed to Composer                                      |
 | `LINT_ARGS`             | `'-e php --colors --show-deprecated .'` | Set of arguments passed to PHP Parallel Lint                             |
 | `COMPOSER_DEPS_INSTALL` | `false`                                 | Whether or not to install Composer dependencies before linting           |
