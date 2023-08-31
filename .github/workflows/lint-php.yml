@@ -66,9 +66,9 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          # This check is being used to support inputs.PHP_MATRIX to run the strategy.matrix
-          # inside of this reusable-workflow and also support inputs.PHP_VERSION and configuration
-          # of a strategy.matrix in the calling workflow.
+          # This is necessary to support the deprecated PHP_MATRIX (executing the matrix
+          # inside this reusable workflow) while also supporting the new PHP_VERSION input
+          # (passed from a matrix in the caller workflow).
           php-version: ${{ matrix.php-version != 'custom' && matrix.php-version || inputs.PHP_VERSION }}
           tools: cs2pr, parallel-lint
           coverage: none
