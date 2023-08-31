@@ -238,7 +238,7 @@ jobs:
       COMPOSER_DEPS_INSTALL: true
 ```
 
-**Example with PHP_VERSION in matrix:**
+**Example with `PHP_VERSION` in matrix:**
 
 ```yml
 name: Lint PHP
