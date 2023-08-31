@@ -3,9 +3,13 @@ name: Unit tests PHP
 on:
   workflow_call:
     inputs:
+      PHP_VERSION:
+        description: PHP version with which the scripts are executed.
+        default: '8.0'
+        required: false
+        type: string
       PHP_MATRIX:
-        description: Matrix of PHP versions as a JSON formatted object.
-        default: '["8.0"]'
+        description: Matrix of PHP versions as a JSON formatted object (deprecated).
         required: false
         type: string
       COMPOSER_ARGS:
@@ -32,10 +36,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-version: ${{ fromJson(inputs.PHP_MATRIX) }}
+        php-version: ${{ inputs.PHP_MATRIX && fromJSON(inputs.PHP_MATRIX) || fromJson('["custom"]') }}
     env:
       COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
     steps:
+      - name: Deprecation warning
+        if: ${{ inputs.PHP_MATRIX }}
+        run: echo "::warning::The PHP_MATRIX input is deprecated and will be removed in the future. Please create a matrix in your caller workflow and pass it to the PHP_VERSION input."
+
       - name: Checkout
         uses: actions/checkout@v3
 
@@ -53,7 +61,10 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-version }}
+          # This is necessary to support the deprecated PHP_MATRIX (executing the matrix
+          # inside this reusable workflow) while also supporting the new PHP_VERSION input
+          # (passed from a matrix in the caller workflow).
+          php-version: ${{ matrix.php-version != 'custom' && matrix.php-version || inputs.PHP_VERSION }}
 
       - name: Set up problem matchers for PHPUnit
         run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
