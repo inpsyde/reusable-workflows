@@ -246,7 +246,8 @@ jobs:
           then
             IS_PRERELEASE=$(echo $RELEASE_INFO | jq '.prerelease')
             IS_DRAFT=$(echo $RELEASE_INFO | jq '.draft')
-            RELEASE_EDIT_ARGS="${{ env.TAG_NAME }} --tag=${{ env.TAG_NAME }} --draft=$IS_DRAFT $(if [ $IS_PRERELEASE ]; then echo '--prerelease'";fi)
+            echo "Preparing the ARGS for the Release edit"
+            RELEASE_EDIT_ARGS="${{ env.TAG_NAME }} --tag=${{ env.TAG_NAME }} --draft=$IS_DRAFT $(if [ $IS_PRERELEASE ]; then echo '--prerelease';fi)"
             echo "Release edit args: $RELEASE_EDIT_ARGS"
             gh release edit "$RELEASE_EDIT_ARGS"
           fi
