@@ -39,11 +39,11 @@ jobs:
   lint-php:
     timeout-minutes: 5
     runs-on: ubuntu-latest
-    env:
-      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
     strategy:
       matrix:
         php-version: ${{ inputs.PHP_MATRIX && fromJSON(inputs.PHP_MATRIX) || fromJson('["custom"]') }}
+    env:
+      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
     steps:
       - name: Deprecation warning
         if: ${{ inputs.PHP_MATRIX }}
