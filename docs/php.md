@@ -165,7 +165,7 @@ jobs:
       PHPUNIT_ARGS: '--coverage-text --debug'
 ```
 
-**Example with PHP_VERSION in matrix:**
+**Example with `PHP_VERSION` in matrix:**
 
 ```yml
 name: Unit tests PHP
