@@ -74,6 +74,9 @@ on:
       GITHUB_USER_EMAIL:
         description: Email address for the GitHub user configuration.
         required: true
+      GITHUB_TOKEN:
+        description: The token to be used to interact with GH Cli.
+        required: true
       GITHUB_USER_NAME:
         description: Username for the GitHub user configuration.
         required: true
@@ -225,6 +228,8 @@ jobs:
 
       - name: Move tag
         if: ${{ github.ref_type == 'tag' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Preparation: Getting owner and repo name"
           echo "owner_repo=$(gh repo view --json  url,owner,name --template '{{.owner.login}}/{{.name}}')" >> $GITHUB_ENV
