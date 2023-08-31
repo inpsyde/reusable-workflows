@@ -226,10 +226,26 @@ jobs:
       - name: Move tag
         if: ${{ github.ref_type == 'tag' }}
         run: |
+          echo "Preparation: Getting owner and repo name"
+          echo "owner_repo=$(gh repo view --json  url,owner,name --template '{{.owner.login}}/{{.name}}')" >> $GITHUB_ENV
+          echo "${{ env.owner_repo }}"
+          echo "Preparation: Checking if tag has a release associated"
+          gh api repos/${{ env.owner_repo }}/releases/tags/${{ env.TAG_NAME }} --silent && FOUND="yes" || FOUND="false"
+          TAG_HAS_RELEASE_ASSOCIATED="$FOUND"
+          if [ $TAG_HAS_RELEASE_ASSOCIATED = "yes" ]; then RELEASE_INFO=$(gh api repos/$owner_repo/releases/tags/${{ env.TAG_NAME }} -q '{draft,prerelease,tag_name,name}');fi
+          echo "Is this tag associated with a release?: $TAG_HAS_RELEASE_ASSOCIATED"
           git tag -d ${{ env.TAG_NAME }}
           git push origin :refs/tags/${{ env.TAG_NAME }}
           git tag -a -m "[RELEASE] ${{ github.sha }} // Released by '${{ github.workflow }}'" ${{ env.TAG_NAME }}
           git push origin --tags
+          if [ $TAG_HAS_RELEASE_ASSOCIATED = "yes" ];
+          then
+            IS_PRERELEASE=$(echo $RELEASE_INFO | jq '.prerelease')
+            IS_DRAFT=$(echo $RELEASE_INFO | jq '.draft')
+            RELEASE_EDIT_ARGS="${{ env.TAG_NAME }} --tag=${{ env.TAG_NAME }} --draft=$(echo "IS_DRAFT") $(if [ $IS_PRERELEASE ]; then echo '--prerelease')";fi
+            echo "Release edit args: $RELEASE_EDIT_ARGS"
+            gh release edit $RELEASE_EDIT_ARGS
+          fi
 
       - name: Delete temporary tag branch
         if: ${{ always() && (env.TAG_BRANCH_NAME != '') }}
