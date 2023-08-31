@@ -47,7 +47,7 @@ jobs:
     steps:
       - name: Deprecation warning
         if: ${{ inputs.PHP_MATRIX }}
-        run: echo "::warning::The inputs.PHP_MATRIX is deprecated and will be removed in future. Please use inputs.PHP_VERSION with a matrix in your consuming workflow."
+        run: echo "::warning::The PHP_MATRIX input is deprecated and will be removed in the future. Please create a matrix in your caller workflow and pass it to the PHP_VERSION input."
 
       - name: Checkout
         uses: actions/checkout@v3
