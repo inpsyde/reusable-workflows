@@ -234,9 +234,9 @@ jobs:
           echo "Preparation: Getting owner and repo name"
           echo "The GH owner & repo $GITHUB_REPOSITORY"
           echo "Preparation: Checking if tag has a release associated"
-          gh api repos/$GITHUB_REPOSITORY/releases/tags/${{ env.TAG_NAME }} --silent --repo $GITHUB_REPOSITORY && FOUND="yes" || FOUND="false"
+          gh api repos/$GITHUB_REPOSITORY/releases/tags/${{ env.TAG_NAME }} --silent && FOUND="yes" || FOUND="false"
           TAG_HAS_RELEASE_ASSOCIATED="$FOUND"
-          if [ $TAG_HAS_RELEASE_ASSOCIATED = "yes" ]; then RELEASE_INFO=$(gh api repos/$GITHUB_REPOSITORY/releases/tags/${{ env.TAG_NAME }} -q '{draft,prerelease,tag_name,name}' --repo $GITHUB_REPOSITORY);fi
+          if [ $TAG_HAS_RELEASE_ASSOCIATED = "yes" ]; then RELEASE_INFO=$(gh api repos/$GITHUB_REPOSITORY/releases/tags/${{ env.TAG_NAME }} -q '{draft,prerelease,tag_name,name}');fi
           echo "Is this tag associated with a release?: $TAG_HAS_RELEASE_ASSOCIATED"
           git tag -d ${{ env.TAG_NAME }}
           git push origin :refs/tags/${{ env.TAG_NAME }}
@@ -248,7 +248,7 @@ jobs:
             IS_DRAFT=$(echo $RELEASE_INFO | jq '.draft')
             RELEASE_EDIT_ARGS="${{ env.TAG_NAME }} --tag=${{ env.TAG_NAME }} --draft=$IS_DRAFT $(if [ $IS_PRERELEASE ]; then echo '--prerelease'";fi)
             echo "Release edit args: $RELEASE_EDIT_ARGS"
-            gh release edit "$RELEASE_EDIT_ARGS" --repo $GITHUB_REPOSITORY
+            gh release edit "$RELEASE_EDIT_ARGS"
           fi
 
       - name: Delete temporary tag branch
