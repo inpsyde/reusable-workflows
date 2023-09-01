@@ -136,8 +136,8 @@ jobs:
 
       - name: Setup Git
         run: |
-          git config --global advice.addIgnoredFile false
-          git config --global push.autoSetupRemote true
+          git config --local advice.addIgnoredFile false
+          git config --local push.autoSetupRemote true
 
       - name: Set branch environment variables
         if: ${{ github.ref_type == 'branch' }}
