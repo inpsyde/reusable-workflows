@@ -220,6 +220,8 @@ jobs:
         run: ${{ ((env.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm run' }} ${{ env.COMPILE_SCRIPT }}
 
       - name: Git add, commit, push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_USER_TOKEN }}
         run: |
           declare -a TARGET_PATHS_ARRAY=(${{ inputs.ASSETS_TARGET_PATHS }})
           for path in "${TARGET_PATHS_ARRAY[@]}"; do git add -f "${path}/*"; done
@@ -230,7 +232,7 @@ jobs:
       - name: Move tag
         if: ${{ github.ref_type == 'tag' }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_CLI_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_USER_TOKEN }}
         run: |
           echo "Preparation: Getting owner and repo name"
           echo "The GH owner & repo $GITHUB_REPOSITORY"
