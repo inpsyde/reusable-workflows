@@ -134,6 +134,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_USER_TOKEN }}
+          persist-credentials: true
 
       - name: Setup Git
         run: |
