@@ -74,8 +74,8 @@ on:
       GITHUB_USER_EMAIL:
         description: Email address for the GitHub user configuration.
         required: true
-      GITHUB_CLI_TOKEN:
-        description: The token to be used to interact with GH Cli.
+      GITHUB_USER_TOKEN:
+        description: The token to be used to interact with GH Cli and making the commits.
         required: true
       GITHUB_USER_NAME:
         description: Username for the GitHub user configuration.
@@ -133,13 +133,6 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-          ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
-
-      - name: Set up SSH
-        if: ${{ env.GITHUB_USER_SSH_KEY != '' }}
-        uses: webfactory/ssh-agent@v0.8.0
-        with:
-          ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
       - name: Setup Git
         run: |
@@ -226,6 +219,8 @@ jobs:
           git add -A
           git commit -m "[BUILD] ${{ github.sha }}" --no-verify || echo "No changes to commit"
           git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.DEPLOYBOT_REPO_READ_WRITE_TOKEN }}
 
       - name: Move tag
         if: ${{ github.ref_type == 'tag' }}
