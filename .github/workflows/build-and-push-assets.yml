@@ -132,12 +132,12 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          persist-credentials: false
+          token: ${{ secrets.GITHUB_USER_TOKEN }}
 
       - name: Setup Git
         run: |
-          git config --global user.email "${{ secrets.GITHUB_USER_EMAIL }}" 
-          git config --global user.name "${{ secrets.GITHUB_USER_NAME }}"
+#          git config --global user.email "${{ secrets.GITHUB_USER_EMAIL }}"
+#          git config --global user.name "${{ secrets.GITHUB_USER_NAME }}"
           git config --global advice.addIgnoredFile false
           git config --global push.autoSetupRemote true
 
@@ -219,8 +219,6 @@ jobs:
           git add -A
           git commit -m "[BUILD] ${{ github.sha }}" --no-verify || echo "No changes to commit"
           git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.DEPLOYBOT_REPO_READ_WRITE_TOKEN }}
 
       - name: Move tag
         if: ${{ github.ref_type == 'tag' }}
