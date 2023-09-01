@@ -127,6 +127,7 @@ jobs:
       TAG_BRANCH_NAME: ''                              # we'll override if the push is for tag
       LOCK_FILE: ''                                    # we'll override after checking files
       PACKAGE_MANAGER: 'yarn'                          # we'll override based on env/inputs
+      GITHUB_TOKEN: ${{ secrets.GITHUB_USER_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
