@@ -112,7 +112,7 @@ jobs:
 
   compile-assets:
     needs: checks
-    if: ${{ github.ref_type == 'branch' || (github.ref_type == 'tag' && needs.checks.outputs.is_moved_tag == 'no') }}
+    if: ${{ (github.ref_type == 'branch' && !contains(github.ref_name, '-built') ) || (github.ref_type == 'tag' && needs.checks.outputs.is_moved_tag == 'no') }}
     defaults:
       run:
         working-directory: ${{ inputs.WORKING_DIRECTORY }}
