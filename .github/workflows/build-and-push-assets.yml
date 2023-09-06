@@ -74,9 +74,6 @@ on:
       GITHUB_USER_EMAIL:
         description: Email address for the GitHub user configuration.
         required: true
-      GITHUB_USER_TOKEN:
-        description: The token to be used to interact with GH Cli and making the commits.
-        required: true
       GITHUB_USER_NAME:
         description: Username for the GitHub user configuration.
         required: true
@@ -106,9 +103,8 @@ jobs:
         id: detect_tag_annotation
         if: ${{ github.ref_type == 'tag' }}
         run: |
-          echo "LAST_TAG_FIRST_LINE_CONTENT=$(git --no-pager tag -l --format='%(contents)' ${{ github.ref_name }} | head -n 1)" >> $GITHUB_ENV
-          echo "${{ env.LAST_TAG_FIRST_LINE_CONTENT }}"
-          echo "tag_annotation=${{ env.LAST_TAG_FIRST_LINE_CONTENT }}" >> "$GITHUB_OUTPUT"
+          echo $(git --no-pager tag -l --format='%(contents)' ${{ github.ref_name }})
+          echo "tag_annotation=$(git --no-pager tag -l --format='%(contents)' ${{ github.ref_name }})" >> "$GITHUB_OUTPUT"
 
   compile-assets:
     needs: checks
@@ -127,7 +123,6 @@ jobs:
       TAG_BRANCH_NAME: ''                              # we'll override if the push is for tag
       LOCK_FILE: ''                                    # we'll override after checking files
       PACKAGE_MANAGER: 'yarn'                          # we'll override based on env/inputs
-      GITHUB_TOKEN: ${{ secrets.GITHUB_USER_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -220,8 +215,6 @@ jobs:
         run: ${{ ((env.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm run' }} ${{ env.COMPILE_SCRIPT }}
 
       - name: Git add, commit, push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_USER_TOKEN }}
         run: |
           declare -a TARGET_PATHS_ARRAY=(${{ inputs.ASSETS_TARGET_PATHS }})
           for path in "${TARGET_PATHS_ARRAY[@]}"; do git add -f "${path}/*"; done
@@ -231,29 +224,11 @@ jobs:
 
       - name: Move tag
         if: ${{ github.ref_type == 'tag' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_USER_TOKEN }}
         run: |
-          echo "Preparation: Getting owner and repo name"
-          echo "The GH owner & repo $GITHUB_REPOSITORY"
-          echo "Preparation: Checking if tag has a release associated"
-          gh api repos/$GITHUB_REPOSITORY/releases/tags/${{ env.TAG_NAME }} --silent && FOUND="yes" || FOUND="false"
-          TAG_HAS_RELEASE_ASSOCIATED="$FOUND"
-          if [ $TAG_HAS_RELEASE_ASSOCIATED = "yes" ]; then RELEASE_INFO=$(gh api repos/$GITHUB_REPOSITORY/releases/tags/${{ env.TAG_NAME }} -q '{draft,prerelease,tag_name,name}');fi
-          echo "Is this tag associated with a release?: $TAG_HAS_RELEASE_ASSOCIATED"
           git tag -d ${{ env.TAG_NAME }}
           git push origin :refs/tags/${{ env.TAG_NAME }}
           git tag -a -m "[RELEASE] ${{ github.sha }} // Released by '${{ github.workflow }}'" ${{ env.TAG_NAME }}
           git push origin --tags
-          if [ $TAG_HAS_RELEASE_ASSOCIATED = "yes" ];
-          then
-            IS_PRERELEASE=$(echo $RELEASE_INFO | jq '.prerelease')
-            IS_DRAFT=$(echo $RELEASE_INFO | jq '.draft')
-            echo "Preparing the ARGS for the Release edit"
-            RELEASE_EDIT_ARGS="${{ env.TAG_NAME }} --tag=${{ env.TAG_NAME }} --draft=$IS_DRAFT $(if [ $IS_PRERELEASE ]; then echo '--prerelease';fi)"
-            echo "Release edit args: $RELEASE_EDIT_ARGS"
-            gh release edit $RELEASE_EDIT_ARGS
-          fi
 
       - name: Delete temporary tag branch
         if: ${{ always() && (env.TAG_BRANCH_NAME != '') }}
