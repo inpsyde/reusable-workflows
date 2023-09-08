@@ -71,7 +71,7 @@ on:
         description: Branches that should use the COMPILE_SCRIPT_PROD script
         default: []
         required: false
-        type: array
+        type: choice
 
     secrets:
       NPM_REGISTRY_TOKEN:
