@@ -67,6 +67,12 @@ on:
         default: "8.1"
         required: false
         type: string
+      BRANCHES_USING_COMPILE_SCRIPT_PROD:
+        description: Branches that should use the COMPILE_SCRIPT_PROD script
+        default: []
+        required: false
+        type: array
+
     secrets:
       NPM_REGISTRY_TOKEN:
         description: Authentication for the private npm registry.
@@ -123,6 +129,7 @@ jobs:
       TAG_BRANCH_NAME: ''                              # we'll override if the push is for tag
       LOCK_FILE: ''                                    # we'll override after checking files
       PACKAGE_MANAGER: 'yarn'                          # we'll override based on env/inputs
+      BRANCHES_USING_COMPILE_SCRIPT_PROD: ${{ inputs.BRANCHES_USING_COMPILE_SCRIPT_PROD }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -152,6 +159,11 @@ jobs:
         if: ${{ github.ref_type == 'tag' }}
         run: |
           echo "TAG_NAME=$(echo ${GITHUB_REF#refs/*/})" >> $GITHUB_ENV
+          echo "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_PROD }}" >> $GITHUB_ENV
+
+      - name: Set branch COMPILE_SCRIPT
+        if: ${{ github.ref_type == 'branch' && contains(env.BRANCHES_USING_COMPILE_SCRIPT_PROD, github.ref_name) }}
+        run: |
           echo "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_PROD }}" >> $GITHUB_ENV
 
       - name: Checkout and merge the built branch
