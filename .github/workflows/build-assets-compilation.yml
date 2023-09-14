@@ -15,7 +15,7 @@ on:
         type: string
       NODE_VERSION:
         description: Node version with which the assets will be compiled.
-        default: 16
+        default: 18
         required: false
         type: string
       COMPOSER_ARGS:
