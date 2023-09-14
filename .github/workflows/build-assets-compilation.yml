@@ -130,7 +130,10 @@ jobs:
         if: ${{ !contains(github.ref, 'refs/tags/') }}
         run: |
           echo "ASSETS_HASH=$(composer assets-hash)" >> $GITHUB_ENV
-          echo "BUILD_ENV=dev" >> $GITHUB_ENV
+          # We set "development" here to align with webpack's "mode"
+          # to be used in Composer Asset Compiler as a placeholder variable.
+          # @link https://webpack.js.org/configuration/mode/
+          echo "BUILD_ENV=development" >> $GITHUB_ENV
 
       - name: Set environment variables [PROD]
         if: ${{ contains(github.ref, 'refs/tags/') }}
