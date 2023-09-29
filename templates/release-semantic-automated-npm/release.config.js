@@ -20,7 +20,7 @@ module.exports = {
       "npmPublish": false
     }],
     ["@semantic-release/exec", {
-      "prepareCmd": "sed -i \"s/Version:.*/Version:     ${nextRelease.version}/\" style.css 2> /dev/null",
+      "prepareCmd": "test -f index.php && sed -i \"s/Version:.*/Version:     ${nextRelease.version}/\" index.php || true; test -f style.css && sed -i \"s/Version:.*/Version:     ${nextRelease.version}/\" style.css || true",
     }],
     "@semantic-release/github",
     ["@semantic-release/git", {
