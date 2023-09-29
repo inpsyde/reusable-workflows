@@ -13,6 +13,8 @@ jobs:
     name: Release
     timeout-minutes: 5
     runs-on: ubuntu-latest
+    env:
+      HAS_CONFIG: false
     steps:
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -33,8 +35,8 @@ jobs:
       - name: Check presence of release.config.js
         run: |
           HAS_CONFIG=$(test -f "release.config.js" && echo true || echo false)
-          echo "HAS_CONFIG=$HAS_CONFIG" >> $GITHUB_ENV
           echo "Configuration file release.config.js found: $HAS_CONFIG"
+          echo "HAS_CONFIG=true" >> $GITHUB_ENV
           echo ${{ env.HAS_CONFIG }}
 
       - name: Checkout the workflow repository if release.config.js file is not provided
