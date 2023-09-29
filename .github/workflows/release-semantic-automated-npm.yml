@@ -13,8 +13,6 @@ jobs:
     name: Release
     timeout-minutes: 5
     runs-on: ubuntu-latest
-    env:
-      HAS_CONFIG: false
     steps:
       - name: Setup Node.js
         uses: actions/setup-node@v3
