@@ -1,12 +1,7 @@
-name: Release
+name: Semantic Release
 on:
   workflow_call:
     inputs:
-      BRANCHES:
-        description: The release branches. Provide it in JSON string format as ["main", "next"].
-        default: ''
-        required: false
-        type: string
       NODE_VERSION:
         description: Node version with which the release will be executed.
         default: 18
@@ -18,9 +13,6 @@ jobs:
     name: Release
     timeout-minutes: 5
     runs-on: ubuntu-latest
-    env:
-      MAIN_FILENAME: ''
-      BRANCHES: ${{ inputs.BRANCHES }}
     steps:
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -33,65 +25,31 @@ jobs:
             @semantic-release/git \
             @semantic-release/npm \
             @semantic-release/exec \
-            semantic-release \
-            ejs
+            semantic-release
 
       - name: Checkout
         uses: actions/checkout@v3
 
       - name: Check presence of release.config.js
         run: |
-          HAS_CONFIG=false
-          if [ -f "release.config.js" ]; then 
-            echo "Configuration file release.config.js found" 
-            HAS_CONFIG=true
-          fi
+          HAS_CONFIG=$(test -f "release.config.js" && echo true || echo false)
+          echo "Configuration file release.config.js found: $HAS_CONFIG"
 
-      - name: Prepare main filename
-        if: ${{ env.HAS_CONFIG == false }}
-        run: |
-          if [ -z "$MAIN_FILENAME" ]; then
-            echo "MAIN_FILENAME var is empty"
-            if [ -f style.css ]; then
-              MAIN_FILENAME='style.css'
-            elif [ -f index.php ]; then
-              MAIN_FILENAME='index.php'
-            fi
-          fi
-          echo "Using MAIN_FILENAME with value \"$MAIN_FILENAME\""
-          echo "MAIN_FILENAME=$MAIN_FILENAME" >> $GITHUB_ENV
-
-      - name: Prepare list of files to commit
-        if: ${{ env.HAS_CONFIG == false }}
-        run: |
-          if [ -z "$MAIN_FILENAME" ]; then
-            FILES_TO_COMMIT='["CHANGELOG.md", "package-lock.json", "package.json", "composer.json"]'
-          else
-            FILES_TO_COMMIT='["CHANGELOG.md", "package-lock.json", "package.json", "composer.json", "'$MAIN_FILENAME'"]'
-          fi
-          echo "FILES_TO_COMMIT=$(echo $FILES_TO_COMMIT | sed 's/"/\\"/g')" >> $GITHUB_ENV
-
-      - name: Prepare list of branches
-        if: ${{ env.HAS_CONFIG == false }}
-        run: |
-          BRANCHES=${BRANCHES:-'["main", "next", {"name": "beta", "prerelease": true}, {"name": "alpha", "prerelease": true}]'}
-          echo "BRANCHES=$(echo $BRANCHES | sed 's/"/\\"/g')" >> $GITHUB_ENV
-
-      - name: Checkout the workflow repository
-        if: ${{ env.HAS_CONFIG == false }}
+      - name: Checkout the workflow repository if release.config.js file is not provided
+        if: ${{ !env.HAS_CONFIG }}
         uses: actions/checkout@v3
         with:
           repository: inpsyde/reusable-workflows
           ref: automatic-release
           path: workflow-repo
 
-      - name: Compile the release.config.js template
-        if: ${{ env.HAS_CONFIG == false }}
+      - name: Add release.config.js file if not provided
+        if: ${{ !env.HAS_CONFIG }}
         run: |
-          ejs ${GITHUB_WORKSPACE}/workflow-repo/templates/release-semantic-automated-npm/release.config.ejs -o release.config.js branches="${{ env.BRANCHES }}" mainFilename=${{ env.MAIN_FILENAME }} filesToCommit="${{ env.FILES_TO_COMMIT }}"
+          cp ${GITHUB_WORKSPACE}/workflow-repo/templates/release-semantic-automated-npm/release.config.js .
 
       - name: Check the presence of the configuration file
-        if: ${{ env.HAS_CONFIG == false }}
+        if: ${{ !env.HAS_CONFIG }}
         run: |
           if [ ! -f "release.config.js" ]; then 
             echo "Configuration file release.config.js does not exist, aborting!" 
@@ -99,7 +57,7 @@ jobs:
           fi
 
       - name: Remove the workflow repository
-        if: ${{ env.HAS_CONFIG == false }}
+        if: ${{ !env.HAS_CONFIG }}
         run: |
           rm -rf workflow-repo
 

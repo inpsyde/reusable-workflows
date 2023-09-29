@@ -17,6 +17,9 @@ Otherwise, the workflow will create the release with a standard set of configura
 
 If you don't ship any of these files the release process will not fail.
 
+Another standard set of configurations is on the branches: every push to `main` and `next` branches will release a stable version, every push to `alpha` and `beta` branches will release a pre-release version.
+If you would like another setting, please provide your custom release.config.js file.
+
 Packages based on yarn will not be released using this automation.
 
 **Simplest possible example:**
@@ -40,7 +43,6 @@ jobs:
 
 | Name                  | Default                                                                                       | Description                                          |
 |-----------------------|-----------------------------------------------------------------------------------------------|------------------------------------------------------|
-| `BRANCHES`            | ["main", "next", {"name": "beta", "prerelease": true}, {"name": "alpha", "prerelease": true}] | The release branches                                 |
 | `NODE_VERSION`        | 18                                                                                            | Node version with which the release will be executed |
 
 **Example with configuration parameters:**
@@ -56,6 +58,5 @@ jobs:
   release:
     uses: inpsyde/reusable-workflows/.github/workflows/release-semantic-automated.yml@main
     with:
-      BRANCHES: '["main", {"name": "alpha", "prerelease": true}]'
       NODE_VERSION: 16
 ```
