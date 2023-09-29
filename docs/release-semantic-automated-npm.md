@@ -34,7 +34,7 @@ on:
       - alpha
 jobs:
   release:
-    uses: inpsyde/reusable-workflows/.github/workflows/release-semantic-automated.yml@main
+    uses: inpsyde/reusable-workflows/.github/workflows/release-semantic-automated-npm.yml@main
 ```
 
 ### Configuration parameters
@@ -56,7 +56,7 @@ on:
       - alpha
 jobs:
   release:
-    uses: inpsyde/reusable-workflows/.github/workflows/release-semantic-automated.yml@main
+    uses: inpsyde/reusable-workflows/.github/workflows/release-semantic-automated-npm.yml@main
     with:
       NODE_VERSION: 16
 ```
