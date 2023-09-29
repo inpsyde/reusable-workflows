@@ -36,7 +36,9 @@ jobs:
         run: |
           HAS_CONFIG=$(test -f "release.config.js" && echo true || echo false)
           echo "Configuration file release.config.js found: $HAS_CONFIG"
-          echo "HAS_CONFIG=true" >> $GITHUB_ENV
+
+      - name: test
+        run: |
           echo ${{ env.HAS_CONFIG }}
 
       - name: Checkout the workflow repository if release.config.js file is not provided
