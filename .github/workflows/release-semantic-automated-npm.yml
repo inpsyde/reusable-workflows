@@ -38,12 +38,8 @@ jobs:
           echo "Configuration file release.config.js found: $HAS_CONFIG"
           echo "HAS_CONFIG=$HAS_CONFIG" >> $GITHUB_ENV
 
-      - name: test
-        run: |
-          echo ${{ env.HAS_CONFIG }}
-
       - name: Checkout the workflow repository if release.config.js file is not provided
-        if: ${{ env.HAS_CONFIG == false }}
+        if: ${{ env.HAS_CONFIG == 'false' }}
         uses: actions/checkout@v3
         with:
           repository: inpsyde/reusable-workflows
@@ -51,12 +47,12 @@ jobs:
           path: workflow-repo
 
       - name: Add release.config.js file if not provided
-        if: ${{ env.HAS_CONFIG == false }}
+        if: ${{ env.HAS_CONFIG == 'false' }}
         run: |
           cp ${GITHUB_WORKSPACE}/workflow-repo/templates/release-semantic-automated-npm/release.config.js .
 
       - name: Check the presence of the configuration file
-        if: ${{ env.HAS_CONFIG == false }}
+        if: ${{ env.HAS_CONFIG == 'false' }}
         run: |
           if [ ! -f "release.config.js" ]; then 
             echo "Configuration file release.config.js does not exist, aborting!" 
@@ -64,7 +60,7 @@ jobs:
           fi
 
       - name: Remove the workflow repository
-        if: ${{ env.HAS_CONFIG == false }}
+        if: ${{ env.HAS_CONFIG == 'false' }}
         run: |
           rm -rf workflow-repo
 
