@@ -43,6 +43,16 @@ on:
         default: './assets'
         required: false
         type: string
+      BUILT_BRANCH_SUFFIX:
+        description: Suffix for branch creating for compiled assets (`-built` is recommended for convention).
+        type: string
+        default: ''
+        required: false
+      RELEASE_BRANCH_NAME:
+        description: Branch name where consequentially tags are moved.
+        type: string
+        default: ''
+        required: false
     secrets:
       NPM_REGISTRY_TOKEN:
         description: Authentication for the private npm registry.
@@ -61,6 +71,40 @@ on:
         required: false
 
 jobs:
+  checks:
+    runs-on: ubuntu-latest
+    outputs:
+      development_branch_name: steps.detect_development_branch_name.outputs.development_branch_name
+      is_development_branch_last_commit: ${{ github.sha == steps.detect_development_branch_last_commit.outputs.development_branch_last_commit && 'yes' || 'no' }}
+      is_moved_tag: ${{ (github.ref_type == 'tag' && contains(steps.detect_tag_annotation.outputs.tag_annotation, env.MOVED_TAG_ANNOTATION_PATTERN)) && 'yes' || 'no' }}
+    steps:
+      - name: Find development branch (default GitHub repository branch)
+        id: detect_development_branch_name
+        run: |
+          echo "development_branch_name=${{ gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name' }}" >> $GITHUB_OUTPUT
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ steps.detect_development_branch_name.outputs.development_branch_name }} # it is not possible to get tag annotation from detached state https://github.com/actions/runner/issues/712
+
+      - name: Find last commit
+        id: detect_development_branch_last_commit
+        run: |
+          echo "development_branch_last_commit=$(git --no-pager log -n 1 --pretty=tformat:'%H')" >> "$GITHUB_OUTPUT"
+
+      - name: Find tag message
+        id: detect_tag_annotation
+        if: ${{ github.ref_type == 'tag' }}
+        run: |
+          echo $(git --no-pager tag -l --format='%(contents)' ${{ github.ref_name }})
+          echo "tag_annotation=$(git --no-pager tag -l --format='%(contents)' ${{ github.ref_name }})" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare moved tag annotation pattern
+        run: |
+          echo "MOVED_TAG_ANNOTATION_PATTERN='// Released by ${{ github.workflow }}'" >> $GITHUB_ENV
+
   compile-assets:
     defaults:
       run:
@@ -85,25 +129,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          # when current push is a tag, we check out the tag's SHA, we'll create a new branch later
-          ref: ${{ ((github.ref_type == 'tag') && github.sha) || github.ref }}
-
-      - name: Set up custom environment variables
-        env:
-          ENV_VARS: ${{ secrets.ENV_VARS }}
-        if: ${{ env.ENV_VARS }}
-        uses: actions/github-script@v6
-        with:
-          script: |
-            JSON
-              .parse(process.env.ENV_VARS)
-              .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
-
-      - name: Set production environment variables
-        if: ${{ contains(github.ref, 'refs/tags/') }}
-        run: |
-          echo "TAG_NAME=$(echo ${GITHUB_REF#refs/*/})" >> $GITHUB_ENV
-          echo "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_PROD }}" >> $GITHUB_ENV
+          ssh-key: ${{ env.GITHUB_USER_SSH_KEY }}
 
       - name: Set up SSH
         if: ${{ env.GITHUB_USER_SSH_KEY != '' }}
@@ -117,17 +143,56 @@ jobs:
           git config --global user.name "${{ env.GITHUB_USER_NAME }}"
           git config --global advice.addIgnoredFile false
           git config --global push.autoSetupRemote true
-          mkdir -p ${{ inputs.ASSETS_TARGET_PATHS }}
+
+      - name: Set up custom environment variables
+        env:
+          ENV_VARS: ${{ secrets.ENV_VARS }}
+        if: ${{ env.ENV_VARS }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            JSON
+              .parse(process.env.ENV_VARS)
+              .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
+
+      - name: Set branch environment variables
+        if: ${{ github.ref_type == 'branch' }}
+        run: |
+          echo "BUILT_BRANCH_NAME=${{ github.ref_name }}${{ inputs.BUILT_BRANCH_SUFFIX }}" >> $GITHUB_ENV
+
+      - name: Set tag environment variables
+        if: ${{ github.ref_type == 'tag' }}
+        run: |
+          echo "TAG_NAME=$(echo ${GITHUB_REF#refs/*/})" >> $GITHUB_ENV
+          echo "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_PROD }}" >> $GITHUB_ENV
+          echo "RELEASE_BRANCH_ENABLED=${{ (needs.checks.outputs.is_development_branch_last_commit == 'yes' && inputs.RELEASE_BRANCH_NAME != '') && 'yes' || 'no' }}" >> $GITHUB_ENV
+
+      - name: Checkout and merge the built branch
+        if: ${{ github.ref_type == 'branch' }}
+        run: |
+          git checkout ${{ env.BUILT_BRANCH_NAME }} || git checkout -b ${{ env.BUILT_BRANCH_NAME }}
+          git merge ${{ github.ref_name }}
 
       - name: Git pull on re-run
         if: ${{ (github.run_attempt > 1) && (github.ref_type != 'tag') }}
         run: git pull
 
-      - name: Checkout new branch when running for a tag
-        if: ${{ github.ref_type == 'tag' }}
+      - name: Checkout and merge the release branch
+        if: ${{ github.ref_type == 'tag' && env.RELEASE_BRANCH_ENABLED == 'yes' }}
+        run: |
+          git checkout ${{ needs.checks.outputs.development_branch_name }}
+          git checkout ${{ inputs.RELEASE_BRANCH_NAME }} || git checkout -b ${{ inputs.RELEASE_BRANCH_NAME }}
+          git merge ${{ needs.checks.outputs.development_branch_name }}
+
+      - name: Checkout temporary tag branch
+        if: ${{ github.ref_type == 'tag' && env.RELEASE_BRANCH_ENABLED == 'no'  }}
         run: |
           git checkout -b bot/compiled-assets/${{ github.sha }}
           echo "TAG_BRANCH_NAME=bot/compiled-assets/${{ github.sha }}" >> $GITHUB_ENV
+
+      - name: Prepare directories
+        run: |
+          mkdir -p ${{ inputs.ASSETS_TARGET_PATHS }}
 
       - name: Set up node cache mode
         run: |
@@ -154,27 +219,31 @@ jobs:
       - name: Compile assets
         run: ${{ ((env.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm run' }} ${{ env.COMPILE_SCRIPT }}
 
-      - name: Git add, commit, push
+      - name: Git add, commit
         run: |
           declare -a TARGET_PATHS_ARRAY=(${{ inputs.ASSETS_TARGET_PATHS }})
           for path in "${TARGET_PATHS_ARRAY[@]}"; do git add -f "${path}/*"; done
-          git add ./*.json && git add ./*.lock
+          git add -A
           git commit -m "[BOT] Add compiled assets for #${{ github.ref }}" --no-verify || ((echo "NO_CHANGES=yes" >> $GITHUB_ENV) && (echo "No changes to commit"))
 
-      - name: Git push
-        if: ${{ env.NO_CHANGES != 'yes' }}
+      - name: Git push for branch
+        if: ${{ github.ref_type == 'branch' && (env.NO_CHANGES != 'yes' || inputs.BUILT_BRANCH_SUFFIX != '') }}
+        run: git push
+
+      - name: Git push for tag
+        if: ${{ github.ref_type == 'tag' && (env.NO_CHANGES != 'yes' || env.RELEASE_BRANCH_ENABLED == 'yes') }}
         run: git push
 
       - name: Move tag
-        if: ${{ env.TAG_NAME != '' && env.NO_CHANGES != 'yes' }}
+        if: ${{ github.ref_type == 'tag' && (env.NO_CHANGES != 'yes' || env.RELEASE_BRANCH_ENABLED == 'yes') }}
         run: |
           git tag -d ${{ env.TAG_NAME }}
           git push origin :refs/tags/${{ env.TAG_NAME }}
-          git tag ${{ env.TAG_NAME }}
+          git tag -a -m "[RELEASE] ${{ github.sha }} // Released by ${{ github.workflow }}" ${{ env.TAG_NAME }}
           git push origin --tags
 
-      - name: Delete tag branch
-        if: ${{ always() && (env.TAG_BRANCH_NAME != '' && env.NO_CHANGES != 'yes') }}
+      - name: Delete temporary tag branch
+        if: ${{ always() && env.TAG_BRANCH_NAME != '' }}
         run: |
           git checkout --detach
           git branch -d ${{ env.TAG_BRANCH_NAME }}
