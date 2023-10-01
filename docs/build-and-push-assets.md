@@ -72,29 +72,26 @@ This is not the simplest possible example, but it showcases all the recommendati
 
 ### Inputs
 
-| Name                  | Default                         | Description                                                                            |
-|-----------------------|---------------------------------|----------------------------------------------------------------------------------------|
-| `NODE_VERSION`        | `16`                            | Node version with which the assets will be compiled                                    |
-| `NPM_REGISTRY_DOMAIN` | `"https://npm.pkg.github.com/"` | Domain of the private npm registry                                                     |
-| `PACKAGE_MANAGER`     | `"auto"` <sup>**^1**</sup>      | Package manager. Supported are "yarn" and "npm". Required if no lock file is available |
-| `DEPS_INSTALL`        | `"yes"`                         | Install dependencies before compiling? Options: `"yes"` (default) `"no"`               |
-| `COMPILE_SCRIPT_PROD` | `"encore prod"`                 | Script added to `npm run` or `yarn` to build production assets                         |
-| `COMPILE_SCRIPT_DEV`  | `"encore dev"`                  | Script added to `npm run` or `yarn` to build development assets                        |
-| `ASSETS_TARGET_PATHS` | `"./assets"`                    | Target path(s) for compiled assets                                                     |
-
-<sup>**^1**</sup> `PACKAGE_MANAGER` defaults to "auto" because it tries to determine the package
-manager by looking at lock file (e.g. presence of `yarn.lock` means _Yarn_, `npm-shrinkwrap.json`
-or `package-lock.json` means _npm_). **In the case no lock file is found in the repository,
-then `PACKAGE_MANAGER` input is required**.
+| Name                  | Default                       | Description                                                                       |
+|-----------------------|-------------------------------|-----------------------------------------------------------------------------------|
+| `NODE_OPTIONS`        | `''`                          | Space-separated list of command-line Node options                                 |
+| `NODE_VERSION`        | `18`                          | Node version with which the assets will be compiled                               |
+| `NPM_REGISTRY_DOMAIN` | `https://npm.pkg.github.com/` | Domain of the private npm registry                                                |
+| `PACKAGE_MANAGER`     | `yarn`                        | Package manager with which the dependencies should be installed (`npm` or `yarn`) |
+| `WORKING_DIRECTORY`   | `'./'`                        | Working directory path                                                            |
+| `COMPILE_SCRIPT_PROD` | `'encore prod'`               | Script added to `npm run` or `yarn` to build production assets                    |
+| `COMPILE_SCRIPT_DEV`  | `'encore dev'`                | Script added to `npm run` or `yarn` to build development assets                   |
+| `ASSETS_TARGET_PATHS` | `'./assets'`                  | Target path(s) for compiled assets                                                |
 
 ## Secrets
 
 | Name                  | Description                                                                  |
 |-----------------------|------------------------------------------------------------------------------|
 | `NPM_REGISTRY_TOKEN`  | Authentication for the private npm registry                                  |
-| `GITHUB_USER_EMAIL`   | Email address for Git configuration                                          |
-| `GITHUB_USER_NAME`    | Username for Git configuration                                               |
+| `GITHUB_USER_EMAIL`   | Email address for the GitHub user configuration                              |
+| `GITHUB_USER_NAME`    | Username for the GitHub user configuration                                   |
 | `GITHUB_USER_SSH_KEY` | Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME` |
+| `ENV_VARS`            | Additional environment variables as a JSON formatted object                  |
 
 ## FAQ
 
@@ -133,6 +130,8 @@ jobs:
     secrets:
       GITHUB_USER_EMAIL: ${{ secrets.INPSYDE_BOT_EMAIL }}
       GITHUB_USER_NAME: ${{ secrets.INPSYDE_BOT_USER }}
+      ENV_VARS: >-
+        [{"name":"EXAMPLE_USERNAME", "value":"${{ secrets.USERNAME }}"}]
 ```
 
 ---
@@ -210,5 +209,5 @@ The workflow supports a private SSH key passed via the `GITHUB_USER_SSH_KEY` sec
 By passing a key associated with the GitHub user defined in the required `GITHUB_USER_NAME`, the
 workflow can install these packages.
 
-Please note that in such cases it is a good practice not to use a "personal" GitHub user, but an _
-ad-hoc_ "bot" user with an _ad-hoc_ private SSH key used only for the scope.
+Please note that in such cases it is a good practice not to use a "personal" GitHub user, but an 
+_ad-hoc_ "bot" user with an _ad-hoc_ private SSH key used only for the scope.

@@ -10,7 +10,7 @@ on:
         type: string
       NODE_VERSION:
         description: Node version with which the static code analysis is to be executed.
-        default: 16
+        default: 18
         required: false
         type: string
       STYLELINT_ARGS:
@@ -18,40 +18,61 @@ on:
         default: './resources/**/*.scss'
         required: false
         type: string
+      PACKAGE_MANAGER:
+        description: Package manager with which the dependencies should be installed (`npm` or `yarn`).
+        default: 'yarn'
+        required: false
+        type: string
+      NODE_OPTIONS:
+        description: Space-separated list of command-line Node options.
+        type: string
+        default: ''
+        required: false
     secrets:
       NPM_REGISTRY_TOKEN:
         description: Authentication for the private npm registry.
         required: false
+      ENV_VARS:
+        description: Additional environment variables as a JSON formatted object.
+        required: false
 
 jobs:
-  static-code-analysis-sass:
+  static-analysis-sass:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     env:
+      NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
       NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
     steps:
+      - name: Deprecation warning
+        run: echo "::warning::This workflow is deprecated and will be replaced by the @wordpress/scripts workflow (wp-scripts-lint.yml) in the future."
+
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Set up custom environment variables
+        env:
+          ENV_VARS: ${{ secrets.ENV_VARS }}
+        if: ${{ env.ENV_VARS }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            JSON
+              .parse(process.env.ENV_VARS)
+              .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
       - name: Set up node
         uses: actions/setup-node@v3
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
+          cache: ${{ inputs.PACKAGE_MANAGER }}
 
       - name: Set up problem matchers for Stylelint
         uses: xt0rted/stylelint-problem-matcher@v1
 
-      - name: Cache npm dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install npm dependencies
-        run: npm install
+      - name: Install dependencies
+        run: ${{ ((inputs.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm install' }}
 
       - name: Run Stylelint
-        run: ./node_modules/.bin/stylelint ${{ inputs.STYLELINT_ARGS }}
+        run: ./node_modules/.bin/stylelint "${{ inputs.STYLELINT_ARGS }}"

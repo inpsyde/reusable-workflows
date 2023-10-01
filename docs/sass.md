@@ -2,6 +2,8 @@
 
 ## Static code analysis
 
+> **:warning: This workflow is deprecated and will be replaced by the `@wordpress/scripts` workflow (`wp-scripts-lint.yml`) in the future.**
+
 This workflow runs [Stylelint](https://stylelint.io/). It does so by executing the binary in
 the `./node_modules/.bin/` folder.
 
@@ -20,17 +22,20 @@ jobs:
 
 #### Inputs
 
-| Name                  | Default                         | Description                                         |
-|-----------------------|---------------------------------|-----------------------------------------------------|
-| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                  |
-| `NODE_VERSION`        | 16                              | Node version with which the assets will be compiled |
-| `STYLELINT_ARGS`      | `'./resources/**/*.scss'`       | Set of arguments passed to Stylelint                |
+| Name                  | Default                       | Description                                                                       |
+|-----------------------|-------------------------------|-----------------------------------------------------------------------------------|
+| `NPM_REGISTRY_DOMAIN` | `https://npm.pkg.github.com/` | Domain of the private npm registry                                                |
+| `NODE_VERSION`        | `18`                          | Node version with which the assets will be compiled                               |
+| `STYLELINT_ARGS`      | `'./resources/**/*.scss'`     | Set of arguments passed to Stylelint                                              |
+| `PACKAGE_MANAGER`     | `yarn`                        | Package manager with which the dependencies should be installed (`npm` or `yarn`) |
+| `NODE_OPTIONS`        | `''`                          | Space-separated list of command-line Node options                                 |
 
 #### Secrets
 
-| Name                 | Description                                 |
-|----------------------|---------------------------------------------|
-| `NPM_REGISTRY_TOKEN` | Authentication for the private npm registry |
+| Name                 | Description                                                 |
+|----------------------|-------------------------------------------------------------|
+| `NPM_REGISTRY_TOKEN` | Authentication for the private npm registry                 |
+| `ENV_VARS`           | Additional environment variables as a JSON formatted object |
 
 **Example with configuration parameters:**
 
@@ -43,6 +48,8 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/static-analysis-sass.yml@main
     secrets:
       NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      ENV_VARS: >-
+        [{"name":"EXAMPLE_USERNAME", "value":"${{ secrets.USERNAME }}"}]
     with:
       NODE_VERSION: 14
       STYLELINT_ARGS: './assets/scss/*.scss'

@@ -10,7 +10,7 @@ on:
         type: string
       NODE_VERSION:
         description: Node version with which the unit tests are to be executed.
-        default: 16
+        default: 18
         required: false
         type: string
       JEST_ARGS:
@@ -18,9 +18,31 @@ on:
         default: '--reporters=default --reporters=github-actions'
         required: false
         type: string
+      PACKAGE_MANAGER:
+        description: Package manager with which the dependencies should be installed (`npm` or `yarn`).
+        default: 'yarn'
+        required: false
+        type: string
+      NODE_OPTIONS:
+        description: Space-separated list of command-line Node options.
+        type: string
+        default: ''
+        required: false
     secrets:
       NPM_REGISTRY_TOKEN:
         description: Authentication for the private npm registry.
+        required: false
+      GITHUB_USER_EMAIL:
+        description: Email address for the GitHub user configuration.
+        required: false
+      GITHUB_USER_NAME:
+        description: Username for the GitHub user configuration.
+        required: false
+      GITHUB_USER_SSH_KEY:
+        description: Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`.
+        required: false
+      ENV_VARS:
+        description: Additional environment variables as a JSON formatted object.
         required: false
 
 jobs:
@@ -28,27 +50,46 @@ jobs:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     env:
+      NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
       NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      GITHUB_USER_EMAIL: ${{ secrets.GITHUB_USER_EMAIL }}
+      GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
+      GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Set up custom environment variables
+        env:
+          ENV_VARS: ${{ secrets.ENV_VARS }}
+        if: ${{ env.ENV_VARS }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            JSON
+              .parse(process.env.ENV_VARS)
+              .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
+
+      - name: Set up SSH
+        if: ${{ env.GITHUB_USER_SSH_KEY != '' }}
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ env.GITHUB_USER_SSH_KEY }}
+
+      - name: Set up Git
+        run: |
+          git config --global user.email "${{ env.GITHUB_USER_EMAIL }}"
+          git config --global user.name "${{ env.GITHUB_USER_NAME }}"
 
       - name: Set up node
         uses: actions/setup-node@v3
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
+          cache: ${{ inputs.PACKAGE_MANAGER }}
 
-      - name: Cache npm dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install npm dependencies
-        run: npm install
+      - name: Install dependencies
+        run: ${{ ((inputs.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm install' }}
 
       - name: Run Jest
         run: ./node_modules/.bin/jest ${{ inputs.JEST_ARGS }}

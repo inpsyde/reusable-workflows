@@ -3,39 +3,44 @@ name: Build and push assets
 on:
   workflow_call:
     inputs:
+      NODE_OPTIONS:
+        description: Space-separated list of command-line Node options.
+        type: string
+        default: ''
+        required: false
       NODE_VERSION:
-        description: Node version with which the assets will be compiled.
-        default: 16
+        description: Node version with which the static code analysis is to be executed.
+        default: 18
         required: false
         type: string
       NPM_REGISTRY_DOMAIN:
         description: Domain of the private npm registry.
-        default: "https://npm.pkg.github.com/"
+        default: https://npm.pkg.github.com/
         required: false
         type: string
       PACKAGE_MANAGER:
-        description: Package manager. Supported are "yarn" and "npm".
-        type: string
-        default: "auto"
+        description: Package manager with which the dependencies should be installed (`npm` or `yarn`).
+        default: 'yarn'
         required: false
-      DEPS_INSTALL:
-        description: Install dependencies before compiling?
         type: string
-        default: "yes"
+      WORKING_DIRECTORY:
+        description: Working directory path.
+        default: './'
         required: false
+        type: string
       COMPILE_SCRIPT_PROD:
         description: Script added to "npm run" or "yarn" to build production assets.
         type: string
-        default: "encore prod"
+        default: 'encore prod'
         required: false
       COMPILE_SCRIPT_DEV:
         description: Script added to "npm run" or "yarn" to build development assets.
         type: string
-        default: "encore dev"
+        default: 'encore dev'
         required: false
       ASSETS_TARGET_PATHS:
         description: Target path(s) for compiled assets.
-        default: "./assets"
+        default: './assets'
         required: false
         type: string
     secrets:
@@ -43,28 +48,38 @@ on:
         description: Authentication for the private npm registry.
         required: false
       GITHUB_USER_EMAIL:
-        description: Email address for Git configuration.
+        description: Email address for the GitHub user configuration.
         required: true
       GITHUB_USER_NAME:
-        description: Username for Git configuration.
+        description: Username for the GitHub user configuration.
         required: true
       GITHUB_USER_SSH_KEY:
         description: Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`.
         required: false
+      ENV_VARS:
+        description: Additional environment variables as a JSON formatted object.
+        required: false
 
 jobs:
   compile-assets:
+    defaults:
+      run:
+        working-directory: ${{ inputs.WORKING_DIRECTORY }}
     timeout-minutes: 10
     runs-on: ubuntu-latest
     env:
+      NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
       NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      NODE_CACHE_MODE: ''
+      GITHUB_USER_EMAIL: ${{ secrets.GITHUB_USER_EMAIL }}
+      GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
       GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
       COMPILE_SCRIPT: ${{ inputs.COMPILE_SCRIPT_DEV }} # we'll override if the push is for tag
       TAG_NAME: ''                                     # we'll override if the push is for tag
       TAG_BRANCH_NAME: ''                              # we'll override if the push is for tag
       LOCK_FILE: ''                                    # we'll override after checking files
-      PACKAGE_MANAGER: "yarn"                          # we'll override based on env/inputs
-      NO_CHANGES: ""                                   # we'll override if no changes to commit
+      PACKAGE_MANAGER: 'yarn'                          # we'll override based on env/inputs
+      NO_CHANGES: ''                                   # we'll override if no changes to commit
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -73,11 +88,16 @@ jobs:
           # when current push is a tag, we check out the tag's SHA, we'll create a new branch later
           ref: ${{ ((github.ref_type == 'tag') && github.sha) || github.ref }}
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: Set up custom environment variables
+        env:
+          ENV_VARS: ${{ secrets.ENV_VARS }}
+        if: ${{ env.ENV_VARS }}
+        uses: actions/github-script@v6
         with:
-          node-version: ${{ inputs.NODE_VERSION }}
-          registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
+          script: |
+            JSON
+              .parse(process.env.ENV_VARS)
+              .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
       - name: Set production environment variables
         if: ${{ contains(github.ref, 'refs/tags/') }}
@@ -87,14 +107,14 @@ jobs:
 
       - name: Set up SSH
         if: ${{ env.GITHUB_USER_SSH_KEY != '' }}
-        uses: webfactory/ssh-agent@v0.7.0
+        uses: webfactory/ssh-agent@v0.8.0
         with:
-          ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
+          ssh-private-key: ${{ env.GITHUB_USER_SSH_KEY }}
 
-      - name: Setup Git
+      - name: Set up Git
         run: |
-          git config --global user.email "${{ secrets.GITHUB_USER_EMAIL }}" 
-          git config --global user.name "${{ secrets.GITHUB_USER_NAME }}"
+          git config --global user.email "${{ env.GITHUB_USER_EMAIL }}"
+          git config --global user.name "${{ env.GITHUB_USER_NAME }}"
           git config --global advice.addIgnoredFile false
           git config --global push.autoSetupRemote true
           mkdir -p ${{ inputs.ASSETS_TARGET_PATHS }}
@@ -109,35 +129,30 @@ jobs:
           git checkout -b bot/compiled-assets/${{ github.sha }}
           echo "TAG_BRANCH_NAME=bot/compiled-assets/${{ github.sha }}" >> $GITHUB_ENV
 
-      - name: Try determining package manager by lock file
-        if: ${{ inputs.PACKAGE_MANAGER == 'auto' }}
+      - name: Set up node cache mode
         run: |
-          [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] && echo "LOCK_FILE=npm" >> $GITHUB_ENV || echo "No package-lock.json found"
-          [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ] && echo "LOCK_FILE=npm" >> $GITHUB_ENV || echo "No npm-shrinkwrap.json found"
-          [ -f "${GITHUB_WORKSPACE}/yarn.lock" ] && echo "LOCK_FILE=yarn" >> $GITHUB_ENV || echo "No yarn.lock found"
+          if [ "${{ inputs.PACKAGE_MANAGER }}" == 'npm' ] && { [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ]; }; then
+            echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV
+          elif [ "${{ inputs.PACKAGE_MANAGER }}" == 'yarn' ] && [ -f "${GITHUB_WORKSPACE}/yarn.lock" ]; then
+            echo "NODE_CACHE_MODE=yarn" >> $GITHUB_ENV
+          else
+            echo "No lock files found or unknown package manager"
+          fi
 
-      - name: Warning for fallback package manager
-        if: ${{ (inputs.PACKAGE_MANAGER == 'auto') && (env.LOCK_FILE == '') }}
-        run: echo "::warning::PACKAGE_MANAGER input not defined, and no lock file found, using Yarn as default."
-
-      - name: Determine package manager
-        if: ${{ (env.LOCK_FILE == 'npm') || (inputs.PACKAGE_MANAGER == 'npm') }}
-        run: echo "PACKAGE_MANAGER=npm" >> $GITHUB_ENV
-
-      - name: Cache npm/Yarn dependencies
-        uses: actions/cache@v3
+      - name: Set up node
+        uses: actions/setup-node@v3
         with:
-          path: ~/.deps_cache
-          key: ${{ runner.os }}-node-${{ inputs.NODE_VERSION }}-${{ env.PACKAGE_MANAGER }}-${{ hashFiles('**/package-lock.json', '**/npm-shrinkwrap.json', '**/yarn.lock') }}
+          node-version: ${{ inputs.NODE_VERSION }}
+          registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
+          cache: ${{ env.NODE_CACHE_MODE }}
 
       - name: Install dependencies
-        if: ${{ ! startsWith( 'no', inputs.DEPS_INSTALL ) }}
-        run: |
-          ${{ ((env.PACKAGE_MANAGER == 'npm') && 'npm config set cache ~/.deps_cache --global') || 'yarn config set cache-folder ~/.deps_cache' }}
-          ${{ ((env.PACKAGE_MANAGER == 'npm') && 'npm install') || 'yarn' }}
+        env:
+          ARGS: ${{ env.NODE_CACHE_MODE == 'yarn' && '--frozen-lockfile' || env.NODE_CACHE_MODE == 'npm' && 'ci' || 'install' }}
+        run: ${{ format('{0} {1}', inputs.PACKAGE_MANAGER, env.ARGS) }}
 
       - name: Compile assets
-        run: ${{ ((env.PACKAGE_MANAGER == 'npm') && 'npm run') || 'yarn' }} ${{ env.COMPILE_SCRIPT }}
+        run: ${{ ((env.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm run' }} ${{ env.COMPILE_SCRIPT }}
 
       - name: Git add, commit, push
         run: |
