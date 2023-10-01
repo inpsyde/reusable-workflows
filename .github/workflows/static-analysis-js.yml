@@ -48,7 +48,7 @@ jobs:
         run: echo "::warning::This workflow is deprecated and will be replaced by the @wordpress/scripts workflow (wp-scripts-lint.yml) in the future."
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up custom environment variables
         env:
