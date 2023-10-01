@@ -1,26 +1,26 @@
-# Release semantic automated
+# Automatic release
 
-This workflow utilizes the [Semantic Release](https://github.com/semantic-release/semantic-release) package to create a release of a package that uses npm.
-Mind that, in order to use Semantic Release, you need to stick to their convention about commit messages.
+This workflow utilizes [semantic-release](https://github.com/semantic-release/semantic-release) to create a package
+release.
+Note that you must stick to
+their [commit message convention](https://github.com/semantic-release/semantic-release#commit-message-format) to use it.
+You can provide a `release.config.js` file in your repository to create a custom release that uses the following
+semantic-release plugins:
 
-You can provide a release.config.js file in your repository to create a custom release that uses the following Semantic Release plugins:
 - git
 - npm
 - exec
-
-Otherwise, the workflow will create the release with a standard set of configurations, updating the version in the following files:
-- style.css or index.php 
-- CHANGELOG.md
-- package-lock.json
-- package.json
-- composer.json
-
-If you don't ship any of these files the release process will not fail.
-
-Another standard set of configurations is on the branches: every push to `main` and `next` branches will release a stable version, every push to `alpha` and `beta` branches will release a pre-release version.
-If you would like another setting, please provide your custom release.config.js file.
-
-Packages based on yarn will not be released using this automation.
+  Otherwise, the workflow will create the release with a standard set of configurations, updating the version in the
+  following files:
+- `CHANGELOG.md`
+- `composer.json`
+- `package-lock.json`
+- `package.json`
+- `style.css` or `index.php`
+  By default, every push to the `main` and `next` branches will release a stable version, and every push to the `alpha`
+  and `beta` branches will create a pre-release version.
+  If you would like another setting, please provide your custom release.config.js file.
+  Packages based on yarn will not be released using this automation.
 
 **Simplest possible example:**
 
@@ -41,9 +41,9 @@ jobs:
 
 #### Inputs
 
-| Name                  | Default                                                                                       | Description                                          |
-|-----------------------|-----------------------------------------------------------------------------------------------|------------------------------------------------------|
-| `NODE_VERSION`        | 18                                                                                            | Node version with which the release will be executed |
+| Name           | Default | Description                                          |
+|----------------|---------|------------------------------------------------------|
+| `NODE_VERSION` | 18      | Node version with which the release will be executed |
 
 **Example with configuration parameters:**
 
