@@ -39,7 +39,7 @@ jobs:
           echo "HAS_CONFIG=$HAS_CONFIG" >> $GITHUB_ENV
 
       - name: Checkout the workflow repository if release.config.js file is not provided
-        if: env.HAS_CONFIG == 'false' }}
+        if: ${{ env.HAS_CONFIG == 'false' }}
         uses: actions/checkout@v3
         with:
           repository: inpsyde/reusable-workflows
