@@ -81,7 +81,7 @@ jobs:
       - name: Find development branch (default GitHub repository branch)
         id: detect_development_branch_name
         run: |
-          echo "development_branch_name=${{ gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name' }}" >> $GITHUB_OUTPUT
+          echo "development_branch_name=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')" >> $GITHUB_OUTPUT
 
       - name: Checkout repository
         uses: actions/checkout@v3
