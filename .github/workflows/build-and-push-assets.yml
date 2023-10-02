@@ -76,20 +76,24 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
     outputs:
-      development_branch_name: steps.detect_development_branch_name.outputs.development_branch_name
+      development_branch_name: ${{ steps.detect_development_branch_name.outputs.development_branch_name }}
       is_development_branch_last_commit: ${{ github.sha == steps.detect_development_branch_last_commit.outputs.development_branch_last_commit && 'yes' || 'no' }}
       is_moved_tag: ${{ (github.ref_type == 'tag' && contains(steps.detect_tag_annotation.outputs.tag_annotation, env.MOVED_TAG_ANNOTATION_PATTERN)) && 'yes' || 'no' }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
       - name: Find development branch (default GitHub repository branch)
         id: detect_development_branch_name
         run: |
           echo "development_branch_name=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')" >> $GITHUB_OUTPUT
 
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          ref: ${{ steps.detect_development_branch_name.outputs.development_branch_name }} # it is not possible to get tag annotation from detached state https://github.com/actions/runner/issues/712
+      - name: Checkout development branch
+        # it is not possible to get tag annotation from detached state https://github.com/actions/runner/issues/712
+        run: |
+          git checkout ${{ steps.detect_development_branch_name.outputs.development_branch_name }}
 
       - name: Find last commit
         id: detect_development_branch_last_commit
