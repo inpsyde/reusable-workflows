@@ -106,6 +106,8 @@ jobs:
           echo "MOVED_TAG_ANNOTATION_PATTERN='// Released by ${{ github.workflow }}'" >> $GITHUB_ENV
 
   compile-assets:
+    needs: checks
+    if: ${{ github.ref_type == 'branch' || (github.ref_type == 'tag' && needs.checks.outputs.is_moved_tag == 'no') }}
     defaults:
       run:
         working-directory: ${{ inputs.WORKING_DIRECTORY }}
