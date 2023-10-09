@@ -49,7 +49,7 @@ jobs:
       - name: Add release.config.js file if not provided
         if: ${{ env.HAS_CONFIG == 'false' }}
         run: |
-          cp ${GITHUB_WORKSPACE}/workflow-repo/templates/release-semantic-automated-npm/release.config.js .
+          cp ${GITHUB_WORKSPACE}/workflow-repo/templates/automatic-release/release.config.js .
 
       - name: Remove the workflow repository
         if: ${{ env.HAS_CONFIG == 'false' }}

@@ -20,7 +20,6 @@ semantic-release plugins:
   By default, every push to the `main` and `next` branches will release a stable version, and every push to the `alpha`
   and `beta` branches will create a pre-release version.
   If you would like another setting, please provide your custom release.config.js file.
-  Packages based on yarn will not be released using this automation.
 
 **Simplest possible example:**
 
