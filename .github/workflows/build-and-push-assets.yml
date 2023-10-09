@@ -82,7 +82,7 @@ jobs:
       NO_CHANGES: ''                                   # we'll override if no changes to commit
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           # when current push is a tag, we check out the tag's SHA, we'll create a new branch later
