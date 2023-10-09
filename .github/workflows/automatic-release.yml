@@ -1,0 +1,62 @@
+name: Automatic Release
+on:
+  workflow_call:
+    inputs:
+      NODE_VERSION:
+        description: Node version with which the release will be executed.
+        default: 18
+        required: false
+        type: string
+
+jobs:
+  release:
+    name: Release
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    env:
+      HAS_CONFIG: false
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ inputs.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          npm i -g @semantic-release/changelog \
+            @semantic-release/git \
+            @semantic-release/npm \
+            @semantic-release/exec \
+            semantic-release
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Check presence of release.config.js
+        run: |
+          HAS_CONFIG=$(test -f "release.config.js" && echo true || echo false)
+          echo "Configuration file release.config.js found: $HAS_CONFIG"
+          echo "HAS_CONFIG=$HAS_CONFIG" >> $GITHUB_ENV
+
+      - name: Checkout the workflow repository if release.config.js file is not provided
+        if: ${{ env.HAS_CONFIG == 'false' }}
+        uses: actions/checkout@v3
+        with:
+          repository: inpsyde/reusable-workflows
+          ref: automatic-release
+          path: workflow-repo
+
+      - name: Add release.config.js file if not provided
+        if: ${{ env.HAS_CONFIG == 'false' }}
+        run: |
+          cp ${GITHUB_WORKSPACE}/workflow-repo/templates/automatic-release/release.config.js .
+
+      - name: Remove the workflow repository
+        if: ${{ env.HAS_CONFIG == 'false' }}
+        run: |
+          rm -rf workflow-repo
+
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
