@@ -162,7 +162,7 @@ jobs:
 
 ---
 
-> Will I have merge conflicts during PRs merging if I would not use `BUILT_BRANCH_SUFFIX`?
+> Will I have merge conflicts during PRs merging if I don't use `BUILT_BRANCH_SUFFIX`?
 
 No, if you follow the recommendations in this document you shouldn't.
 
