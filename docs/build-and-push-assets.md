@@ -6,25 +6,25 @@ To achieve that, the reusable workflow:
 
 1. installs dependencies defined in `package.json`
 2. builds the package's assets via a build script (see below)
-3. pushes built assets back to the repository (to the same branch or to defined branches)
+3. pushes built assets back to the repository (to the same branch or a defined branch)
 
 ## Where are assets stored
 
-To define branches as assets storage two inputs can be used - `BUILT_BRANCH_SUFFIX` and `RELEASE_BRANCH_NAME`.
+Two inputs can be used to define branches as assets storage - `BUILT_BRANCH_SUFFIX` and `RELEASE_BRANCH_NAME`.
 
-`BUILT_BRANCH_SUFFIX` is used only for push to branch events. If it's defined compiled assets
+`BUILT_BRANCH_SUFFIX` is used only for push to branch events. If defined, compiled assets
 will be stored in the branch with name equals current branch plus suffix. For instance,
-if `BUILT_BRANCH_SUFFIX` equals `-built` for pushing to the `main` branch compiled assets will be stored
-in the `main-built` branch (branch will be created if not exist).
+if `BUILT_BRANCH_SUFFIX` equals `-built` for pushing to the `main` branch, compiled assets will be stored
+in the `main-built` branch (a branch will be created if it does not exist).
 
-`RELEASE_BRANCH_NAME` is used only for tag events. If it's defined and the pushed tag points
-to the last commit of the default branch of the GitHub repository compiled assets will be pushed
-to the release branch and the tag will be moved there.
-If the input is undefined or the tag points to one of the previous commits
-the compiled assets will be pushed to detached commit and the tag will be moved there.
+`RELEASE_BRANCH_NAME` is used only for tag events. If defined and the pushed tag points
+to the last commit of the default branch of the GitHub repository, compiled assets will be pushed
+to the release branch, and the tag will be moved there.
+If the input is undefined or the tag points to one of the previous commits,
+the compiled assets will be pushed to the detached commit, and the tag will be moved there.
 
-The main benefit of using `BUILT_BRANCH_SUFFIX` is you don't pollute the main development branch
-with compiled assets commits. With `RELEASE_BRANCH_NAME` you can gain linear tag history
+The main benefit of using `BUILT_BRANCH_SUFFIX` is not to pollute the main development branch
+with commits containing compiled assets. With `RELEASE_BRANCH_NAME`, you can gain linear tag history
 if you always tag just the last commit from the main development branch.
 
 ## Build script
