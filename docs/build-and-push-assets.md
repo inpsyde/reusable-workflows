@@ -242,11 +242,11 @@ _ad-hoc_ "bot" user with an _ad-hoc_ private SSH key used only for the scope.
 
 ---
 
-> What version should I use for Composer?
+> What version should I use when requiring the package with Composer?
 
-For tags the pushed tags name are always used.
+For tags, the pushed tag name is always used.
 
-For branches, it depends on `BUILT_BRANCH_SUFFIX` input value. If the input is not provided
-you can use branch name (i.e. `dev-main` for `main` branch) as usually. If suffix was defined
-the built branch should be used. I.e. for `BUILT_BRANCH_SUFFIX` equals `-built` and branch `main`
+For branches, it depends on the `BUILT_BRANCH_SUFFIX` input value. If the input is not provided,
+you can use the branch name (i.e., `dev-main` for the `main` branch) as usual. If a suffix was defined,
+the built branch should be used. I.e., when `BUILT_BRANCH_SUFFIX` is `-built` and branch `main`,
 the `dev-main-built` branch should be used as the package version.
