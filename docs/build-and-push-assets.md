@@ -199,7 +199,7 @@ hash that triggered the compilation.
 As for the "noise", it will indeed be there. However, considering that all workflow commit messages
 start with the prefix `[BOT]`, it would be quite easy to ignore them without any cognitive effort.
 
-With defining `BUILT_BRANCH_SUFFIX` you can keep compiled assets commit separated in the built branch.
+By defining `BUILT_BRANCH_SUFFIX`, you keep commits containing compiled assets separated in the built branch.
 
 ---
 
