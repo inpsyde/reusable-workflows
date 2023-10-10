@@ -51,8 +51,8 @@ is moved** to point to the commit that contains the compiled assets.
   avoid conflicts when a push happens before the current workflow is not completed.
 - It is recommended for calling workflows to
   use ["paths" settings](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#example-including-paths)
-  to avoid running the workflow when no asset sources are changed. It's not applicable for built branches
-  and release branch strategies because with last ones sync should happen on every push.
+  to avoid running the workflow when no asset sources are changed. It should not be used for built branches
+  and release branch strategies because the sync should happen on every push.
 
 ## Simple usage example:
 
