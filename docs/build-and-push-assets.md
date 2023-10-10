@@ -123,7 +123,7 @@ This is not the simplest possible example, but it showcases all the recommendati
 
 > Isn't it bad practice to push compiled assets into version control?
 
-This is the single way supported by [Composer package manager](https://github.com/composer/packagist/issues/903) out of the box.
+This is the only supported way by [Composer](https://github.com/composer/packagist/issues/903).
 
 ---
 
