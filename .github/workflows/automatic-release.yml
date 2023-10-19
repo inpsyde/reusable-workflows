@@ -43,7 +43,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: inpsyde/reusable-workflows
-          ref: automatic-release
           path: workflow-repo
 
       - name: Add release.config.js file if not provided
