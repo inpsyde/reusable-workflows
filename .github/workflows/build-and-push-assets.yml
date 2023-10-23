@@ -53,6 +53,21 @@ on:
         type: string
         default: ''
         required: false
+      INSTALL_WP_CLI:
+        description: Whether to Install WP cli or not.
+        default: false
+        required: false
+        type: boolean
+      PHP_VERSION:
+        description: PHP version with which the WP CLI is going to be executed.
+        default: "8.1"
+        required: false
+        type: string
+      BRANCHES_USING_COMPILE_SCRIPT_PROD:
+        description: Branches that should use the COMPILE_SCRIPT_PROD script
+        default: '[]'
+        required: false
+        type: string
     secrets:
       NPM_REGISTRY_TOKEN:
         description: Authentication for the private npm registry.
@@ -126,6 +141,7 @@ jobs:
       GITHUB_USER_EMAIL: ${{ secrets.GITHUB_USER_EMAIL }}
       GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
       GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
+      BRANCHES_USING_COMPILE_SCRIPT_PROD: ${{ inputs.BRANCHES_USING_COMPILE_SCRIPT_PROD }}
       COMPILE_SCRIPT: ${{ inputs.COMPILE_SCRIPT_DEV }} # we'll override if the push is for tag
       TAG_NAME: ''                                     # we'll override if the push is for tag
       TAG_BRANCH_NAME: ''                              # we'll override if the push is for tag
@@ -175,6 +191,11 @@ jobs:
           echo "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_PROD }}" >> $GITHUB_ENV
           echo "RELEASE_BRANCH_ENABLED=${{ (needs.checks.outputs.is_development_branch_last_commit == 'yes' && inputs.RELEASE_BRANCH_NAME != '') && 'yes' || 'no' }}" >> $GITHUB_ENV
 
+      - name: Set branch COMPILE_SCRIPT
+        if: ${{ github.ref_type == 'branch' && contains(fromJSON(env.BRANCHES_USING_COMPILE_SCRIPT_PROD), github.ref_name) }}
+        run: |
+          echo "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_PROD }}" >> $GITHUB_ENV
+
       - name: Checkout and merge the built branch
         if: ${{ github.ref_type == 'branch' }}
         run: |
@@ -218,6 +239,14 @@ jobs:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
           cache: ${{ env.NODE_CACHE_MODE }}
+
+      - name: Install WP CLI
+        if: ${{ inputs.INSTALL_WP_CLI }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.PHP_VERSION }}
+          tools: wp-cli
+          coverage: none
 
       - name: Install dependencies
         env:
