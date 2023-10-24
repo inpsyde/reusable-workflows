@@ -229,7 +229,7 @@ jobs:
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
           cache: ${{ env.NODE_CACHE_MODE }}
 
-      - name: Configure PHP
+      - name: Set up PHP
         if: ${{ inputs.PHP_TOOLS }}
         uses: shivammathur/setup-php@v2
         with:
