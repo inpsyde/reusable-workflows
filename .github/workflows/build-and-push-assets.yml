@@ -54,7 +54,7 @@ on:
         default: ''
         required: false
       PHP_VERSION:
-        description: PHP version with which the WP CLI is going to be executed.
+        description: PHP version with which the PHP tools are to be executed.
         default: "8.0"
         required: false
         type: string
