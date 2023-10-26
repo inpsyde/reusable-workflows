@@ -96,20 +96,20 @@ This is not the simplest possible example, but it showcases all the recommendati
 
 ### Inputs
 
-| Name                  | Default                       | Description                                                                       |
-|-----------------------|-------------------------------|-----------------------------------------------------------------------------------|
-| `NODE_OPTIONS`        | `''`                          | Space-separated list of command-line Node options                                 |
-| `NODE_VERSION`        | `18`                          | Node version with which the assets will be compiled                               |
-| `NPM_REGISTRY_DOMAIN` | `https://npm.pkg.github.com/` | Domain of the private npm registry                                                |
-| `PACKAGE_MANAGER`     | `yarn`                        | Package manager with which the dependencies should be installed (`npm` or `yarn`) |
-| `WORKING_DIRECTORY`   | `'./'`                        | Working directory path                                                            |
-| `COMPILE_SCRIPT_PROD` | `'encore prod'`               | Script added to `npm run` or `yarn` to build production assets                    |
-| `COMPILE_SCRIPT_DEV`  | `'encore dev'`                | Script added to `npm run` or `yarn` to build development assets                   |
-| `ASSETS_TARGET_PATHS` | `'./assets'`                  | Target path(s) for compiled assets                                                |
-| `BUILT_BRANCH_SUFFIX` | `''`                          | Suffix to calculate target branch for pushing assets on `branch` event            |
-| `RELEASE_BRANCH_NAME` | `''`                          | Target branch for pushing compiled assets on `tag` event                          |
-| `PHP_VERSION`         | `'8.0'`                       | PHP version that will be installed in the action                                  |
-| `PHP_TOOLS`           | `''`                          | PHP tools to be installed. See: shivammathur/setup-php GH Action                  |
+| Name                  | Default                       | Description                                                                                                                     |
+|-----------------------|-------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
+| `NODE_OPTIONS`        | `''`                          | Space-separated list of command-line Node options                                                                               |
+| `NODE_VERSION`        | `18`                          | Node version with which the assets will be compiled                                                                             |
+| `NPM_REGISTRY_DOMAIN` | `https://npm.pkg.github.com/` | Domain of the private npm registry                                                                                              |
+| `PACKAGE_MANAGER`     | `yarn`                        | Package manager with which the dependencies should be installed (`npm` or `yarn`)                                               |
+| `WORKING_DIRECTORY`   | `'./'`                        | Working directory path                                                                                                          |
+| `COMPILE_SCRIPT_PROD` | `'encore prod'`               | Script added to `npm run` or `yarn` to build production assets                                                                  |
+| `COMPILE_SCRIPT_DEV`  | `'encore dev'`                | Script added to `npm run` or `yarn` to build development assets                                                                 |
+| `ASSETS_TARGET_PATHS` | `'./assets'`                  | Target path(s) for compiled assets                                                                                              |
+| `BUILT_BRANCH_SUFFIX` | `''`                          | Suffix to calculate target branch for pushing assets on `branch` event                                                          |
+| `RELEASE_BRANCH_NAME` | `''`                          | Target branch for pushing compiled assets on `tag` event                                                                        |
+| `PHP_VERSION`         | `'8.0'`                       | PHP version with which the PHP tools are to be executed                                                                         |
+| `PHP_TOOLS`           | `''`                          | PHP tools supported by [shivammathur/setup-php](https://github.com/shivammathur/setup-php#wrench-tools-support) to be installed |
 
 ## Secrets
 
