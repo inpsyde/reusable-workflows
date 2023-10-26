@@ -55,12 +55,12 @@ on:
         required: false
       PHP_VERSION:
         description: PHP version with which the PHP tools are to be executed.
-        default: "8.0"
+        default: '8.0'
         required: false
         type: string
       PHP_TOOLS:
-        description: "PHP tools to be installed. See: shivammathur/setup-php GH Action"
-        default: ""
+        description: PHP tools supported by shivammathur/setup-php to be installed.
+        default: ''
         required: false
         type: string
     secrets:
