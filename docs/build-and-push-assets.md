@@ -108,6 +108,8 @@ This is not the simplest possible example, but it showcases all the recommendati
 | `ASSETS_TARGET_PATHS` | `'./assets'`                  | Target path(s) for compiled assets                                                |
 | `BUILT_BRANCH_SUFFIX` | `''`                          | Suffix to calculate target branch for pushing assets on `branch` event            |
 | `RELEASE_BRANCH_NAME` | `''`                          | Target branch for pushing compiled assets on `tag` event                          |
+| `PHP_VERSION`         | `'8.0'`                       | PHP version that will be installed in the action                                  |
+| `PHP_TOOLS`           | `''`                          | PHP tools to be installed. See: shivammathur/setup-php GH Action                  |
 
 ## Secrets
 
