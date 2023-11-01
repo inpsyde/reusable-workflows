@@ -30,7 +30,7 @@ jobs:
             semantic-release
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Check presence of release.config.js
         run: |
@@ -40,7 +40,7 @@ jobs:
 
       - name: Checkout the workflow repository if release.config.js file is not provided
         if: ${{ env.HAS_CONFIG == 'false' }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: inpsyde/reusable-workflows
           path: workflow-repo
