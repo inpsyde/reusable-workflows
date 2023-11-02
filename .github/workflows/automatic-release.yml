@@ -10,7 +10,7 @@ on:
     secrets:
       USER_TOKEN:
         description: Authentication for the semantic release action.
-        required: true
+        required: false
 
 jobs:
   release:
