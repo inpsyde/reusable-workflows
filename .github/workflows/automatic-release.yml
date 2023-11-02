@@ -11,7 +11,6 @@ on:
       USER_TOKEN:
         description: Authentication for the semantic release action.
         required: false
-        default: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   release:
@@ -62,5 +61,5 @@ jobs:
 
       - name: Release
         env:
-          GITHUB_TOKEN: ${{ secrets.USER_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.USER_TOKEN != '' && secrets.USER_TOKEN || secrets.GITHUB_TOKEN }}
         run: npx semantic-release
