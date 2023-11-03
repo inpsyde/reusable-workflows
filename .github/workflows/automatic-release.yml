@@ -7,6 +7,16 @@ on:
         default: 18
         required: false
         type: string
+    secrets:
+      GITHUB_USER_EMAIL:
+        description: Email address for the GitHub user configuration.
+        required: false
+      GITHUB_USER_NAME:
+        description: Username for the GitHub user configuration.
+        required: false
+      GITHUB_USER_SSH_KEY:
+        description: Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`.
+        required: false
 
 jobs:
   release:
@@ -15,6 +25,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       HAS_CONFIG: false
+      GITHUB_USER_EMAIL: ${{ secrets.GITHUB_USER_EMAIL }}
+      GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
+      GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
+      AUTH_TO_USE: ${{ secrets.GITHUB_USER_SSH_KEY != '' && 'SSH' || 'TOKEN' }}
     steps:
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -31,6 +45,8 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Check presence of release.config.js
         run: |
@@ -55,7 +71,26 @@ jobs:
         run: |
           rm -rf workflow-repo
 
-      - name: Release
+      - name: Release with TOKEN
+        if: ${{ env.AUTH_TO_USE == 'TOKEN' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
+
+      - name: Set up SSH
+        if: ${{ env.AUTH_TO_USE == 'SSH' }}
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ env.GITHUB_USER_SSH_KEY }}
+
+      - name: Set up Git
+        if: ${{ env.AUTH_TO_USE == 'SSH' }}
+        run: |
+          git config --global user.email "${{ env.GITHUB_USER_EMAIL }}"
+          git config --global user.name "${{ env.GITHUB_USER_NAME }}"
+          git config --global advice.addIgnoredFile false
+          git config --global push.autoSetupRemote true
+
+      - name: Release with SSH
+        if: ${{ env.AUTH_TO_USE == 'SSH' }}
         run: npx semantic-release
