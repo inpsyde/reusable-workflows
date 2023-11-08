@@ -9,7 +9,7 @@ on:
         type: string
     secrets:
       USER_TOKEN:
-        description: Authentication for the semantic release action.
+        description: Authentication for the automatic release action.
         required: false
 
 jobs:
