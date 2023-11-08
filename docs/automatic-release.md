@@ -60,5 +60,5 @@ jobs:
     with:
       NODE_VERSION: 16
     secrets:
-      USER_TOKEN: ${{ secrets.MY_TOKEN_SECRET }}
+      USER_TOKEN: ${{ secrets.WRITE_TOKEN }}
 ```
