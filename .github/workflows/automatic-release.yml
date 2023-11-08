@@ -9,7 +9,7 @@ on:
         type: string
     secrets:
       USER_TOKEN:
-        description: Authentication for the automatic release action.
+        description: Authentication token with write permission needed by the release bot.
         required: false
 
 jobs:
