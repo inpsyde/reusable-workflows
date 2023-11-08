@@ -40,9 +40,10 @@ jobs:
 
 #### Inputs
 
-| Name           | Default | Description                                          |
-|----------------|---------|------------------------------------------------------|
-| `NODE_VERSION` | 18      | Node version with which the release will be executed |
+| Name           | Required | Default | Description                                                                                |
+|----------------|----------|------------------|--------------------------------------------------------------------------------------------|
+| `NODE_VERSION` | false    |18               | Node version with which the release will be executed                                       |
+| `USER_TOKEN`   | false    |`empty`          | The token used to authenticate with GitHub. When not defined will fallback to GITHUB_TOKEN |
 
 **Example with configuration parameters:**
 
@@ -58,4 +59,6 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/automatic-release.yml@main
     with:
       NODE_VERSION: 16
+    secrets:
+      USER_TOKEN: ${{ secrets.MY_TOKEN_SECRET }}
 ```
