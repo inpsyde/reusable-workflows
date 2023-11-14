@@ -43,6 +43,11 @@ on:
         default: './assets'
         required: false
         type: string
+      MODE:
+        description: Define the mode for building either "prod" or "dev" assets.
+        default: ''
+        required: false
+        type: string
     secrets:
       NPM_REGISTRY_TOKEN:
         description: Authentication for the private npm registry.
@@ -59,7 +64,6 @@ on:
       ENV_VARS:
         description: Additional environment variables as a JSON formatted object.
         required: false
-
 jobs:
   compile-assets:
     defaults:
@@ -74,7 +78,7 @@ jobs:
       GITHUB_USER_EMAIL: ${{ secrets.GITHUB_USER_EMAIL }}
       GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
       GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
-      COMPILE_SCRIPT: ${{ inputs.COMPILE_SCRIPT_DEV }} # we'll override if the push is for tag
+      COMPILE_SCRIPT: ${{ inputs.COMPILE_SCRIPT_DEV }}
       TAG_NAME: ''                                     # we'll override if the push is for tag
       TAG_BRANCH_NAME: ''                              # we'll override if the push is for tag
       LOCK_FILE: ''                                    # we'll override after checking files
@@ -99,11 +103,22 @@ jobs:
               .parse(process.env.ENV_VARS)
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
+      - name: Set compile script
+        run: |
+          if [ "${{ inputs.MODE }}" == 'dev' ]; then
+           "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_DEV }}" >> $GITHUB_ENV
+          elif [ "${{ inputs.MODE }}" == 'prod' ]; then
+           "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_PROD }}" >> $GITHUB_ENV
+          elif [ "${{ inputs.MODE }}" == '' && ${{ contains(github.ref, 'refs/tags/') }} ]; then
+            "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_PROD }}" >> $GITHUB_ENV
+          else
+           "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_DEV }}" >> $GITHUB_ENV
+          fi
+
       - name: Set production environment variables
         if: ${{ contains(github.ref, 'refs/tags/') }}
         run: |
           echo "TAG_NAME=$(echo ${GITHUB_REF#refs/*/})" >> $GITHUB_ENV
-          echo "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_PROD }}" >> $GITHUB_ENV
 
       - name: Set up SSH
         if: ${{ env.GITHUB_USER_SSH_KEY != '' }}

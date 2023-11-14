@@ -13,7 +13,7 @@ To achieve that, the reusable workflow:
 In step *2* above, the assets are "built", whatever that means for a package. For maximum
 flexibility, the workflow relies on a "script" to be defined in `package.json`. There are two
 possible building scripts: a "*dev*" script which is executed on regular pushes to branches, and
-a "*prod*" script, which is executed when a tag is pushed.
+a "*prod*" script, which is executed when a tag is pushed. In case you want to configure when which script is being used, you can set the `inputs.MODE` manually with either `dev` or `prod`.
 
 By default, the two scripts are `encore dev` and `encore prod`, but can be configured
 via [inputs](#inputs).
@@ -82,6 +82,7 @@ This is not the simplest possible example, but it showcases all the recommendati
 | `COMPILE_SCRIPT_PROD` | `'encore prod'`               | Script added to `npm run` or `yarn` to build production assets                    |
 | `COMPILE_SCRIPT_DEV`  | `'encore dev'`                | Script added to `npm run` or `yarn` to build development assets                   |
 | `ASSETS_TARGET_PATHS` | `'./assets'`                  | Target path(s) for compiled assets                                                |
+| `MODE`                | `''`                          | Defines the build mode. Can be either `dev` or `prod`.                            |
 
 ## Secrets
 
@@ -113,6 +114,32 @@ Encore.cleanupOutputBeforeBuild(['*.js', '*.css'])
 ```
 
 ---
+
+> Can I decide when to run `COMPILE_SCRIPT_PROD` or `COMPILE_SCRIPT_DEV`?
+ 
+Yes, you can define the `inputs.MODE` which is either `dev` or `prod`. Depending on the set value the corresponding script will be executed.
+
+When left empty, the default logic is applied. So we can define following scenarios:
+
+| MODE     | scenario            | script                |
+|----------|---------------------|-----------------------|
+| `''`     | push to branch.     | `COMPILE_SCRIPT_DEV`  |
+| `''`     | create release/tag. | `COMPILE_SCRIPT_PROD` |
+| `'dev'`  | _not evaluated_     | `COMPILE_SCRIPT_DEV`  |
+| `'prod'` | _not evaluated_     | `COMPILE_SCRIPT_PROD` |
+
+**Example:** I want to push to a branch `production` and "production"-ready assets have to be compiled:
+
+```yaml
+name: Build and push assets
+on:
+  push:
+jobs:
+  build-assets:
+    uses: inpsyde/reusable-workflows/.github/workflows/build-and-push-assets.yml@main
+    inputs:
+      MODE: ${{ github.ref === 'refs/heads/production') && 'prod' || '' }}
+```
 
 > Can I have multiple output folders for my package?
 
