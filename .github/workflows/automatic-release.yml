@@ -8,7 +8,7 @@ on:
         required: false
         type: string
     secrets:
-      USER_TOKEN:
+      GITHUB_USER_TOKEN:
         description: Authentication token with write permission needed by the release bot.
         required: false
 
@@ -63,5 +63,5 @@ jobs:
 
       - name: Release
         env:
-          GITHUB_TOKEN: ${{ secrets.USER_TOKEN != '' && secrets.USER_TOKEN || secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_USER_TOKEN != '' && secrets.GITHUB_USER_TOKEN || secrets.GITHUB_TOKEN }}
         run: npx semantic-release
