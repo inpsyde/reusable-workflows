@@ -138,7 +138,7 @@ jobs:
   build-assets:
     uses: inpsyde/reusable-workflows/.github/workflows/build-and-push-assets.yml@main
     inputs:
-      MODE: ${{ github.ref === 'refs/heads/production') && 'prod' || '' }}
+      MODE: ${{ github.ref_type == 'branch' && github.ref_name == 'production' && 'prod' || '' }}
 ```
 
 > Can I have multiple output folders for my package?
