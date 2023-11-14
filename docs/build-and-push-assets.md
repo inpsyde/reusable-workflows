@@ -137,7 +137,7 @@ on:
 jobs:
   build-assets:
     uses: inpsyde/reusable-workflows/.github/workflows/build-and-push-assets.yml@main
-    inputs:
+    with:
       MODE: ${{ github.ref_type == 'branch' && github.ref_name == 'production' && 'prod' || '' }}
 ```
 
@@ -152,7 +152,7 @@ on:
 jobs:
   build-assets:
     uses: inpsyde/reusable-workflows/.github/workflows/build-and-push-assets.yml@main
-    inputs:
+    with:
       ASSETS_TARGET_PATHS: "./assets ./modules/Foo/assets ./modules/Bar/assets"
     secrets:
       GITHUB_USER_EMAIL: ${{ secrets.INPSYDE_BOT_EMAIL }}
