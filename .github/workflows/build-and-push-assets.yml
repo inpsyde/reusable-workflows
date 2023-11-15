@@ -243,7 +243,7 @@ jobs:
         run: ${{ format('{0} {1}', inputs.PACKAGE_MANAGER, env.ARGS) }}
 
       - name: Compile assets
-        run: ${{ env.PACKAGE_MANAGER == 'yarn' && 'yarn' || format('{0} {1}', 'npm run', env.COMPILE_SCRIPT) }}
+        run: ${{ env.PACKAGE_MANAGER == 'yarn' && 'yarn' || 'npm run' }} ${{ env.COMPILE_SCRIPT }}
 
       - name: Git add, commit
         run: |
