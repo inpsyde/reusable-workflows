@@ -4,22 +4,26 @@ This workflow utilizes [semantic-release](https://github.com/semantic-release/se
 release.
 Note that you must stick to
 their [commit message convention](https://github.com/semantic-release/semantic-release#commit-message-format) to use it.
+
 You can provide a `release.config.js` file in your repository to create a custom release that uses the following
 semantic-release plugins:
 
-- git
-- npm
-- exec
-  Otherwise, the workflow will create the release with a standard set of configurations, updating the version in the
-  following files:
+- [git](https://github.com/semantic-release/git)
+- [npm](https://github.com/semantic-release/npm)
+- [exec](https://github.com/semantic-release/exec)
+
+Otherwise, the workflow will create the release with a [standard set of configurations](../templates/automatic-release/release.config.js), updating the version in the
+following files:
+
 - `CHANGELOG.md`
 - `composer.json`
 - `package-lock.json`
 - `package.json`
 - `style.css` or `index.php`
-  By default, every push to the `main` and `next` branches will release a stable version, and every push to the `alpha`
-  and `beta` branches will create a pre-release version.
-  If you would like another setting, please provide your custom release.config.js file.
+
+By default, every push to the `main` and `next` branches will release a stable version, and every push to the `alpha`
+and `beta` branches will create a pre-release version.
+If you want to use a different configuration, please provide your custom `release.config.js` file.
 
 **Simplest possible example:**
 
