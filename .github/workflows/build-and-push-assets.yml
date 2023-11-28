@@ -105,13 +105,13 @@ jobs:
       - name: Set compile script
         run: |
           if [ "${{ inputs.MODE }}" == 'dev' ]; then
-            "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_DEV }}" >> $GITHUB_ENV
+            echo "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_DEV }}" >> $GITHUB_ENV
           elif [ "${{ inputs.MODE }}" == 'prod' ]; then
-            "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_PROD }}" >> $GITHUB_ENV
+            echo "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_PROD }}" >> $GITHUB_ENV
           elif [ ${{ contains(github.ref, 'refs/tags/') }} ]; then
-            "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_PROD }}" >> $GITHUB_ENV
+            echo "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_PROD }}" >> $GITHUB_ENV
           else
-            "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_DEV }}" >> $GITHUB_ENV
+            echo "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_DEV }}" >> $GITHUB_ENV
           fi
 
       - name: Set production environment variables
