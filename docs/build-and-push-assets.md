@@ -31,8 +31,9 @@ if you always tag just the last commit from the main development branch.
 
 In step *2* above, the assets are "built", whatever that means for a package. For maximum
 flexibility, the workflow relies on a "script" to be defined in `package.json`. There are two
-possible building scripts: a "*dev*" script which is executed on regular pushes to branches, and
-a "*prod*" script, which is executed when a tag is pushed.
+possible building scripts: a "*dev*" script which is executed on regular pushes to branches, and a "
+*prod*" script, which is executed when a tag is pushed. To override this behavior,
+define `inputs.MODE' and set it to `dev' or `prod'.
 
 By default, the two scripts are `encore dev` and `encore prod`, but can be configured
 via [inputs](#inputs).
@@ -105,11 +106,13 @@ This is not the simplest possible example, but it showcases all the recommendati
 | `WORKING_DIRECTORY`   | `'./'`                        | Working directory path                                                                                                          |
 | `COMPILE_SCRIPT_PROD` | `'encore prod'`               | Script added to `npm run` or `yarn` to build production assets                                                                  |
 | `COMPILE_SCRIPT_DEV`  | `'encore dev'`                | Script added to `npm run` or `yarn` to build development assets                                                                 |
+| `MODE`                | `''`                          | Mode for compiling assets (`prod` or `dev`)                                                                                     |
 | `ASSETS_TARGET_PATHS` | `'./assets'`                  | Target path(s) for compiled assets                                                                                              |
 | `BUILT_BRANCH_SUFFIX` | `''`                          | Suffix to calculate target branch for pushing assets on `branch` event                                                          |
 | `RELEASE_BRANCH_NAME` | `''`                          | Target branch for pushing compiled assets on `tag` event                                                                        |
 | `PHP_VERSION`         | `'8.0'`                       | PHP version with which the PHP tools are to be executed                                                                         |
 | `PHP_TOOLS`           | `''`                          | PHP tools supported by [shivammathur/setup-php](https://github.com/shivammathur/setup-php#wrench-tools-support) to be installed |
+
 
 ## Secrets
 
@@ -142,6 +145,34 @@ Encore.cleanupOutputBeforeBuild(['*.js', '*.css'])
 
 ---
 
+> Can I decide when to run `COMPILE_SCRIPT_PROD` or `COMPILE_SCRIPT_DEV`?
+
+Use the `inputs.MODE` and set it to `dev` or `prod`. Depending on the value, the corresponding
+script will be executed. When left empty, the default logic is applied.
+
+The following table provides an overview when `COMPILE_SCRIPT_DEV` or `COMPILE_SCRIPT_PROD` is used:
+
+| MODE   | scenario           | script                |
+|--------|--------------------|-----------------------|
+| `''`   | push to branch     | `COMPILE_SCRIPT_DEV`  |
+| `''`   | create release/tag | `COMPILE_SCRIPT_PROD` |
+| `dev`  | _not evaluated_    | `COMPILE_SCRIPT_DEV`  |
+| `prod` | _not evaluated_    | `COMPILE_SCRIPT_PROD` |
+
+**Example:** I want to push to a branch `production` and "production"-ready assets should be
+compiled:
+
+```yaml
+name: Build and push assets
+on:
+  push:
+jobs:
+  build-assets:
+    uses: inpsyde/reusable-workflows/.github/workflows/build-and-push-assets.yml@main
+    with:
+      MODE: ${{ github.ref_type == 'branch' && github.ref_name == 'production' && 'prod' || '' }}
+```
+
 > Can I have multiple output folders for my package?
 
 Yes, the `inputs.ASSETS_TARGET_PATHS` accepts multiple space-separated paths:
@@ -153,7 +184,7 @@ on:
 jobs:
   build-assets:
     uses: inpsyde/reusable-workflows/.github/workflows/build-and-push-assets.yml@main
-    inputs:
+    with:
       ASSETS_TARGET_PATHS: "./assets ./modules/Foo/assets ./modules/Bar/assets"
     secrets:
       GITHUB_USER_EMAIL: ${{ secrets.INPSYDE_BOT_EMAIL }}
@@ -189,7 +220,7 @@ same as the two commits would have been made as a single commit including both.
 ---
 
 > Does the workflow mess up the git history or add noise to it? How do we know which "compilation"
-commit belongs to which "real" commit?
+> commit belongs to which "real" commit?
 
 As a side effect of using the
 recommended [concurrency settings] (https://docs.github.com/en/actions/using-jobs/using-concurrency)
@@ -206,7 +237,7 @@ By defining `BUILT_BRANCH_SUFFIX`, you keep commits containing compiled assets s
 ---
 
 > When using commit-precise Composer version constraints like `dev-master#a1bcde`, is there a risk
-of referencing a commit that has no compiled assets?
+> of referencing a commit that has no compiled assets?
 
 Yes. However, commit-accurate version constraints are not recommended (especially in production),
 are usually temporary, and are objectively rare. And in the unlikely event that we need to maintain
@@ -232,14 +263,14 @@ complexity required to do so was not deemed worthwhile.
 ---
 
 > I use the `git+ssh` protocol for dependencies in `package.json`. How can I use it with this
-workflow?
+> workflow?
 
 The workflow supports a private SSH key passed via the `GITHUB_USER_SSH_KEY` secret.
 
 By passing a key associated with the GitHub user defined in the required `GITHUB_USER_NAME`, the
 workflow can install these packages.
 
-Please note that in such cases it is a good practice not to use a "personal" GitHub user, but an 
+Please note that in such cases it is a good practice not to use a "personal" GitHub user, but an
 _ad-hoc_ "bot" user with an _ad-hoc_ private SSH key used only for the scope.
 
 ---

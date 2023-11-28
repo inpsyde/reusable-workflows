@@ -38,6 +38,11 @@ on:
         type: string
         default: 'encore dev'
         required: false
+      MODE:
+        description: Mode for compiling assets (`prod` or `dev`)
+        default: ''
+        required: false
+        type: string
       ASSETS_TARGET_PATHS:
         description: Target path(s) for compiled assets.
         default: './assets'
@@ -79,7 +84,6 @@ on:
       ENV_VARS:
         description: Additional environment variables as a JSON formatted object.
         required: false
-
 jobs:
   checks:
     runs-on: ubuntu-latest
@@ -136,15 +140,14 @@ jobs:
       GITHUB_USER_EMAIL: ${{ secrets.GITHUB_USER_EMAIL }}
       GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
       GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
-      COMPILE_SCRIPT: ${{ inputs.COMPILE_SCRIPT_DEV }} # we'll override if the push is for tag
+      COMPILE_SCRIPT: ''
       TAG_NAME: ''                                     # we'll override if the push is for tag
       TAG_BRANCH_NAME: ''                              # we'll override if the push is for tag
       LOCK_FILE: ''                                    # we'll override after checking files
-      PACKAGE_MANAGER: 'yarn'                          # we'll override based on env/inputs
       NO_CHANGES: ''                                   # we'll override if no changes to commit
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ssh-key: ${{ env.GITHUB_USER_SSH_KEY }}
@@ -172,7 +175,17 @@ jobs:
             JSON
               .parse(process.env.ENV_VARS)
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
-
+      - name: Set compile script
+        run: |
+          if [ "${{ inputs.MODE }}" == 'dev' ]; then
+            "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_DEV }}" >> $GITHUB_ENV
+          elif [ "${{ inputs.MODE }}" == 'prod' ]; then
+            "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_PROD }}" >> $GITHUB_ENV
+          elif [ ${{ contains(github.ref, 'refs/tags/') }} ]; then
+            "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_PROD }}" >> $GITHUB_ENV
+          else
+            "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_DEV }}" >> $GITHUB_ENV
+          fi
       - name: Set branch environment variables
         if: ${{ github.ref_type == 'branch' }}
         run: |
@@ -182,7 +195,6 @@ jobs:
         if: ${{ github.ref_type == 'tag' }}
         run: |
           echo "TAG_NAME=$(echo ${GITHUB_REF#refs/*/})" >> $GITHUB_ENV
-          echo "COMPILE_SCRIPT=${{ inputs.COMPILE_SCRIPT_PROD }}" >> $GITHUB_ENV
           echo "RELEASE_BRANCH_ENABLED=${{ (needs.checks.outputs.is_development_branch_last_commit == 'yes' && inputs.RELEASE_BRANCH_NAME != '') && 'yes' || 'no' }}" >> $GITHUB_ENV
 
       - name: Checkout and merge the built branch
@@ -223,7 +235,7 @@ jobs:
           fi
 
       - name: Set up node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
@@ -243,7 +255,7 @@ jobs:
         run: ${{ format('{0} {1}', inputs.PACKAGE_MANAGER, env.ARGS) }}
 
       - name: Compile assets
-        run: ${{ ((env.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm run' }} ${{ env.COMPILE_SCRIPT }}
+        run: ${{ inputs.PACKAGE_MANAGER == 'yarn' && 'yarn' || 'npm run' }} ${{ env.COMPILE_SCRIPT }}
 
       - name: Git add, commit
         run: |

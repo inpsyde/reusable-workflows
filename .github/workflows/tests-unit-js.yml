@@ -57,7 +57,7 @@ jobs:
       GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up custom environment variables
         env:
@@ -82,14 +82,14 @@ jobs:
           git config --global user.name "${{ env.GITHUB_USER_NAME }}"
 
       - name: Set up node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
           cache: ${{ inputs.PACKAGE_MANAGER }}
 
       - name: Install dependencies
-        run: ${{ ((inputs.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm install' }}
+        run: ${{ inputs.PACKAGE_MANAGER == 'yarn' && 'yarn' || 'npm install' }}
 
       - name: Run Jest
         run: ./node_modules/.bin/jest ${{ inputs.JEST_ARGS }}
