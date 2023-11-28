@@ -7,6 +7,10 @@ on:
         default: 18
         required: false
         type: string
+    secrets:
+      GITHUB_USER_TOKEN:
+        description: Authentication token with write permission needed by the release bot (falls back to GITHUB_TOKEN).
+        required: false
 
 jobs:
   release:
@@ -31,6 +35,8 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Check presence of release.config.js
         run: |
@@ -57,5 +63,5 @@ jobs:
 
       - name: Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_USER_TOKEN != '' && secrets.GITHUB_USER_TOKEN || secrets.GITHUB_TOKEN }}
         run: npx semantic-release
