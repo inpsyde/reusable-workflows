@@ -84,7 +84,7 @@ jobs:
   checks:
     runs-on: ubuntu-latest
     env:
-      GH_TOKEN: ${{ github.token }}
+      GH_TOKEN: ${{ github.token }} # to use GitHub CLI https://docs.github.com/en/actions/using-workflows/using-github-cli-in-workflows
     outputs:
       development_branch_name: ${{ steps.detect_development_branch_name.outputs.development_branch_name }}
       is_development_branch_last_commit: ${{ github.sha == steps.detect_development_branch_last_commit.outputs.development_branch_last_commit && 'yes' || 'no' }}
