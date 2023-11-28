@@ -44,7 +44,7 @@ on:
         required: false
         type: string
       MODE:
-        description: Define the mode for building either "prod" or "dev" assets.
+        description: Mode for compiling assets (`prod` or `dev`)
         default: ''
         required: false
         type: string
@@ -78,7 +78,7 @@ jobs:
       GITHUB_USER_EMAIL: ${{ secrets.GITHUB_USER_EMAIL }}
       GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
       GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
-      COMPILE_SCRIPT: ${{ inputs.COMPILE_SCRIPT_DEV }}
+      COMPILE_SCRIPT: ''
       TAG_NAME: ''                                     # we'll override if the push is for tag
       TAG_BRANCH_NAME: ''                              # we'll override if the push is for tag
       LOCK_FILE: ''                                    # we'll override after checking files

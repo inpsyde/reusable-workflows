@@ -13,7 +13,7 @@ To achieve that, the reusable workflow:
 In step *2* above, the assets are "built", whatever that means for a package. For maximum
 flexibility, the workflow relies on a "script" to be defined in `package.json`. There are two
 possible building scripts: a "*dev*" script which is executed on regular pushes to branches, and
-a "*prod*" script, which is executed when a tag is pushed. In case you want to configure when which script is being used, you can set the `inputs.MODE` manually with either `dev` or `prod`.
+a "*prod*" script, which is executed when a tag is pushed. To override this behavior, define `inputs.MODE' and set it to `dev' or `prod'.
 
 By default, the two scripts are `encore dev` and `encore prod`, but can be configured
 via [inputs](#inputs).
@@ -81,8 +81,8 @@ This is not the simplest possible example, but it showcases all the recommendati
 | `WORKING_DIRECTORY`   | `'./'`                        | Working directory path                                                            |
 | `COMPILE_SCRIPT_PROD` | `'encore prod'`               | Script added to `npm run` or `yarn` to build production assets                    |
 | `COMPILE_SCRIPT_DEV`  | `'encore dev'`                | Script added to `npm run` or `yarn` to build development assets                   |
+| `MODE`                | `''`                          | Mode for compiling assets (`prod` or `dev`)                                       |
 | `ASSETS_TARGET_PATHS` | `'./assets'`                  | Target path(s) for compiled assets                                                |
-| `MODE`                | `''`                          | Defines the build mode. Can be either `dev` or `prod`.                            |
 
 ## Secrets
 
@@ -117,18 +117,18 @@ Encore.cleanupOutputBeforeBuild(['*.js', '*.css'])
 
 > Can I decide when to run `COMPILE_SCRIPT_PROD` or `COMPILE_SCRIPT_DEV`?
  
-Yes, you can define the `inputs.MODE` which is either `dev` or `prod`. Depending on the set value the corresponding script will be executed.
+Use the `inputs.MODE` and set it to `dev` or `prod`. Depending on the value, the corresponding script will be executed. When left empty, the default logic is applied.
 
-When left empty, the default logic is applied. So we can define following scenarios:
+The following table provides an overview when `COMPILE_SCRIPT_DEV` or `COMPILE_SCRIPT_PROD` is used:
 
-| MODE     | scenario            | script                |
-|----------|---------------------|-----------------------|
-| `''`     | push to branch.     | `COMPILE_SCRIPT_DEV`  |
-| `''`     | create release/tag. | `COMPILE_SCRIPT_PROD` |
-| `'dev'`  | _not evaluated_     | `COMPILE_SCRIPT_DEV`  |
-| `'prod'` | _not evaluated_     | `COMPILE_SCRIPT_PROD` |
+| MODE   | scenario           | script                |
+|--------|--------------------|-----------------------|
+| `''`   | push to branch     | `COMPILE_SCRIPT_DEV`  |
+| `''`   | create release/tag | `COMPILE_SCRIPT_PROD` |
+| `dev`  | _not evaluated_    | `COMPILE_SCRIPT_DEV`  |
+| `prod` | _not evaluated_    | `COMPILE_SCRIPT_PROD` |
 
-**Example:** I want to push to a branch `production` and "production"-ready assets have to be compiled:
+**Example:** I want to push to a branch `production` and "production"-ready assets should be compiled:
 
 ```yaml
 name: Build and push assets
