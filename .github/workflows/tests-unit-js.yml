@@ -89,7 +89,7 @@ jobs:
           cache: ${{ inputs.PACKAGE_MANAGER }}
 
       - name: Install dependencies
-        run: ${{ ((inputs.PACKAGE_MANAGER == 'yarn') && 'yarn') || 'npm install' }}
+        run: ${{ inputs.PACKAGE_MANAGER == 'yarn' && 'yarn' || 'npm install' }}
 
       - name: Run Jest
         run: ./node_modules/.bin/jest ${{ inputs.JEST_ARGS }}
