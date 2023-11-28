@@ -38,14 +38,14 @@ on:
         type: string
         default: 'encore dev'
         required: false
-      ASSETS_TARGET_PATHS:
-        description: Target path(s) for compiled assets.
-        default: './assets'
-        required: false
-        type: string
       MODE:
         description: Mode for compiling assets (`prod` or `dev`)
         default: ''
+        required: false
+        type: string
+      ASSETS_TARGET_PATHS:
+        description: Target path(s) for compiled assets.
+        default: './assets'
         required: false
         type: string
     secrets:
