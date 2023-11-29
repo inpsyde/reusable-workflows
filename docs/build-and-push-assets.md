@@ -31,9 +31,8 @@ if you always tag just the last commit from the main development branch.
 
 In step *2* above, the assets are "built", whatever that means for a package. For maximum
 flexibility, the workflow relies on a "script" to be defined in `package.json`. There are two
-possible building scripts: a "*dev*" script which is executed on regular pushes to branches, and a "
-*prod*" script, which is executed when a tag is pushed. To override this behavior,
-define `inputs.MODE' and set it to `dev' or `prod'.
+possible building scripts: a "*dev*" script which is executed on regular pushes to branches, and
+a "*prod*" script, which is executed when a tag is pushed.
 
 By default, the two scripts are `encore dev` and `encore prod`, but can be configured
 via [inputs](#inputs).
