@@ -48,7 +48,7 @@ jobs:
         run: echo "::warning::This workflow is deprecated and will be replaced by the @wordpress/scripts workflow (wp-scripts-lint.yml) in the future."
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up custom environment variables
         env:
@@ -62,7 +62,7 @@ jobs:
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
       - name: Set up node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
