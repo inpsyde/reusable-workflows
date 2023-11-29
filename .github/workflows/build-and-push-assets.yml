@@ -87,10 +87,7 @@ on:
 jobs:
   checks:
     runs-on: ubuntu-latest
-    env:
-      GH_TOKEN: ${{ github.token }} # to use GitHub CLI https://docs.github.com/en/actions/using-workflows/using-github-cli-in-workflows
     outputs:
-      development_branch_name: ${{ steps.detect_development_branch_name.outputs.development_branch_name }}
       is_development_branch_last_commit: ${{ github.sha == steps.detect_development_branch_last_commit.outputs.development_branch_last_commit && 'yes' || 'no' }}
       is_moved_tag: ${{ (github.ref_type == 'tag' && contains(steps.detect_tag_annotation.outputs.tag_annotation, env.MOVED_TAG_ANNOTATION_PATTERN)) && 'yes' || 'no' }}
     steps:
@@ -99,15 +96,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Find development branch (default GitHub repository branch)
-        id: detect_development_branch_name
-        run: |
-          echo "development_branch_name=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')" >> $GITHUB_OUTPUT
-
       - name: Checkout development branch
         # it is not possible to get tag annotation from detached state https://github.com/actions/runner/issues/712
         run: |
-          git checkout ${{ steps.detect_development_branch_name.outputs.development_branch_name }}
+          git checkout ${{ github.event.repository.default_branch }}
 
       - name: Find last commit
         id: detect_development_branch_last_commit
@@ -212,9 +204,9 @@ jobs:
       - name: Checkout and merge the release branch
         if: ${{ github.ref_type == 'tag' && env.RELEASE_BRANCH_ENABLED == 'yes' }}
         run: |
-          git checkout ${{ needs.checks.outputs.development_branch_name }}
+          git checkout ${{ github.event.repository.default_branch }}
           git checkout ${{ inputs.RELEASE_BRANCH_NAME }} || git checkout -b ${{ inputs.RELEASE_BRANCH_NAME }}
-          git merge ${{ needs.checks.outputs.development_branch_name }}
+          git merge ${{ github.event.repository.default_branch }}
 
       - name: Checkout temporary tag branch
         if: ${{ github.ref_type == 'tag' && env.RELEASE_BRANCH_ENABLED == 'no'  }}
