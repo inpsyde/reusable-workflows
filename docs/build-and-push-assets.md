@@ -103,8 +103,8 @@ This is not the simplest possible example, but it showcases all the recommendati
 | `NPM_REGISTRY_DOMAIN` | `https://npm.pkg.github.com/` | Domain of the private npm registry                                                                                              |
 | `PACKAGE_MANAGER`     | `yarn`                        | Package manager with which the dependencies should be installed (`npm` or `yarn`)                                               |
 | `WORKING_DIRECTORY`   | `'./'`                        | Working directory path                                                                                                          |
-| `COMPILE_SCRIPT_PROD` | `'encore prod'`               | Script added to `npm run` or `yarn` to build production assets                                                                  |
-| `COMPILE_SCRIPT_DEV`  | `'encore dev'`                | Script added to `npm run` or `yarn` to build development assets                                                                 |
+| `COMPILE_SCRIPT_PROD` | `'build'`                     | Script added to `npm run` or `yarn` to build production assets                                                                  |
+| `COMPILE_SCRIPT_DEV`  | `'build:dev'`                 | Script added to `npm run` or `yarn` to build development assets                                                                 |
 | `MODE`                | `''`                          | Mode for compiling assets (`prod` or `dev`)                                                                                     |
 | `ASSETS_TARGET_PATHS` | `'./assets'`                  | Target path(s) for compiled assets                                                                                              |
 | `BUILT_BRANCH_SUFFIX` | `''`                          | Suffix to calculate target branch for pushing assets on `branch` event                                                          |
