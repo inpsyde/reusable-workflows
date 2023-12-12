@@ -110,8 +110,7 @@ jobs:
         id: detect_tag_annotation
         if: ${{ github.ref_type == 'tag' }}
         run: |
-          echo $(git --no-pager tag -l --format='%(contents)' ${{ github.ref_name }})
-          echo "tag_annotation=$(git --no-pager tag -l --format='%(contents)' ${{ github.ref_name }})" >> "$GITHUB_OUTPUT"
+          echo "tag_annotation=$(git --no-pager tag -l --format='%(contents:subject)' ${{ github.ref_name }})" >> "$GITHUB_OUTPUT"
 
       - name: Prepare moved tag annotation pattern
         run: |
