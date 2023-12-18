@@ -111,7 +111,7 @@ jobs:
       - name: Set up full archive name
         env:
           ARCHIVE_FULL_NAME: ${{ inputs.ARCHIVE_FULL_NAME }}
-        id: archive-full-name
+        id: set-archive-full-name
         run: |
           if [ ! -z "$ARCHIVE_FULL_NAME" ]; then
               echo "archive-full-name=$ARCHIVE_FULL_NAME" >> $GITHUB_OUTPUT
@@ -233,8 +233,8 @@ jobs:
       - name: Set artifact name
         id: set-artifact-name
         run: |
-          if [ ! -z ${{ steps.plugin-data.outputs.archive-full-name }}]; then
-            echo "artifact=${{ steps.plugin-data.outputs.archive-full-name }}" >> $GITHUB_OUTPUT
+          if [ ! -z ${{ steps.set-archive-full-name.outputs.archive-full-name }}]; then
+            echo "artifact=${{ steps.set-archive-full-name.outputs.archive-full-name }}" >> $GITHUB_OUTPUT
           else
             echo "artifact=${{ steps.plugin-data.outputs.archive-name }}-${{ inputs.PLUGIN_VERSION }}" >> $GITHUB_OUTPUT
           fi
