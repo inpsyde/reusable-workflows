@@ -129,6 +129,7 @@ jobs:
             echo "plugin-dir-name=$ARCHIVE_NAME" >> $GITHUB_OUTPUT
           else
             echo "plugin-dir-name=${{ github.event.repository.name }}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Set up custom environment variables
         env:
