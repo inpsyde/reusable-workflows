@@ -125,7 +125,7 @@ jobs:
           if [ ! -z "$PLUGIN_DIR_NAME" ]; then
             echo "plugin-dir-name=$PLUGIN_DIR_NAME" >> $GITHUB_OUTPUT
           elif [ ! -z "$ARCHIVE_NAME"]; then
-            echo "plugin-dir-name=$ARCHIVE_NAME"
+            echo "plugin-dir-name=$ARCHIVE_NAME" >> $GITHUB_OUTPUT
           else
             echo "plugin-dir-name=${{ github.event.repository.name }}" >> $GITHUB_OUTPUT
 
