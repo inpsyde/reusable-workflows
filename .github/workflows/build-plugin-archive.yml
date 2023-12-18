@@ -41,7 +41,7 @@ on:
       ARCHIVE_FULL_NAME:
         description: The full name of the resulting zip archive. Falls back to the ARCHIVE_NAME-PLUGIN_VERSION template.
         required: false
-        default: '',
+        default: ''
         type: string
       PLUGIN_MAIN_FILE:
         description: The name of the main plugin file.
