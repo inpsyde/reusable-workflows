@@ -120,6 +120,7 @@ jobs:
       - name: Set up plugin dir name
         env:
           PLUGIN_DIR_NAME: ${{ inputs.PLUGIN_DIR_NAME }}
+          ARCHIVE_NAME: ${{ inputs.ARCHIVE_NAME }}
         id: plugin-dir-name
         run: |
           if [ ! -z "$PLUGIN_DIR_NAME" ]; then
