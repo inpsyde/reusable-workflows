@@ -237,6 +237,7 @@ jobs:
             echo "artifact=${{ steps.plugin-data.outputs.archive-full-name }}" >> $GITHUB_OUTPUT
           else
             echo "artifact=${{ steps.plugin-data.outputs.archive-name }}-${{ inputs.PLUGIN_VERSION }}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
