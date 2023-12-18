@@ -233,7 +233,7 @@ jobs:
       - name: Set artifact name
         id: set-artifact-name
         run: |
-          if [! -z ${{ steps.plugin-data.outputs.archive-full-name }}]; then
+          if [ ! -z ${{ steps.plugin-data.outputs.archive-full-name }}]; then
             echo "artifact=${{ steps.plugin-data.outputs.archive-full-name }}" >> $GITHUB_OUTPUT
           else
             echo "artifact=${{ steps.plugin-data.outputs.archive-name }}-${{ inputs.PLUGIN_VERSION }}" >> $GITHUB_OUTPUT
