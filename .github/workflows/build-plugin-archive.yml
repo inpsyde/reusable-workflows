@@ -115,6 +115,7 @@ jobs:
         run: |
           if [ ! -z "$ARCHIVE_FULL_NAME" ]; then
               echo "archive-full-name=$ARCHIVE_FULL_NAME" >> $GITHUB_OUTPUT
+              echo "Full archive name set up as $ARCHIVE_FULL_NAME"
           fi
 
       - name: Set up plugin dir name
@@ -235,8 +236,10 @@ jobs:
         run: |
           if [ ! -z ${{ steps.set-archive-full-name.outputs.archive-full-name }}]; then
             echo "artifact=${{ steps.set-archive-full-name.outputs.archive-full-name }}" >> $GITHUB_OUTPUT
+            echo "archive-full-name is ${{ steps.set-archive-full-name.outputs.archive-full-name }}
           else
             echo "artifact=${{ steps.plugin-data.outputs.archive-name }}-${{ inputs.PLUGIN_VERSION }}" >> $GITHUB_OUTPUT
+            echo "archive full name not found"
           fi
 
       - name: Upload artifact
