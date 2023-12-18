@@ -38,10 +38,20 @@ on:
         default: ''
         required: false
         type: string
+      ARCHIVE_FULL_NAME:
+        description: The full name of the resulting zip archive. Falls back to the ARCHIVE_NAME-PLUGIN_VERSION template.
+        required: false
+        default: '',
+        type: string
       PLUGIN_MAIN_FILE:
         description: The name of the main plugin file.
         required: false
         default: 'index.php'
+        type: string
+      PLUGIN_DIR_NAME:
+        description: The name of the plugin directory inside the archive. Falls back to the archive name and repository name.
+        required: false
+        default: ''
         type: string
       PLUGIN_VERSION:
         description: The new plugin version.
@@ -97,6 +107,27 @@ jobs:
           else
               echo "archive-name=${{ github.event.repository.name }}" >> $GITHUB_OUTPUT
           fi
+
+      - name: Set up full archive name
+        env:
+          ARCHIVE_FULL_NAME: ${{ inputs.ARCHIVE_FULL_NAME }}
+        id: archive-full-name
+        run: |
+          if [ ! -z "$ARCHIVE_FULL_NAME" ]; then
+              echo "archive-full-name=$ARCHIVE_FULL_NAME" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set up plugin dir name
+        env:
+          PLUGIN_DIR_NAME: {{ inputs.PLUGIN_DIR_NAME }}
+        id: plugin-dir-name
+        run: |
+          if [ ! -z "$PLUGIN_DIR_NAME" ]; then
+            echo "plugin-dir-name=$PLUGIN_DIR_NAME" >> $GITHUB_OUTPUT
+          elif [! -z "$ARCHIVE_NAME"]; then
+            echo "plugin-dir-name=$ARCHIVE_NAME"
+          else
+            echo "plugin-dir-name=${{ github.event.repository.name }}" >> $GITHUB_OUTPUT
 
       - name: Set up custom environment variables
         env:
@@ -199,7 +230,11 @@ jobs:
 
       - name: Set artifact name
         id: set-artifact-name
-        run: echo "artifact=${{ steps.plugin-data.outputs.archive-name }}-${{ inputs.PLUGIN_VERSION }}" >> $GITHUB_OUTPUT
+        run: |
+          if [! -z ${{ steps.plugin-data.outputs.archive-full-name }}]; then
+            echo "artifact=${{ steps.plugin-data.outputs.archive-full-name }}" >> $GITHUB_OUTPUT
+          else
+            echo "artifact=${{ steps.plugin-data.outputs.archive-name }}-${{ inputs.PLUGIN_VERSION }}" >> $GITHUB_OUTPUT
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
