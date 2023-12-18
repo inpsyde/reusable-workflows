@@ -224,7 +224,7 @@ jobs:
             ${{ inputs.PRE_SCRIPT }}
 
       - name: Run WP-CLI command
-        run: wp dist-archive . ./archive.zip --plugin-dirname=${{ steps.plugin-data.outputs.archive-name }}
+        run: wp dist-archive . ./archive.zip --plugin-dirname=${{ steps.plugin-dir-name.outputs.plugin-dir-name }}
 
         # GitHub Action artifacts would otherwise produce a zip within a zip
       - name: Unzip archive to dist/
