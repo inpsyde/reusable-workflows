@@ -234,7 +234,7 @@ jobs:
       - name: Set artifact name
         id: set-artifact-name
         run: |
-          if [ ! -z ${{ steps.set-archive-full-name.outputs.archive-full-name }}]; then
+          if [ ! -z ${{ steps.set-archive-full-name.outputs.archive-full-name }} ]; then
             echo "artifact=${{ steps.set-archive-full-name.outputs.archive-full-name }}" >> $GITHUB_OUTPUT
             echo "archive-full-name is ${{ steps.set-archive-full-name.outputs.archive-full-name }}"
           else
