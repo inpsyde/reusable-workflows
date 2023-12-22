@@ -125,31 +125,13 @@ jobs:
           php-version: ${{ inputs.PHP_VERSION }}
           tools: wp-cli
 
-      - name: Install Composer dependencies
-        # ⬑ The idea is to ensure we have non-production tools like Composer Asset Compiler and WordPress Translation Downloader available
-        uses: ramsey/composer-install@v2
-        with:
-          composer-options: --prefer-dist
-
-      - name: Check optional Composer build tools
-        id: composer-tools
+      - name: Install global Composer packages
         run: |
-          hasDep(){
-            composer show -i -N -D --strict "${1}" >/dev/null 2>&1
-            local EXIT=$?
-            echo "$EXIT"
-          }
-          echo "assets-compiler=$( hasDep inpsyde/composer-assets-compiler )" >> $GITHUB_OUTPUT
-          echo "translation-downloader=$( hasDep inpsyde/wp-translation-downloader )" >> $GITHUB_OUTPUT
-
-      - name: Check for package.json
-        id: check-for-package
-        run: |
-          if [ -f package.json ]; then
-            echo "has_package=true" >> $GITHUB_OUTPUT
-          else
-            echo "has_package=false" >> $GITHUB_OUTPUT
-          fi
+          composer global config --no-plugins allow-plugins.inpsyde/composer-assets-compiler true
+          composer global config --no-plugins allow-plugins.inpsyde/wp-translation-downloader true
+          composer global config --no-plugins allow-plugins.composer/installers true
+          composer global require inpsyde/composer-assets-compiler
+          composer global require inpsyde/wp-translation-downloader
 
       - name: Set up node
         if: steps.check-for-package.outputs.has_package == 'true'
@@ -160,11 +142,9 @@ jobs:
           cache: ${{ env.NODE_CACHE_MODE }}
 
       - name: Run Composer Asset Compiler
-        if: steps.composer-tools.outputs.assets-compiler == '0' && steps.check-for-package.outputs.has_package == 'true'
         run: composer compile-assets ${{ inputs.COMPILE_ASSETS_ARGS }}
 
       - name: Run WordPress Translation Downloader
-        if: steps.composer-tools.outputs.translation-downloader == '0'
         run: composer wp-translation-downloader:download
 
       - name: Install Composer dependencies without dev dependencies
