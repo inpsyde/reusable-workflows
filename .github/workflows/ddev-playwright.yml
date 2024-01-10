@@ -54,6 +54,9 @@ on:
       NGROK_AUTH_TOKEN:
         description: The auth token for Ngrok. If not provided, skips Ngrok.
         required: false
+      GITHUB_USER_SSH_KEY:
+        description: Private SSH key to be used to reach remote destinations.
+        required: false
 
 jobs:
   ddev-playwright:
@@ -63,6 +66,7 @@ jobs:
       COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
       NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       NGROK: ${{ secrets.NGROK_AUTH_TOKEN != '' }}
+      GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
     outputs:
       artifact: ${{ steps.set-artifact-name.outputs.artifact }}
     steps:
@@ -79,6 +83,14 @@ jobs:
             JSON
               .parse(process.env.ENV_VARS)
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
+            
+      - name: Setup SSH keys
+        run: |
+            mkdir -p .ddev/homeadditions/.ssh
+            echo "${{ secrets.GITHUB_USER_SSH_KEY }}" > .ddev/homeadditions/.ssh/id_rsa
+            chmod 700 .ddev/homeadditions/.ssh
+            chmod 600 .ddev/homeadditions/.ssh/id_rsa
+        if: ${{ env.GITHUB_USER_SSH_KEY != '' }}
 
       - uses: ddev/github-action-setup-ddev@v1
         with:
