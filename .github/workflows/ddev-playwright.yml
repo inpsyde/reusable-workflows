@@ -98,8 +98,7 @@ jobs:
 
       - name: Setup SSH knows hosts
         run: |
-          mkdir -p .ddev/homeadditions/.ssh-agent
-          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > .ddev/homeadditions/.ssh-agent/known_hosts
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > .ddev/homeadditions/.ssh/known_hosts
         if: ${{ env.SSH_KNOWN_HOSTS != '' }}
 
       - uses: ddev/github-action-setup-ddev@v1
