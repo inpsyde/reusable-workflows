@@ -47,8 +47,7 @@ jobs:
 | `PACKAGE_MANAGER`     | `"yarn"`                                                      | Package manager with which the dependencies should be installed (`npm` or `yarn`)             |
 | `COMPOSER_ARGS`       | `'--no-dev --no-scripts --prefer-dist --optimize-autoloader'` | Set of arguments passed to Composer                                                           |
 | `PHP_VERSION`         | `"8.0"`                                                       | PHP version to use during packaging                                                           |
-| `ARCHIVE_NAME`        | `""`                                                          | The base name of the resulting zip archive. Falls back to the repository name                 |
-| `ARCHIVE_FULL_NAME`   | `""`                                                          | Desired full name of resulting archive. Falls back to ARCHIVE_NAME-PLUGIN_VERSION.            |
+| `ARCHIVE_NAME`        | `""`                                                          | Desired full name of resulting archive. Falls back to repository name.                        |
 | `PLUGIN_DIR_NAME`     | `""`                                                          | Name of the directory inside the archive. Falls back to the archive name and repository name. |
 | `PLUGIN_MAIN_FILE`    | `"index.php"`                                                 | The name of the plugin main file                                                              |
 | `PLUGIN_VERSION`      | -                                                             | The plugin version                                                                            |

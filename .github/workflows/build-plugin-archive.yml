@@ -34,14 +34,9 @@ on:
         required: false
         type: string
       ARCHIVE_NAME:
-        description: The base name of the resulting zip archive. Falls back to the repository name.
+        description: The full name of the resulting zip archive. Falls back to the repository name.
         default: ''
         required: false
-        type: string
-      ARCHIVE_FULL_NAME:
-        description: The full name of the resulting zip archive. Falls back to the ARCHIVE_NAME-PLUGIN_VERSION template.
-        required: false
-        default: ''
         type: string
       PLUGIN_MAIN_FILE:
         description: The name of the main plugin file.
@@ -106,15 +101,6 @@ jobs:
               echo "archive-name=$ARCHIVE_NAME" >> $GITHUB_OUTPUT
           else
               echo "archive-name=${{ github.event.repository.name }}" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Set up full archive name
-        env:
-          ARCHIVE_FULL_NAME: ${{ inputs.ARCHIVE_FULL_NAME }}
-        id: set-archive-full-name
-        run: |
-          if [ ! -z "$ARCHIVE_FULL_NAME" ]; then
-              echo "archive-full-name=$ARCHIVE_FULL_NAME" >> $GITHUB_OUTPUT
           fi
 
       - name: Set up plugin dir name
@@ -232,12 +218,7 @@ jobs:
 
       - name: Set artifact name
         id: set-artifact-name
-        run: |
-          if [ ! -z ${{ steps.set-archive-full-name.outputs.archive-full-name }} ]; then
-            echo "artifact=${{ steps.set-archive-full-name.outputs.archive-full-name }}" >> $GITHUB_OUTPUT
-          else
-            echo "artifact=${{ steps.plugin-data.outputs.archive-name }}-${{ inputs.PLUGIN_VERSION }}" >> $GITHUB_OUTPUT
-          fi
+        run: echo "artifact=${{ steps.plugin-data.outputs.archive-name }}" >> $GITHUB_OUTPUT
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
