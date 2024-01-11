@@ -192,3 +192,4 @@ jobs:
             path: |
                 ${{ inputs.PLAYWRIGHT_DIR }}/playwright-report/*
                 ${{ inputs.PLAYWRIGHT_DIR }}/test-results/*
+                ${{ inputs.PLAYWRIGHT_DIR }}/artifacts/test-results/*
