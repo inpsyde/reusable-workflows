@@ -103,7 +103,7 @@ jobs:
               echo "archive-name=${{ github.event.repository.name }}" >> $GITHUB_OUTPUT
           fi
 
-      - name: Set up plugin dir name
+      - name: Set up plugin folder name
         env:
           PLUGIN_FOLDER_NAME: ${{ inputs.PLUGIN_FOLDER_NAME }}
           ARCHIVE_NAME: ${{ inputs.ARCHIVE_NAME }}
