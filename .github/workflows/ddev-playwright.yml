@@ -93,6 +93,7 @@ jobs:
             mkdir -p .ddev/homeadditions/.ssh
             echo "${{ secrets.SSH_KEY }}" > .ddev/homeadditions/.ssh/id_rsa
             echo "StrictHostKeyChecking=accept-new" > .ddev/homeadditions/.ssh/config
+            echo "UserKnownHostsFile=~/.ssh/known_hosts" > .ddev/homeadditions/.ssh/config
             echo "HashKnownHosts=no" >> .ddev/homeadditions/.ssh/config
             chmod 700 .ddev/homeadditions/.ssh
             chmod 600 .ddev/homeadditions/.ssh/id_rsa
