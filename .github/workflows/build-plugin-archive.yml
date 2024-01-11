@@ -43,7 +43,7 @@ on:
         required: false
         default: 'index.php'
         type: string
-      PLUGIN_DIR_NAME:
+      PLUGIN_FOLDER_NAME:
         description: The name of the plugin directory inside the archive. Falls back to the archive name and repository name.
         required: false
         default: ''
