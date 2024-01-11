@@ -34,7 +34,7 @@ on:
         required: false
         type: string
       ARCHIVE_NAME:
-        description: The full name of the resulting zip archive. Falls back to the repository name.
+        description: The name of the zip archive (falls back to the repository name).
         default: ''
         required: false
         type: string
