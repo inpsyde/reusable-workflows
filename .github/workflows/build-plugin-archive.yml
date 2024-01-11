@@ -92,7 +92,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up plugin base name
+      - name: Set up archive name
         env:
           ARCHIVE_NAME: ${{ inputs.ARCHIVE_NAME }}
         id: plugin-data
