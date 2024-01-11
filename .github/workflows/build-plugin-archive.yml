@@ -44,7 +44,7 @@ on:
         default: 'index.php'
         type: string
       PLUGIN_FOLDER_NAME:
-        description: The name of the plugin directory inside the archive. Falls back to the archive name and repository name.
+        description: The name of the plugin folder (falls back to the archive name, if set, or the repository name).
         required: false
         default: ''
         type: string
