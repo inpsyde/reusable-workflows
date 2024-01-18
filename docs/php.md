@@ -230,7 +230,7 @@ jobs:
   lint-php:
     strategy:
       matrix:
-        php: [ "7.4", "8.0", "8.1" ]
+        php: [ "8.0", "8.1", "8.2" ]
     uses: inpsyde/reusable-workflows/.github/workflows/lint-php.yml@main
     with:
       PHP_VERSION: ${{ matrix.php }}
