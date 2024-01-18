@@ -53,8 +53,9 @@ jobs:
       PHPCS_ARGS: '--report=summary'
 ```
 
-**Note**: Coding standards analysis can only be performed with a specific PHP version and not in a PHP matrix, as it should always be tested with the highest PHP version in use. To check compatibility with multiple PHP versions, use the [Lint PHP](#lint-php) workflow.
-
+**Note**: Coding standards analysis can only be performed with a specific PHP version and not in a
+PHP matrix, as it should always be tested with the highest PHP version in use. To check
+compatibility with multiple PHP versions, use the [Lint PHP](#lint-php) workflow.
 
 ## Static code analysis
 
@@ -108,7 +109,9 @@ jobs:
       PSALM_ARGS: '--threads=3'
 ```
 
-**Note**: Static code analysis can only be performed with a specific PHP version and not in a PHP matrix, as it should always be tested with the highest PHP version in use. To check compatibility with multiple PHP versions, use the [Lint PHP](#lint-php) workflow.
+**Note**: Static code analysis can only be performed with a specific PHP version and not in a PHP
+matrix, as it should always be tested with the highest PHP version in use. To check compatibility
+with multiple PHP versions, use the [Lint PHP](#lint-php) workflow.
 
 ## Unit tests PHP
 
@@ -131,12 +134,11 @@ jobs:
 
 #### Inputs
 
-| Name            | Default             | Description                                                              |
-|-----------------|---------------------|--------------------------------------------------------------------------|
-| `PHP_MATRIX`    | `["8.0"]`           | :warning: deprecated - Matrix of PHP versions as a JSON formatted object |
-| `PHP_VERSION`   | `"8.0"`             | PHP version with which the scripts are executed                          |
-| `COMPOSER_ARGS` | `'--prefer-dist'`   | Set of arguments passed to Composer                                      |
-| `PHPUNIT_ARGS`  | `'--coverage-text'` | Set of arguments passed to PHPUnit                                       |
+| Name            | Default             | Description                                     |
+|-----------------|---------------------|-------------------------------------------------|
+| `PHP_VERSION`   | `"8.0"`             | PHP version with which the scripts are executed |
+| `COMPOSER_ARGS` | `'--prefer-dist'`   | Set of arguments passed to Composer             |
+| `PHPUNIT_ARGS`  | `'--coverage-text'` | Set of arguments passed to PHPUnit              |
 
 #### Secrets
 
@@ -154,38 +156,18 @@ on:
   pull_request:
 jobs:
   tests-unit-php:
-    uses: inpsyde/reusable-workflows/.github/workflows/tests-unit-php.yml@main
-    secrets:
-      COMPOSER_AUTH_JSON: ${{ secrets.COMPOSER_AUTH_JSON }}
-      ENV_VARS: >-
-        [{"name":"EXAMPLE_USERNAME", "value":"${{ secrets.USERNAME }}"}]
-    with:
-      PHP_MATRIX: >-
-        ["7.4", "8.0", "8.1"]
-      PHPUNIT_ARGS: '--coverage-text --debug'
-```
-
-**Example with `PHP_VERSION` in matrix:**
-
-```yml
-name: Unit tests PHP
-on:
-  push:
-  pull_request:
-jobs:
-  tests-unit-php:
     strategy:
       matrix:
-        php: ["7.4", "8.0", "8.1"]
+        php: [ "8.0", "8.1", "8.2" ]
     uses: inpsyde/reusable-workflows/.github/workflows/tests-unit-php.yml@main
     with:
       PHP_VERSION: ${{ matrix.php }}
+      PHPUNIT_ARGS: '--coverage-text --debug'
 ```
-
 
 ## Lint PHP
 
-This workflow runs [PHP Parallel Lint](https://github.com/php-parallel-lint/PHP-Parallel-Lint). 
+This workflow runs [PHP Parallel Lint](https://github.com/php-parallel-lint/PHP-Parallel-Lint).
 
 **Simplest possible example:**
 
@@ -203,13 +185,12 @@ jobs:
 
 #### Inputs
 
-| Name                    | Default                                 | Description                                                              |
-|-------------------------|-----------------------------------------|--------------------------------------------------------------------------|
-| `PHP_MATRIX`            | `["8.0"]`                               | :warning: deprecated - Matrix of PHP versions as a JSON formatted object |
-| `PHP_VERSION`           | `"8.0"`                                 | PHP version with which the scripts are executed                          |
-| `COMPOSER_ARGS`         | `'--prefer-dist'`                       | Set of arguments passed to Composer                                      |
-| `LINT_ARGS`             | `'-e php --colors --show-deprecated .'` | Set of arguments passed to PHP Parallel Lint                             |
-| `COMPOSER_DEPS_INSTALL` | `false`                                 | Whether or not to install Composer dependencies before linting           |
+| Name                    | Default                                 | Description                                                    |
+|-------------------------|-----------------------------------------|----------------------------------------------------------------|
+| `PHP_VERSION`           | `"8.0"`                                 | PHP version with which the scripts are executed                |
+| `COMPOSER_ARGS`         | `'--prefer-dist'`                       | Set of arguments passed to Composer                            |
+| `LINT_ARGS`             | `'-e php --colors --show-deprecated .'` | Set of arguments passed to PHP Parallel Lint                   |
+| `COMPOSER_DEPS_INSTALL` | `false`                                 | Whether or not to install Composer dependencies before linting |
 
 #### Secrets
 
@@ -249,7 +230,7 @@ jobs:
   lint-php:
     strategy:
       matrix:
-        php: ["7.4", "8.0", "8.1"]
+        php: [ "7.4", "8.0", "8.1" ]
     uses: inpsyde/reusable-workflows/.github/workflows/lint-php.yml@main
     with:
       PHP_VERSION: ${{ matrix.php }}
