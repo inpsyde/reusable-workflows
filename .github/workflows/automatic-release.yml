@@ -4,7 +4,7 @@ on:
     inputs:
       NODE_VERSION:
         description: Node version with which the release will be executed.
-        default: 18
+        default: 20
         required: false
         type: string
     secrets:
