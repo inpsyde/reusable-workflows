@@ -58,7 +58,7 @@ on:
         description: Private SSH key to be used to reach remote destinations.
         required: false
       SSH_KNOWN_HOSTS:
-        description: SSH knows hosts.
+        description: SSH hosts to be set in the known_hosts file.
         required: false
 
 jobs:
@@ -88,7 +88,8 @@ jobs:
               .parse(process.env.ENV_VARS)
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
             
-      - name: Setup SSH keys
+      - name: Set up SSH keys
+        if: ${{ env.SSH_KEY != '' }}
         run: |
             mkdir -p .ddev/homeadditions/.ssh
             echo "${{ secrets.SSH_KEY }}" > .ddev/homeadditions/.ssh/id_rsa
@@ -96,14 +97,12 @@ jobs:
             echo "CheckHostIP=no" > .ddev/homeadditions/.ssh/config
             echo "HashKnownHosts=no" >> .ddev/homeadditions/.ssh/config
             chmod 700 .ddev/homeadditions/.ssh
-            chmod 600 .ddev/homeadditions/.ssh/id_rsa
-            chmod 600 .ddev/homeadditions/.ssh/config
-        if: ${{ env.SSH_KEY != '' }}
+            chmod 600 .ddev/homeadditions/.ssh/id_rsa .ddev/homeadditions/.ssh/config
 
-      - name: Setup SSH knows hosts
+      - name: Set up SSH knows hosts
+        if: ${{ env.SSH_KNOWN_HOSTS != '' }}
         run: |
           echo "${{ secrets.SSH_KNOWN_HOSTS }}" > .ddev/homeadditions/.ssh/known_hosts
-        if: ${{ env.SSH_KNOWN_HOSTS != '' }}
 
       - uses: ddev/github-action-setup-ddev@v1
         with:

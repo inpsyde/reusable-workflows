@@ -74,4 +74,4 @@ jobs:
 | `DDEV_ENV_VARS`      | Additional environment variables for DDEV as a JSON formatted object.                     |
 | `NGROK_AUTH_TOKEN`   | The auth token for Ngrok. If not provided, skips Ngrok.                                   |
 | `SSH_KEY`            | The private SSH key allowing access remote destinations.                                  |
-| `SSH_KNOWN_HOSTS`    | To fill `known_hosts` file for SSH agent.                                                 |
+| `SSH_KNOWN_HOSTS`    | SSH hosts to be set in the `known_hosts` file.                                            |
