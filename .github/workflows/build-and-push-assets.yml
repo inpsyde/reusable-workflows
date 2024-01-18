@@ -49,7 +49,7 @@ on:
         required: false
         type: string
       BUILT_BRANCH_SUFFIX:
-        description: Suffix for branch creating for compiled assets (`-built` is recommended for convention).
+        description: Suffix to calculate the target branch for pushing assets on the `branch` event.
         type: string
         default: ''
         required: false

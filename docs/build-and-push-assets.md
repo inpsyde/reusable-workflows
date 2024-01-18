@@ -6,13 +6,13 @@ To achieve that, the reusable workflow:
 
 1. installs dependencies defined in `package.json`
 2. builds the package's assets via a build script (see below)
-3. pushes built assets back to the repository (to the same branch or a defined branch)
+3. pushes compiled assets back to the repository (to the same branch or a defined branch)
 
 ## Where are assets stored
 
 Two inputs can be used to define branches as assets storage - `BUILT_BRANCH_SUFFIX` and `RELEASE_BRANCH_NAME`.
 
-`BUILT_BRANCH_SUFFIX` is used only for push to branch events. If defined, compiled assets
+`BUILT_BRANCH_SUFFIX` is used only for push-to-branch events. If defined, compiled assets
 will be stored in the branch with name equals current branch plus suffix. For instance,
 if `BUILT_BRANCH_SUFFIX` equals `-built` for pushing to the `main` branch, compiled assets will be stored
 in the `main-built` branch (a branch will be created if it does not exist).
@@ -51,8 +51,8 @@ is moved** to point to the commit that contains the compiled assets.
   avoid conflicts when a push happens before the current workflow is not completed.
 - It is recommended for calling workflows to
   use ["paths" settings](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#example-including-paths)
-  to avoid running the workflow when no asset sources are changed. It should not be used for built branches
-  and release branch strategies because the sync should happen on every push.
+  to avoid running the workflow when no asset sources are changed. However, it should not be used
+  for built branches and release branch strategies because the sync should happen on every push.
 
 ## Simple usage example:
 
@@ -107,8 +107,8 @@ This is not the simplest possible example, but it showcases all the recommendati
 | `COMPILE_SCRIPT_DEV`  | `'build:dev'`                 | Script added to `npm run` or `yarn` to build development assets                                                                 |
 | `MODE`                | `''`                          | Mode for compiling assets (`prod` or `dev`)                                                                                     |
 | `ASSETS_TARGET_PATHS` | `'./assets'`                  | Target path(s) for compiled assets                                                                                              |
-| `BUILT_BRANCH_SUFFIX` | `''`                          | Suffix to calculate target branch for pushing assets on `branch` event                                                          |
-| `RELEASE_BRANCH_NAME` | `''`                          | Target branch for pushing compiled assets on `tag` event                                                                        |
+| `BUILT_BRANCH_SUFFIX` | `''`                          | Suffix to calculate the target branch for pushing assets on the `branch` event                                                  |
+| `RELEASE_BRANCH_NAME` | `''`                          | Target branch for pushing compiled assets on the `tag` event                                                                    |
 | `PHP_VERSION`         | `'8.0'`                       | PHP version with which the PHP tools are to be executed                                                                         |
 | `PHP_TOOLS`           | `''`                          | PHP tools supported by [shivammathur/setup-php](https://github.com/shivammathur/setup-php#wrench-tools-support) to be installed |
 
