@@ -39,20 +39,20 @@ jobs:
 
 ### Inputs
 
-| Name                  | Default                                                       | Description                                                                                   |
-|-----------------------|---------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
-| `NODE_OPTIONS`        | `''`                                                          | Space-separated list of command-line Node options                                             |
-| `NODE_VERSION`        | `18`                                                          | Node version with which the assets will be compiled                                           |
-| `NPM_REGISTRY_DOMAIN` | `"https://npm.pkg.github.com/"`                               | Domain of the private npm registry                                                            |
-| `PACKAGE_MANAGER`     | `"yarn"`                                                      | Package manager with which the dependencies should be installed (`npm` or `yarn`)             |
-| `COMPOSER_ARGS`       | `'--no-dev --no-scripts --prefer-dist --optimize-autoloader'` | Set of arguments passed to Composer                                                           |
-| `PHP_VERSION`         | `"8.0"`                                                       | PHP version to use during packaging                                                           |
-| `ARCHIVE_NAME`        | `""`                                                          | Desired full name of resulting archive. Falls back to repository name.                        |
-| `PLUGIN_DIR_NAME`     | `""`                                                          | Name of the directory inside the archive. Falls back to the archive name and repository name. |
-| `PLUGIN_MAIN_FILE`    | `"index.php"`                                                 | The name of the plugin main file                                                              |
-| `PLUGIN_VERSION`      | -                                                             | The plugin version                                                                            |
-| `PRE_SCRIPT`          | `""`                                                          | Run custom shell code before creating the release archive                                     |
-| `COMPILE_ASSETS_ARGS` | `'-v --env=root'`                                             | Set of arguments passed to Composer Asset Compiler                                            |
+| Name                  | Default                                                       | Description                                                                                |
+|-----------------------|---------------------------------------------------------------|--------------------------------------------------------------------------------------------|
+| `NODE_OPTIONS`        | `''`                                                          | Space-separated list of command-line Node options                                          |
+| `NODE_VERSION`        | `18`                                                          | Node version with which the assets will be compiled                                        |
+| `NPM_REGISTRY_DOMAIN` | `"https://npm.pkg.github.com/"`                               | Domain of the private npm registry                                                         |
+| `PACKAGE_MANAGER`     | `"yarn"`                                                      | Package manager with which the dependencies should be installed (`npm` or `yarn`)          |
+| `COMPOSER_ARGS`       | `'--no-dev --no-scripts --prefer-dist --optimize-autoloader'` | Set of arguments passed to Composer                                                        |
+| `PHP_VERSION`         | `"8.0"`                                                       | PHP version to use during packaging                                                        |
+| `ARCHIVE_NAME`        | `""`                                                          | Desired full name of resulting archive. Falls back to repository name.                     |
+| `PLUGIN_FOLDER_NAME`  | `""`                                                          | Name of the folder inside the archive. Falls back to the archive name and repository name. |
+| `PLUGIN_MAIN_FILE`    | `"index.php"`                                                 | The name of the plugin main file                                                           |
+| `PLUGIN_VERSION`      | -                                                             | The plugin version                                                                         |
+| `PRE_SCRIPT`          | `""`                                                          | Run custom shell code before creating the release archive                                  |
+| `COMPILE_ASSETS_ARGS` | `'-v --env=root'`                                             | Set of arguments passed to Composer Asset Compiler                                         |
 
 #### A note on `PLUGIN_VERSION`
 
