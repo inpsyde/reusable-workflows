@@ -54,6 +54,12 @@ on:
       NGROK_AUTH_TOKEN:
         description: The auth token for Ngrok. If not provided, skips Ngrok.
         required: false
+      SSH_KEY:
+        description: Private SSH key to be used to reach remote destinations.
+        required: false
+      SSH_KNOWN_HOSTS:
+        description: SSH hosts to be set in the known_hosts file.
+        required: false
 
 jobs:
   ddev-playwright:
@@ -63,6 +69,8 @@ jobs:
       COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
       NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       NGROK: ${{ secrets.NGROK_AUTH_TOKEN != '' }}
+      SSH_KEY: ${{ secrets.SSH_KEY }}
+      SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
     outputs:
       artifact: ${{ steps.set-artifact-name.outputs.artifact }}
     steps:
@@ -79,6 +87,22 @@ jobs:
             JSON
               .parse(process.env.ENV_VARS)
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
+            
+      - name: Set up SSH keys
+        if: ${{ env.SSH_KEY != '' }}
+        run: |
+            mkdir -p .ddev/homeadditions/.ssh
+            echo "${{ secrets.SSH_KEY }}" > .ddev/homeadditions/.ssh/id_rsa
+            echo "StrictHostKeyChecking=accept-new" > .ddev/homeadditions/.ssh/config
+            echo "CheckHostIP=no" >> .ddev/homeadditions/.ssh/config
+            echo "HashKnownHosts=no" >> .ddev/homeadditions/.ssh/config
+            chmod 700 .ddev/homeadditions/.ssh
+            chmod 600 .ddev/homeadditions/.ssh/id_rsa .ddev/homeadditions/.ssh/config
+
+      - name: Set up SSH knows hosts
+        if: ${{ env.SSH_KNOWN_HOSTS != '' }}
+        run: |
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > .ddev/homeadditions/.ssh/known_hosts
 
       - uses: ddev/github-action-setup-ddev@v1
         with:
@@ -167,3 +191,4 @@ jobs:
             path: |
                 ${{ inputs.PLAYWRIGHT_DIR }}/playwright-report/*
                 ${{ inputs.PLAYWRIGHT_DIR }}/test-results/*
+                ${{ inputs.PLAYWRIGHT_DIR }}/artifacts/test-results/*
