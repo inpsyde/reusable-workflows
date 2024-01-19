@@ -53,9 +53,9 @@ jobs:
       PHPCS_ARGS: '--report=summary'
 ```
 
-**Note**: Coding standards analysis can only be performed with a specific PHP version and not in a
-PHP matrix, as it should always be tested with the highest PHP version in use. To check
-compatibility with multiple PHP versions, use the [Lint PHP](#lint-php) workflow.
+**Note**: Coding _standards_ analysis should only be performed with the highest supported PHP
+version. Use the [Lint PHP](#lint-php) workflow to check code _compatibility_ with multiple PHP
+versions.
 
 ## Static code analysis
 
