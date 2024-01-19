@@ -109,7 +109,7 @@ jobs:
           ARCHIVE_NAME: ${{ inputs.ARCHIVE_NAME }}
         id: plugin-folder-name
         run: |
-          echo "plugin-folder-name=${PLUGIN_FOLDER_NAME:-$ARCHIVE_NAME:-${{ github.event.repository.name }}}" >> $GITHUB_OUTPUT
+          echo "plugin-folder-name=${PLUGIN_FOLDER_NAME:-${ARCHIVE_NAME:-${{ github.event.repository.name }}}}" >> $GITHUB_OUTPUT
 
       - name: Set up custom environment variables
         env:
