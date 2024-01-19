@@ -54,7 +54,7 @@ on:
         default: ''
         required: false
       RELEASE_BRANCH_NAME:
-        description: Branch name where consequentially tags are moved.
+        description: On tag events, target branch where compiled assets are pushed and the tag is moved to.
         type: string
         default: ''
         required: false
