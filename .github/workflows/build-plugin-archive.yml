@@ -96,12 +96,7 @@ jobs:
         env:
           ARCHIVE_NAME: ${{ inputs.ARCHIVE_NAME }}
         id: plugin-data
-        run: |
-          if [ ! -z "$ARCHIVE_NAME" ]; then
-              echo "archive-name=$ARCHIVE_NAME" >> $GITHUB_OUTPUT
-          else
-              echo "archive-name=${{ github.event.repository.name }}" >> $GITHUB_OUTPUT
-          fi
+        run: echo "archive-name=${ARCHIVE_NAME:-${{ github.event.repository.name }}}"
 
       - name: Set up plugin folder name
         env:
