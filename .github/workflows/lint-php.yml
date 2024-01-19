@@ -8,10 +8,6 @@ on:
         default: '8.0'
         required: false
         type: string
-      PHP_MATRIX:
-        description: Matrix of PHP versions as a JSON formatted object (deprecated).
-        required: false
-        type: string
       COMPOSER_ARGS:
         description: Set of arguments passed to Composer.
         default: '--prefer-dist'
@@ -39,16 +35,9 @@ jobs:
   lint-php:
     timeout-minutes: 5
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        php-version: ${{ inputs.PHP_MATRIX && fromJSON(inputs.PHP_MATRIX) || fromJson('["custom"]') }}
     env:
       COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
     steps:
-      - name: Deprecation warning
-        if: ${{ inputs.PHP_MATRIX }}
-        run: echo "::warning::The PHP_MATRIX input is deprecated and will be removed in the future. Please create a matrix in your caller workflow and pass it to the PHP_VERSION input."
-
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -66,10 +55,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          # This is necessary to support the deprecated PHP_MATRIX (executing the matrix
-          # inside this reusable workflow) while also supporting the new PHP_VERSION input
-          # (passed from a matrix in the caller workflow).
-          php-version: ${{ matrix.php-version != 'custom' && matrix.php-version || inputs.PHP_VERSION }}
+          php-version: ${{ inputs.PHP_VERSION }}
           tools: cs2pr, parallel-lint
           coverage: none
 
