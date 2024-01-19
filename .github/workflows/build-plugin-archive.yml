@@ -96,7 +96,7 @@ jobs:
         env:
           ARCHIVE_NAME: ${{ inputs.ARCHIVE_NAME }}
         id: plugin-data
-        run: echo "archive-name=${ARCHIVE_NAME:-${{ github.event.repository.name }}}"
+        run: echo "archive-name=${ARCHIVE_NAME:-${{ github.event.repository.name }}}" >> $GITHUB_OUTPUT
 
       - name: Set up plugin folder name
         env:
