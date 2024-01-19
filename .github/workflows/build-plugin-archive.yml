@@ -81,6 +81,11 @@ jobs:
       NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
       NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       NODE_CACHE_MODE: ''
+      ARCHIVE_NAME: ${{ inputs.ARCHIVE_NAME }}
+      PLUGIN_FOLDER_NAME: ${{ inputs.PLUGIN_FOLDER_NAME }}
+      ENV_VARS: ${{ secrets.ENV_VARS }}
+      GIT_SHA: ${{ github.sha }}
+      PLUGIN_VERSION: ${{ inputs.PLUGIN_VERSION }}
       COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
       # Disables symlinking of local path repositories.
       # During development, symlinking is preferable.
@@ -93,21 +98,14 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up archive name
-        env:
-          ARCHIVE_NAME: ${{ inputs.ARCHIVE_NAME }}
         id: plugin-data
         run: echo "archive-name=${ARCHIVE_NAME:-${{ github.event.repository.name }}}" >> $GITHUB_OUTPUT
 
       - name: Set up plugin folder name
-        env:
-          PLUGIN_FOLDER_NAME: ${{ inputs.PLUGIN_FOLDER_NAME }}
-          ARCHIVE_NAME: ${{ inputs.ARCHIVE_NAME }}
         id: plugin-folder-name
         run: echo "plugin-folder-name=${PLUGIN_FOLDER_NAME:-${ARCHIVE_NAME:-${{ github.event.repository.name }}}}" >> $GITHUB_OUTPUT
 
       - name: Set up custom environment variables
-        env:
-          ENV_VARS: ${{ secrets.ENV_VARS }}
         if: ${{ env.ENV_VARS }}
         uses: actions/github-script@v7
         with:
@@ -181,13 +179,9 @@ jobs:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
 
       - name: Add commit hash to plugin header
-        env:
-          GIT_SHA: ${{ github.sha }}
         run: 'sed -Ei "s/SHA: .*/SHA: ${GIT_SHA}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
 
       - name: Set plugin version header
-        env:
-            PLUGIN_VERSION: ${{ inputs.PLUGIN_VERSION }}
         run: 'sed -Ei "s/Version: .*/Version: ${PLUGIN_VERSION}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
 
       - name: Install dist-archive command
