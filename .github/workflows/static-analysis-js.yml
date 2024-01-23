@@ -10,7 +10,7 @@ on:
         type: string
       NODE_VERSION:
         description: Node version with which the static code analysis is to be executed.
-        default: 16
+        default: 18
         required: false
         type: string
       ESLINT_ARGS:
@@ -32,6 +32,9 @@ on:
       NPM_REGISTRY_TOKEN:
         description: Authentication for the private npm registry.
         required: false
+      ENV_VARS:
+        description: Additional environment variables as a JSON formatted object.
+        required: false
 
 jobs:
   static-analysis-js:
@@ -41,11 +44,25 @@ jobs:
       NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
       NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
     steps:
+      - name: Deprecation warning
+        run: echo "::warning::This workflow is deprecated and will be replaced by the @wordpress/scripts workflow (wp-scripts-lint.yml) in the future."
+
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - name: Set up custom environment variables
+        env:
+          ENV_VARS: ${{ secrets.ENV_VARS }}
+        if: ${{ env.ENV_VARS }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            JSON
+              .parse(process.env.ENV_VARS)
+              .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
       - name: Set up node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}

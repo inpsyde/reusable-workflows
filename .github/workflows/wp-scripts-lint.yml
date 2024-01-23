@@ -1,4 +1,4 @@
-name: Assets compilation
+name: WP Scripts lint
 
 on:
   workflow_call:
@@ -23,25 +23,36 @@ on:
         default: 'yarn'
         required: false
         type: string
-      PHP_VERSION:
-        description: PHP version with which the assets compilation is to be executed.
-        default: "8.0"
+      LINT_TOOLS:
+        description: Array of checks to be executed by @wordpress/scripts.
+        # [!] Note: "pkg-json" is not included by default. This is currently internally reviewed.
+        default: '["js", "style", "md-docs"]'
         required: false
         type: string
-      COMPOSER_ARGS:
-        description: Set of arguments passed to Composer.
-        default: '--prefer-dist'
+      ESLINT_ARGS:
+        description: Set of arguments passed to `wp-script lint-js`.
+        default: ''
         required: false
         type: string
-      COMPILE_ASSETS_ARGS:
-        description: Set of arguments passed to Composer Asset Compiler.
-        default: '-v --env=root'
+      STYLELINT_ARGS:
+        description: Set of arguments passed to `wp-script lint-style`.
+        default: '--formatter github'
+        required: false
+        type: string
+      MARKDOWNLINT_ARGS:
+        description: Set of arguments passed to `wp-script lint-md-docs`.
+        # Gutenberg documentation says, that "node_modules" are ignored by default,
+        # but this seems not to be the case for markdown-lint-cli
+        # @link https://github.com/igorshubovych/markdownlint-cli/issues/405
+        default: '--ignore LICENSE.md --ignore node_modules'
+        required: false
+        type: string
+      PACKAGE_JSONLINT_ARGS:
+        description: Set of arguments passed to `wp-script lint-pkg-json`.
+        default: ''
         required: false
         type: string
     secrets:
-      COMPOSER_AUTH_JSON:
-        description: Authentication for privately hosted packages and repositories as a JSON formatted object.
-        required: false
       NPM_REGISTRY_TOKEN:
         description: Authentication for the private npm registry.
         required: false
@@ -59,11 +70,10 @@ on:
         required: false
 
 jobs:
-  assets-compilation:
+  static-analysis-assets:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     env:
-      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
       NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
       NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       NODE_CACHE_MODE: ''
@@ -114,59 +124,23 @@ jobs:
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
           cache: ${{ env.NODE_CACHE_MODE }}
 
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ inputs.PHP_VERSION }}
-          tools: composer
-          coverage: none
+      - name: Install dependencies
+        env:
+          ARGS: ${{ env.NODE_CACHE_MODE == 'yarn' && '--frozen-lockfile' || env.NODE_CACHE_MODE == 'npm' && 'ci' || 'install' }}
+        run: ${{ format('{0} {1}', inputs.PACKAGE_MANAGER, env.ARGS) }}
 
-      - name: Install Composer dependencies
-        uses: ramsey/composer-install@v2
-        with:
-          composer-options: ${{ inputs.COMPOSER_ARGS }}
+      - name: Lint script files
+        if: ${{ contains(fromJSON(inputs.LINT_TOOLS), 'js') }}
+        run: ./node_modules/.bin/wp-scripts lint-js ${{ inputs.ESLINT_ARGS }}
 
-      - name: Set environment variables [DEV]
-        if: ${{ !contains(github.ref, 'refs/tags/') }}
-        run: |
-          echo "ASSETS_HASH=$(composer assets-hash)" >> $GITHUB_ENV
-          # We set "development" here to align with webpack's "mode"
-          # to be used in Composer Asset Compiler as a placeholder variable.
-          # @link https://webpack.js.org/configuration/mode/
-          echo "BUILD_ENV=development" >> $GITHUB_ENV
+      - name: Lint style files
+        if: ${{ contains(fromJSON(inputs.LINT_TOOLS), 'style') }}
+        run: ./node_modules/.bin/wp-scripts lint-style ${{ inputs.STYLELINT_ARGS }}
 
-      - name: Set environment variables [PROD]
-        if: ${{ contains(github.ref, 'refs/tags/') }}
-        run: |
-          echo "TAG_NAME=$(echo ${GITHUB_REF#refs/*/})" >> $GITHUB_ENV
-          echo "BUILD_ENV=production" >> $GITHUB_ENV
-          echo "::notice::The ENCORE_ENV variable is deprecated and will be removed soon. If you use it, please change it to BUILD_ENV."
-          echo "ENCORE_ENV=production" >> $GITHUB_ENV
+      - name: Lint markdown files
+        if: ${{ contains(fromJSON(inputs.LINT_TOOLS), 'md-docs') }}
+        run: ./node_modules/.bin/wp-scripts lint-md-docs ${{ inputs.MARKDOWNLINT_ARGS }}
 
-      - name: Compile assets
-        run: composer compile-assets ${{ inputs.COMPILE_ASSETS_ARGS }}
-
-      - name: Upload assets artifact [DEV]
-        uses: actions/upload-artifact@v3
-        if: ${{ !contains(github.ref, 'refs/tags/') }}
-        with:
-          name: assets-${{ env.ASSETS_HASH }}
-          path: assets
-
-      - name: Zip assets folder [PROD]
-        uses: montudor/action-zip@v1
-        if: ${{ contains(github.ref, 'refs/tags/') }}
-        with:
-          args: zip -qq -r assets-${{ env.TAG_NAME }}.zip assets
-
-      - name: Upload release attachment [PROD]
-        if: ${{ contains(github.ref, 'refs/tags/') }}
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: assets-${{ env.TAG_NAME }}.zip
-          tag: ${{ github.ref }}
-          # Release description fallback which will not be enforced due "overwrite: false" (default).
-          body: |
-            # ${{ env.TAG_NAME }}
-            Compiled assets available in `assets-${{ env.TAG_NAME }}.zip`.
+      - name: Lint `package.json` files
+        if: ${{ contains(fromJSON(inputs.LINT_TOOLS), 'pkg-json') }}
+        run: ./node_modules/.bin/wp-scripts lint-pkg-json ${{ inputs.PACKAGE_JSONLINT_ARGS }}

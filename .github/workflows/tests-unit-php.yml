@@ -3,9 +3,9 @@ name: Unit tests PHP
 on:
   workflow_call:
     inputs:
-      PHP_MATRIX:
-        description: Matrix of PHP versions as a JSON formatted object.
-        default: '["8.0"]'
+      PHP_VERSION:
+        description: PHP version with which the scripts are executed.
+        default: '8.0'
         required: false
         type: string
       COMPOSER_ARGS:
@@ -30,30 +30,27 @@ jobs:
   tests-unit-php:
     timeout-minutes: 5
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        php-version: ${{ fromJson(inputs.PHP_MATRIX) }}
     env:
       COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php-version }}
+        uses: actions/checkout@v4
 
       - name: Set up custom environment variables
         env:
           ENV_VARS: ${{ secrets.ENV_VARS }}
         if: ${{ env.ENV_VARS }}
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             JSON
               .parse(process.env.ENV_VARS)
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.PHP_VERSION }}
 
       - name: Set up problem matchers for PHPUnit
         run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"

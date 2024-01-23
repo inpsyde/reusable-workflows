@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       PHP_VERSION:
-        description: PHP version with which the coding standard analysis is to be executed.
+        description: PHP version with which the scripts are executed.
         default: "8.0"
         required: false
         type: string
@@ -27,6 +27,9 @@ on:
       COMPOSER_AUTH_JSON:
         description: Authentication for privately hosted packages and repositories as a JSON formatted object.
         required: false
+      ENV_VARS:
+        description: Additional environment variables as a JSON formatted object.
+        required: false
 
 jobs:
   coding-standards-php:
@@ -36,7 +39,18 @@ jobs:
       COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - name: Set up custom environment variables
+        env:
+          ENV_VARS: ${{ secrets.ENV_VARS }}
+        if: ${{ env.ENV_VARS }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            JSON
+              .parse(process.env.ENV_VARS)
+              .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2

@@ -6,7 +6,26 @@ To achieve that, the reusable workflow:
 
 1. installs dependencies defined in `package.json`
 2. builds the package's assets via a build script (see below)
-3. pushes built assets back to the repository
+3. pushes compiled assets back to the repository (to the same branch or a defined branch)
+
+## Where are assets stored
+
+Two inputs can be used to define branches as assets storage - `BUILT_BRANCH_SUFFIX` and `RELEASE_BRANCH_NAME`.
+
+`BUILT_BRANCH_SUFFIX` is used only for push-to-branch events. If defined, compiled assets
+will be stored in the branch with name equals current branch plus suffix. For instance,
+if `BUILT_BRANCH_SUFFIX` equals `-built` for pushing to the `main` branch, compiled assets will be stored
+in the `main-built` branch (a branch will be created if it does not exist).
+
+`RELEASE_BRANCH_NAME` is used only for tag events. If defined and the pushed tag points
+to the last commit of the default branch of the GitHub repository, compiled assets will be pushed
+to the release branch, and the tag will be moved there.
+If the input is undefined or the tag points to one of the previous commits,
+the compiled assets will be pushed to the detached commit, and the tag will be moved there.
+
+The main benefit of using `BUILT_BRANCH_SUFFIX` is not to pollute the main development branch
+with commits containing compiled assets. With `RELEASE_BRANCH_NAME`, you can gain linear tag history
+if you always tag just the last commit from the main development branch.
 
 ## Build script
 
@@ -32,7 +51,8 @@ is moved** to point to the commit that contains the compiled assets.
   avoid conflicts when a push happens before the current workflow is not completed.
 - It is recommended for calling workflows to
   use ["paths" settings](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#example-including-paths)
-  to avoid running the workflow when no asset sources are changed.
+  to avoid running the workflow when no asset sources are changed. However, it should not be used
+  for built branches and release branch strategies because the sync should happen on every push.
 
 ## Simple usage example:
 
@@ -44,6 +64,7 @@ on:
   push:
     tags: ['*']
     branches: ['*']
+    # Don't include paths if BUILT_BRANCH_SUFFIX or RELEASE_BRANCH_NAME are defined
     paths:
       - '**workflows/build-and-push-assets.yml' # the workflow file itself
       - '**.ts'
@@ -60,6 +81,9 @@ concurrency:
 jobs:
   build-assets:
     uses: inpsyde/reusable-workflows/.github/workflows/build-and-push-assets.yml@main
+    with:
+      BUILT_BRANCH_SUFFIX: '-built' # Optionally, to push compiled assets to built branch
+      RELEASE_BRANCH_NAME: 'release' # Optionally, to move tags to release branch
     secrets:
       GITHUB_USER_EMAIL: ${{ secrets.INPSYDE_BOT_EMAIL }}
       GITHUB_USER_NAME: ${{ secrets.INPSYDE_BOT_USER }}
@@ -72,22 +96,22 @@ This is not the simplest possible example, but it showcases all the recommendati
 
 ### Inputs
 
-| Name                  | Default                       | Description                                                                            |
-|-----------------------|-------------------------------|----------------------------------------------------------------------------------------|
-| `NPM_REGISTRY_DOMAIN` | `https://npm.pkg.github.com/` | Domain of the private npm registry                                                     |
-| `NODE_VERSION`        | 16                            | Node version with which the assets will be compiled                                    |
-| `WORKING_DIRECTORY`   | `'./'`                        | Working directory path                                                                 |
-| `PACKAGE_MANAGER`     | `'auto'` <sup>**^1**</sup>    | Package manager. Supported are "yarn" and "npm". Required if no lock file is available |
-| `DEPS_INSTALL`        | `true`                        | Whether or not to install dependencies before compiling                                |
-| `COMPILE_SCRIPT_PROD` | `'encore prod'`               | Script added to `npm run` or `yarn` to build production assets                         |
-| `COMPILE_SCRIPT_DEV`  | `'encore dev'`                | Script added to `npm run` or `yarn` to build development assets                        |
-| `ASSETS_TARGET_PATHS` | `'./assets'`                  | Target path(s) for compiled assets                                                     |
-| `NODE_OPTIONS`        | `''`                          | Space-separated list of command-line Node options                                      |
+| Name                  | Default                       | Description                                                                                                                     |
+|-----------------------|-------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
+| `NODE_OPTIONS`        | `''`                          | Space-separated list of command-line Node options                                                                               |
+| `NODE_VERSION`        | `18`                          | Node version with which the assets will be compiled                                                                             |
+| `NPM_REGISTRY_DOMAIN` | `https://npm.pkg.github.com/` | Domain of the private npm registry                                                                                              |
+| `PACKAGE_MANAGER`     | `yarn`                        | Package manager with which the dependencies should be installed (`npm` or `yarn`)                                               |
+| `WORKING_DIRECTORY`   | `'./'`                        | Working directory path                                                                                                          |
+| `COMPILE_SCRIPT_PROD` | `'build'`                     | Script added to `npm run` or `yarn` to build production assets                                                                  |
+| `COMPILE_SCRIPT_DEV`  | `'build:dev'`                 | Script added to `npm run` or `yarn` to build development assets                                                                 |
+| `MODE`                | `''`                          | Mode for compiling assets (`prod` or `dev`)                                                                                     |
+| `ASSETS_TARGET_PATHS` | `'./assets'`                  | Target path(s) for compiled assets                                                                                              |
+| `BUILT_BRANCH_SUFFIX` | `''`                          | Suffix to calculate the target branch for pushing assets on the `branch` event                                                  |
+| `RELEASE_BRANCH_NAME` | `''`                          | On tag events, target branch where compiled assets are pushed and the tag is moved to                                           |
+| `PHP_VERSION`         | `'8.0'`                       | PHP version with which the PHP tools are to be executed                                                                         |
+| `PHP_TOOLS`           | `''`                          | PHP tools supported by [shivammathur/setup-php](https://github.com/shivammathur/setup-php#wrench-tools-support) to be installed |
 
-<sup>**^1**</sup> `PACKAGE_MANAGER` defaults to "auto" because it tries to determine the package
-manager by looking at lock file (e.g. presence of `yarn.lock` means _Yarn_, `npm-shrinkwrap.json`
-or `package-lock.json` means _npm_). **In the case no lock file is found in the repository,
-then `PACKAGE_MANAGER` input is required**.
 
 ## Secrets
 
@@ -97,12 +121,13 @@ then `PACKAGE_MANAGER` input is required**.
 | `GITHUB_USER_EMAIL`   | Email address for the GitHub user configuration                              |
 | `GITHUB_USER_NAME`    | Username for the GitHub user configuration                                   |
 | `GITHUB_USER_SSH_KEY` | Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME` |
+| `ENV_VARS`            | Additional environment variables as a JSON formatted object                  |
 
 ## FAQ
 
 > Isn't it bad practice to push compiled assets into version control?
 
-*We* don't push assets into version control, it's the GitHub Actions. :)
+This is the only supported way by [Composer](https://github.com/composer/packagist/issues/903).
 
 ---
 
@@ -119,6 +144,34 @@ Encore.cleanupOutputBeforeBuild(['*.js', '*.css'])
 
 ---
 
+> Can I decide when to run `COMPILE_SCRIPT_PROD` or `COMPILE_SCRIPT_DEV`?
+
+Use the `inputs.MODE` and set it to `dev` or `prod`. Depending on the value, the corresponding
+script will be executed. When left empty, the default logic is applied.
+
+The following table provides an overview when `COMPILE_SCRIPT_DEV` or `COMPILE_SCRIPT_PROD` is used:
+
+| MODE   | scenario           | script                |
+|--------|--------------------|-----------------------|
+| `''`   | push to branch     | `COMPILE_SCRIPT_DEV`  |
+| `''`   | create release/tag | `COMPILE_SCRIPT_PROD` |
+| `dev`  | _not evaluated_    | `COMPILE_SCRIPT_DEV`  |
+| `prod` | _not evaluated_    | `COMPILE_SCRIPT_PROD` |
+
+**Example:** I want to push to a branch `production` and "production"-ready assets should be
+compiled:
+
+```yaml
+name: Build and push assets
+on:
+  push:
+jobs:
+  build-assets:
+    uses: inpsyde/reusable-workflows/.github/workflows/build-and-push-assets.yml@main
+    with:
+      MODE: ${{ github.ref_type == 'branch' && github.ref_name == 'production' && 'prod' || '' }}
+```
+
 > Can I have multiple output folders for my package?
 
 Yes, the `inputs.ASSETS_TARGET_PATHS` accepts multiple space-separated paths:
@@ -130,16 +183,18 @@ on:
 jobs:
   build-assets:
     uses: inpsyde/reusable-workflows/.github/workflows/build-and-push-assets.yml@main
-    inputs:
+    with:
       ASSETS_TARGET_PATHS: "./assets ./modules/Foo/assets ./modules/Bar/assets"
     secrets:
       GITHUB_USER_EMAIL: ${{ secrets.INPSYDE_BOT_EMAIL }}
       GITHUB_USER_NAME: ${{ secrets.INPSYDE_BOT_USER }}
+      ENV_VARS: >-
+        [{"name":"EXAMPLE_USERNAME", "value":"${{ secrets.USERNAME }}"}]
 ```
 
 ---
 
-> Will I have merge conflicts during PRs merging?
+> Will I have merge conflicts during PRs merging if I don't use `BUILT_BRANCH_SUFFIX`?
 
 No, if you follow the recommendations in this document you shouldn't.
 
@@ -164,7 +219,7 @@ same as the two commits would have been made as a single commit including both.
 ---
 
 > Does the workflow mess up the git history or add noise to it? How do we know which "compilation"
-commit belongs to which "real" commit?
+> commit belongs to which "real" commit?
 
 As a side effect of using the
 recommended [concurrency settings] (https://docs.github.com/en/actions/using-jobs/using-concurrency)
@@ -176,10 +231,12 @@ hash that triggered the compilation.
 As for the "noise", it will indeed be there. However, considering that all workflow commit messages
 start with the prefix `[BOT]`, it would be quite easy to ignore them without any cognitive effort.
 
+By defining `BUILT_BRANCH_SUFFIX`, you keep commits containing compiled assets separated in the built branch.
+
 ---
 
 > When using commit-precise Composer version constraints like `dev-master#a1bcde`, is there a risk
-of referencing a commit that has no compiled assets?
+> of referencing a commit that has no compiled assets?
 
 Yes. However, commit-accurate version constraints are not recommended (especially in production),
 are usually temporary, and are objectively rare. And in the unlikely event that we need to maintain
@@ -205,12 +262,23 @@ complexity required to do so was not deemed worthwhile.
 ---
 
 > I use the `git+ssh` protocol for dependencies in `package.json`. How can I use it with this
-workflow?
+> workflow?
 
 The workflow supports a private SSH key passed via the `GITHUB_USER_SSH_KEY` secret.
 
 By passing a key associated with the GitHub user defined in the required `GITHUB_USER_NAME`, the
 workflow can install these packages.
 
-Please note that in such cases it is a good practice not to use a "personal" GitHub user, but an 
+Please note that in such cases it is a good practice not to use a "personal" GitHub user, but an
 _ad-hoc_ "bot" user with an _ad-hoc_ private SSH key used only for the scope.
+
+---
+
+> What version should I use when requiring the package with Composer?
+
+For tags, the pushed tag name is always used.
+
+For branches, it depends on the `BUILT_BRANCH_SUFFIX` input value. If the input is not provided,
+you can use the branch name (i.e., `dev-main` for the `main` branch) as usual. If a suffix was defined,
+the built branch should be used. I.e., when `BUILT_BRANCH_SUFFIX` is `-built` and branch `main`,
+the `dev-main-built` branch should be used as the package version.
