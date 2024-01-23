@@ -144,8 +144,8 @@ jobs:
             EOF
 
       - name: Configure DDEV PHP version
-        run: ddev config --php-version ${{ inputs.PHP_VERSION }}
         if: inputs.PHP_VERSION
+        run: ddev config --php-version ${{ inputs.PHP_VERSION }}
       - name: Configure DDEV Node.js version
         run: ddev config --nodejs-version ${{ inputs.NODE_VERSION }}
         if: inputs.NODE_VERSION
