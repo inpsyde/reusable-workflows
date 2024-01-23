@@ -155,8 +155,8 @@ jobs:
         run: ddev start
 
       - name: Orchestrate DDEV
-        run: ${{ inputs.DDEV_ORCHESTRATE_CMD }}
         if: inputs.DDEV_ORCHESTRATE_CMD
+        run: ${{ inputs.DDEV_ORCHESTRATE_CMD }}
 
       - name: Install Ngrok
         if: env.NGROK != 'false'
@@ -176,9 +176,8 @@ jobs:
         run: ${{ inputs.NGROK_START_CMD }}
 
       - name: Get Ngrok URL and save in env
-        run: echo "${{ inputs.BASEURL_ENV_NAME }}=https://$( curl http://127.0.0.1:4040/api/tunnels | jq -r '.tunnels[0].public_url' | awk -F'^http[s]?://' '{print $2}' )" >> $GITHUB_ENV
         if: env.NGROK != 'false'
-
+        run: echo "${{ inputs.BASEURL_ENV_NAME }}=https://$( curl http://127.0.0.1:4040/api/tunnels | jq -r '.tunnels[0].public_url' | awk -F'^http[s]?://' '{print $2}' )" >> $GITHUB_ENV
 
       - name: Run Playwright
         run: ${{ inputs.PLAYWRIGHT_RUN_CMD }}
