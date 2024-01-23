@@ -136,12 +136,12 @@ jobs:
       - name: Add NODE_AUTH_TOKEN into DDEV
         env:
           NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+        if: env.NPM_REGISTRY_TOKEN
         run: |
             cat <<EOF > $GITHUB_WORKSPACE/.npmrc
             //npm.pkg.github.com/:_authToken=${{env.NPM_REGISTRY_TOKEN}}
             @inpsyde:registry=https://npm.pkg.github.com/
             EOF
-        if: env.NPM_REGISTRY_TOKEN
 
       - name: Configure DDEV PHP version
         run: ddev config --php-version ${{ inputs.PHP_VERSION }}
