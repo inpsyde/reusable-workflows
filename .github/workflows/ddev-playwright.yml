@@ -8,7 +8,7 @@ on:
         required: false
         type: string
       NODE_VERSION:
-        description: Node.js version which will override the version set in the DDEV config.
+        description: Node version which will override the version set in the DDEV config.
         required: false
         type: string
       DDEV_ORCHESTRATE_CMD:
