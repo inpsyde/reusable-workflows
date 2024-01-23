@@ -104,7 +104,8 @@ jobs:
         run: |
           echo "${{ secrets.SSH_KNOWN_HOSTS }}" > .ddev/homeadditions/.ssh/known_hosts
 
-      - uses: ddev/github-action-setup-ddev@v1
+      - name: Set up DDEV
+        uses: ddev/github-action-setup-ddev@v1
         with:
           autostart: false
       
