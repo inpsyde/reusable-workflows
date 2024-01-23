@@ -132,6 +132,7 @@ jobs:
           COMPOSER_AUTH_JSON: '${{ secrets.COMPOSER_AUTH_JSON }}'
         run: echo '${{ env.COMPOSER_AUTH_JSON }}' > $GITHUB_WORKSPACE/auth.json
         if: env.COMPOSER_AUTH_JSON
+
       - name: Add NODE_AUTH_TOKEN into DDEV
         env:
           NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
