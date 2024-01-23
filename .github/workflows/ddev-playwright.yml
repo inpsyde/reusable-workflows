@@ -12,15 +12,15 @@ on:
         required: false
         type: string
       DDEV_ORCHESTRATE_CMD:
-        description: The command for setting up the DDEV website, such as 'ddev orchestrate' from inpsyde/ddev-wordpress-plugin-template.
+        description: The command for setting up the DDEV website, such as `ddev orchestrate` from inpsyde/ddev-wordpress-plugin-template.
         required: false
         type: string
       PLAYWRIGHT_INSTALL_CMD:
-        description: The command for installing Playwright and its deps, such as `yarn install && yarn playwright install --with-deps` or 'ddev pw-install-host' from inpsyde/ddev-wordpress-plugin-template.
+        description: The command for installing Playwright and its dependencies, such as `yarn install && yarn playwright install --with-deps` or `ddev pw-install-host` from inpsyde/ddev-wordpress-plugin-template.
         required: true
         type: string
       PLAYWRIGHT_RUN_CMD:
-        description: The command for running Playwright tests, such as `yarn playwright test` or 'ddev pw-host test' from inpsyde/ddev-wordpress-plugin-template.
+        description: The command for running Playwright tests, such as `yarn playwright test` or `ddev pw-host test` from inpsyde/ddev-wordpress-plugin-template.
         required: true
         type: string
       PLAYWRIGHT_DIR:
@@ -30,7 +30,7 @@ on:
         type: string
       NGROK_START_CMD:
         default: 'vendor/bin/ddev-share'
-        description: The command for starting Ngrok, such as ddev-share from inpsyde/ddev-tools.
+        description: The command for starting Ngrok, such as `ddev-share` from inpsyde/ddev-tools.
         required: false
         type: string
       BASEURL_ENV_NAME:
@@ -58,7 +58,7 @@ on:
         description: Private SSH key to be used to reach remote destinations.
         required: false
       SSH_KNOWN_HOSTS:
-        description: SSH hosts to be set in the known_hosts file.
+        description: SSH hosts to be set in the `known_hosts` file.
         required: false
 
 jobs:
