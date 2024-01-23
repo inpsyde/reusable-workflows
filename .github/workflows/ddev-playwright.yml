@@ -45,14 +45,14 @@ on:
       NPM_REGISTRY_TOKEN:
         description: Authentication for the private npm registry.
         required: false
+      NGROK_AUTH_TOKEN:
+        description: Ngrok auth token; skips the installation of Ngrok if not provided.
+        required: false
       ENV_VARS:
         description: Additional environment variables as a JSON formatted object.
         required: false
       DDEV_ENV_VARS:
         description: Additional environment variables for DDEV as a JSON formatted object.
-        required: false
-      NGROK_AUTH_TOKEN:
-        description: Ngrok auth token; skips the installation of Ngrok if not provided.
         required: false
       SSH_KEY:
         description: Private SSH key to be used to reach remote destinations.
