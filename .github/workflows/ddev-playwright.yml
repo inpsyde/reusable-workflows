@@ -165,8 +165,8 @@ jobs:
       - name: Add Ngrok auth token
         env:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-        run: ngrok config add-authtoken ${{ env.NGROK_AUTH_TOKEN }}
         if: env.NGROK != 'false'
+        run: ngrok config add-authtoken ${{ env.NGROK_AUTH_TOKEN }}
 
       - name: Install Playwright
         run: ${{ inputs.PLAYWRIGHT_INSTALL_CMD }}
