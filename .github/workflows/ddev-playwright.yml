@@ -172,8 +172,8 @@ jobs:
         run: ${{ inputs.PLAYWRIGHT_INSTALL_CMD }}
 
       - name: Start Ngrok
-        run: ${{ inputs.NGROK_START_CMD }}
         if: env.NGROK != 'false'
+        run: ${{ inputs.NGROK_START_CMD }}
 
       - name: Get Ngrok URL and save in env
         run: echo "${{ inputs.BASEURL_ENV_NAME }}=https://$( curl http://127.0.0.1:4040/api/tunnels | jq -r '.tunnels[0].public_url' | awk -F'^http[s]?://' '{print $2}' )" >> $GITHUB_ENV
