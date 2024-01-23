@@ -44,10 +44,11 @@ jobs:
 
 #### Inputs
 
-| Name                | Required | Default | Description                                                                                       |
-|---------------------|----------|---------|---------------------------------------------------------------------------------------------------|
-| `NODE_VERSION`      | false    |18       | Node version with which the release will be executed                                              |
-| `GITHUB_USER_TOKEN` | false    |`''`     | Authentication token with write permission needed by the release bot (falls back to GITHUB_TOKEN) |
+| Name                | Required | Default | Description                                                                                                                        |
+|---------------------|----------|---------|------------------------------------------------------------------------------------------------------------------------------------|
+| `NODE_VERSION`      | false    |18       | Node version with which the release will be executed                                                                               |
+| `GITHUB_USER_TOKEN` | false    |`''`     | Authentication token with write permission needed by the release bot (falls back to GITHUB_TOKEN)                                  |
+| `NPM_TOKEN`         | false    |`''`     | Authentication token with publish permission needed by the release bot to publish to the npm registry (falls back to GITHUB_TOKEN) |
 
 **Example with configuration parameters:**
 
