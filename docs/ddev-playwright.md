@@ -68,10 +68,10 @@ jobs:
 
 | Name                 | Description                                                                               |
 |----------------------|-------------------------------------------------------------------------------------------|
-| `NPM_REGISTRY_TOKEN` | Authentication for the private npm registry.                                              |
-| `COMPOSER_AUTH_JSON` | Authentication for privately hosted packages and repositories as a JSON formatted object. |
-| `ENV_VARS`           | Additional environment variables as a JSON formatted object.                              |
-| `DDEV_ENV_VARS`      | Additional environment variables for DDEV as a JSON formatted object.                     |
-| `NGROK_AUTH_TOKEN`   | The auth token for Ngrok. If not provided, skips Ngrok.                                   |
+| `COMPOSER_AUTH_JSON` | Authentication for privately hosted packages and repositories as a JSON formatted object |
+| `NPM_REGISTRY_TOKEN` | Authentication for the private npm registry                                              |
+| `NGROK_AUTH_TOKEN`   | Ngrok auth token; skips the installation of Ngrok if not provided                        |
+| `ENV_VARS`           | Additional environment variables as a JSON formatted object                              |
+| `DDEV_ENV_VARS`      | Additional environment variables for DDEV as a JSON formatted object                     |
 | `SSH_KEY`            | The private SSH key allowing access remote destinations.                                  |
 | `SSH_KNOWN_HOSTS`    | SSH hosts to be set in the `known_hosts` file.                                            |
