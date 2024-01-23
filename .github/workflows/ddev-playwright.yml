@@ -52,7 +52,7 @@ on:
         description: Additional environment variables for DDEV as a JSON formatted object.
         required: false
       NGROK_AUTH_TOKEN:
-        description: The auth token for Ngrok. If not provided, skips Ngrok.
+        description: Ngrok auth token; skips the installation of Ngrok if not provided.
         required: false
       SSH_KEY:
         description: Private SSH key to be used to reach remote destinations.
