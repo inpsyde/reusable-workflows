@@ -62,7 +62,7 @@ jobs:
 | `PLAYWRIGHT_INSTALL_CMD` | `""`                      | The command for installing Playwright and its deps, such as `yarn install && yarn playwright install --with-deps` or `ddev pw-install-host` from [inpsyde/ddev-wordpress-plugin-template](https://github.com/inpsyde/ddev-wordpress-plugin-template) |
 | `PLAYWRIGHT_RUN_CMD`     | `""`                      | The command for running Playwright tests, such as `yarn playwright test` or `ddev pw-host test` from [inpsyde/ddev-wordpress-plugin-template](https://github.com/inpsyde/ddev-wordpress-plugin-template)                                              |
 | `NGROK_START_CMD`        | `"vendor/bin/ddev-share"` | The command for starting Ngrok, such as `ddev-share` from [inpsyde/ddev-tools](https://github.com/inpsyde/ddev-tools)                                                                                                                                 |
-| `BASEURL_ENV_NAME`       | `"BASEURL"`               | The name of the env variable with the base URL for Playwright. Used for overwriting it with the URL from Ngrok                                                                                                                                       |
+| `BASEURL_ENV_NAME`       | `"BASEURL"`               | The name of the env variable with the base URL for Playwright, used for overwriting it with the URL from Ngrok                                                                                                                                       |
 
 ## Secrets
 
