@@ -54,24 +54,25 @@ jobs:
 
 ### Inputs
 
-| Name                     | Default                   | Description                                                                                                                                                                                                                                           |
-|--------------------------|---------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Name                     | Default                   | Description                                                                                                                                                                                                                                          |
+|--------------------------|---------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `PHP_VERSION`            | `""`                      | PHP version which will override the version set in the DDEV config                                                                                                                                                                                   |
 | `NODE_VERSION`           | `""`                      | Node version which will override the version set in the DDEV config                                                                                                                                                                                  |
 | `DDEV_ORCHESTRATE_CMD`   | `""`                      | The command for setting up the DDEV website, such as `ddev orchestrate` from [inpsyde/ddev-wordpress-plugin-template](https://github.com/inpsyde/ddev-wordpress-plugin-template)                                                                     |
 | `PLAYWRIGHT_INSTALL_CMD` | `""`                      | The command for installing Playwright and its deps, such as `yarn install && yarn playwright install --with-deps` or `ddev pw-install-host` from [inpsyde/ddev-wordpress-plugin-template](https://github.com/inpsyde/ddev-wordpress-plugin-template) |
-| `PLAYWRIGHT_RUN_CMD`     | `""`                      | The command for running Playwright tests, such as `yarn playwright test` or `ddev pw-host test` from [inpsyde/ddev-wordpress-plugin-template](https://github.com/inpsyde/ddev-wordpress-plugin-template)                                              |
-| `NGROK_START_CMD`        | `"vendor/bin/ddev-share"` | The command for starting Ngrok, such as `ddev-share` from [inpsyde/ddev-tools](https://github.com/inpsyde/ddev-tools)                                                                                                                                 |
+| `PLAYWRIGHT_RUN_CMD`     | `""`                      | The command for running Playwright tests, such as `yarn playwright test` or `ddev pw-host test` from [inpsyde/ddev-wordpress-plugin-template](https://github.com/inpsyde/ddev-wordpress-plugin-template)                                             |
+| `PLAYWRIGHT_DIR`         | `"tests/Playwright"`      | The path to the Playwright project.                                                                                                                                                                                                                  | 
+| `NGROK_START_CMD`        | `"vendor/bin/ddev-share"` | The command for starting Ngrok, such as `ddev-share` from [inpsyde/ddev-tools](https://github.com/inpsyde/ddev-tools)                                                                                                                                |
 | `BASEURL_ENV_NAME`       | `"BASEURL"`               | The name of the env variable with the base URL for Playwright, used for overwriting it with the URL from Ngrok                                                                                                                                       |
 
 ## Secrets
 
-| Name                 | Description                                                                               |
-|----------------------|-------------------------------------------------------------------------------------------|
+| Name                 | Description                                                                              |
+|----------------------|------------------------------------------------------------------------------------------|
 | `COMPOSER_AUTH_JSON` | Authentication for privately hosted packages and repositories as a JSON formatted object |
 | `NPM_REGISTRY_TOKEN` | Authentication for the private npm registry                                              |
 | `NGROK_AUTH_TOKEN`   | Ngrok auth token; skips the installation of Ngrok if not provided                        |
 | `ENV_VARS`           | Additional environment variables as a JSON formatted object                              |
 | `DDEV_ENV_VARS`      | Additional environment variables for DDEV as a JSON formatted object                     |
-| `SSH_KEY`            | Private SSH key to be used to reach remote destinations                                   |
-| `SSH_KNOWN_HOSTS`    | SSH hosts to be set in the `known_hosts` file                                             |
+| `SSH_KEY`            | Private SSH key to be used to reach remote destinations                                  |
+| `SSH_KNOWN_HOSTS`    | SSH hosts to be set in the `known_hosts` file                                            |
