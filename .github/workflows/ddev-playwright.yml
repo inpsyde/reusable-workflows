@@ -35,7 +35,7 @@ on:
         type: string
       BASEURL_ENV_NAME:
         default: 'BASEURL'
-        description: The name of the env variable with the base URL for Playwright. Used for overwriting it with the URL from Ngrok.
+        description: The name of the env variable with the base URL for Playwright, used for overwriting it with the URL from Ngrok.
         required: false
         type: string
     secrets:
