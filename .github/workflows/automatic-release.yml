@@ -1,12 +1,6 @@
 name: Automatic Release
 on:
   workflow_call:
-    inputs:
-      NODE_VERSION:
-        description: Node version with which the release will be executed (deprecated).
-        default: 20
-        required: false
-        type: string
     secrets:
       GITHUB_USER_TOKEN:
         description: Authentication token with write permission needed by the release bot (falls back to GITHUB_TOKEN).
@@ -20,11 +14,7 @@ jobs:
     env:
       HAS_CONFIG: false
     steps:
-      - name: Deprecation warning
-        if: ${{ inputs.NODE_VERSION }}
-        run: echo "::warning::The NODE_VERSION input is deprecated and will be removed in the future."
-
-      - name: Checkout semantic-release package.json to get the required minimum engine version
+      - name: Fetch semantic-release Node version
         uses: actions/checkout@v4
         with:
           repository: semantic-release/semantic-release
