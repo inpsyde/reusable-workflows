@@ -42,12 +42,11 @@ jobs:
 
 ### Configuration parameters
 
-#### Inputs
+#### Secrets
 
 | Name                | Required | Default | Description                                                                                       |
 |---------------------|----------|---------|---------------------------------------------------------------------------------------------------|
-| `NODE_VERSION`      | false    |18       | Node version with which the release will be executed                                              |
-| `GITHUB_USER_TOKEN` | false    |`''`     | Authentication token with write permission needed by the release bot (falls back to GITHUB_TOKEN) |
+| `GITHUB_USER_TOKEN` | false    | `''`    | Authentication token with write permission needed by the release bot (falls back to GITHUB_TOKEN) |
 
 **Example with configuration parameters:**
 
@@ -61,8 +60,6 @@ on:
 jobs:
   release:
     uses: inpsyde/reusable-workflows/.github/workflows/automatic-release.yml@main
-    with:
-      NODE_VERSION: 16
     secrets:
       GITHUB_USER_TOKEN: ${{ secrets.WRITE_TOKEN }}
 ```
