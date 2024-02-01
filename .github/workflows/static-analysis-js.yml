@@ -76,6 +76,6 @@ jobs:
         continue-on-error: true
 
       - name: Annotate ESLint report
-        uses: ataylorme/eslint-annotate-action@v2
+        uses: ataylorme/eslint-annotate-action@v3
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
