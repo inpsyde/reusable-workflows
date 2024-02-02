@@ -81,7 +81,7 @@ jobs:
         env:
           ENV_VARS: ${{ secrets.ENV_VARS }}
         if: env.ENV_VARS
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             JSON
@@ -116,7 +116,7 @@ jobs:
         env:
           ENV_VARS: ${{ secrets.DDEV_ENV_VARS }}
         if: env.ENV_VARS
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             JSON
