@@ -110,11 +110,12 @@ jobs:
         id: detect_tag_annotation
         if: ${{ github.ref_type == 'tag' }}
         run: |
+          git fetch --tags --force # Retrieve annotated tags https://github.com/actions/checkout/issues/290
           echo "tag_annotation=$(git --no-pager tag -l --format='%(contents:subject)' ${{ github.ref_name }})" >> "$GITHUB_OUTPUT"
 
       - name: Prepare moved tag annotation pattern
         run: |
-          echo "MOVED_TAG_ANNOTATION_PATTERN='// Released by ${{ github.workflow }}'" >> $GITHUB_ENV
+          echo "MOVED_TAG_ANNOTATION_PATTERN=// Released by ${{ github.workflow }}" >> $GITHUB_ENV
 
   compile-assets:
     needs: checks
