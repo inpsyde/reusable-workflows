@@ -76,7 +76,8 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Don't enable `cancel-in-progress` because it interrupts the workflow
+  cancel-in-progress: false
 
 jobs:
   build-assets:
