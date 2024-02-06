@@ -158,7 +158,7 @@ jobs:
   tests-unit-php:
     strategy:
       matrix:
-        php: [ "8.0", "8.1", "8.2" ]
+        php: [ "8.1", "8.2", "8.3" ]
     uses: inpsyde/reusable-workflows/.github/workflows/tests-unit-php.yml@main
     with:
       PHP_VERSION: ${{ matrix.php }}
@@ -230,7 +230,7 @@ jobs:
   lint-php:
     strategy:
       matrix:
-        php: [ "8.0", "8.1", "8.2" ]
+        php: [ "8.1", "8.2", "8.3" ]
     uses: inpsyde/reusable-workflows/.github/workflows/lint-php.yml@main
     with:
       PHP_VERSION: ${{ matrix.php }}
