@@ -37,9 +37,9 @@ Please note that the individual workflows have different (optional) parameters t
 either as `input`s or `secret`s. To learn more, consult the documentation of the individual workflow
 groups here:
 
-* [`@wordpress/scripts`](./docs/wp-scripts.md)
-* [PHP](./docs/php.md)
-* [JavaScript](./docs/js.md)
+* Assets linting and formatting with [`@wordpress/scripts`](./docs/wp-scripts.md)
+* Linting, formatting, and testing tools for [PHP](./docs/php.md)
+* Unit tests for [JavaScript](./docs/js.md)
 * Assets compilation with [Composer Asset Compiler](./docs/assets-compilation.md) or
   the [Build and push](./docs/build-and-push-assets.md) approach
 * [Create plugin archive](./docs/archive-creation.md)
