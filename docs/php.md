@@ -23,7 +23,7 @@ jobs:
 
 | Name            | Default                                                  | Description                                     |
 |-----------------|----------------------------------------------------------|-------------------------------------------------|
-| `PHP_VERSION`   | `"8.0"`                                                  | PHP version with which the scripts are executed |
+| `PHP_VERSION`   | `'8.2'`                                                  | PHP version with which the scripts are executed |
 | `COMPOSER_ARGS` | `'--prefer-dist'`                                        | Set of arguments passed to Composer             |
 | `PHPCS_ARGS`    | `'--report-full --report-checkstyle=./phpcs-report.xml'` | Set of arguments passed to PHP_CodeSniffer      |
 | `CS2PR_ARGS`    | `'--graceful-warnings ./phpcs-report.xml'`               | Set of arguments passed to cs2pr                |
@@ -80,7 +80,7 @@ jobs:
 
 | Name            | Default                               | Description                                     |
 |-----------------|---------------------------------------|-------------------------------------------------|
-| `PHP_VERSION`   | `"8.0"`                               | PHP version with which the scripts are executed |
+| `PHP_VERSION`   | `'8.2'`                               | PHP version with which the scripts are executed |
 | `COMPOSER_ARGS` | `'--prefer-dist'`                     | Set of arguments passed to Composer             |
 | `PSALM_ARGS`    | `'--output-format=github --no-cache'` | Set of arguments passed to Psalm                |
 
@@ -136,7 +136,7 @@ jobs:
 
 | Name            | Default             | Description                                     |
 |-----------------|---------------------|-------------------------------------------------|
-| `PHP_VERSION`   | `"8.0"`             | PHP version with which the scripts are executed |
+| `PHP_VERSION`   | `'8.2'`             | PHP version with which the scripts are executed |
 | `COMPOSER_ARGS` | `'--prefer-dist'`   | Set of arguments passed to Composer             |
 | `PHPUNIT_ARGS`  | `'--coverage-text'` | Set of arguments passed to PHPUnit              |
 
@@ -187,7 +187,7 @@ jobs:
 
 | Name                    | Default                                 | Description                                                    |
 |-------------------------|-----------------------------------------|----------------------------------------------------------------|
-| `PHP_VERSION`           | `"8.0"`                                 | PHP version with which the scripts are executed                |
+| `PHP_VERSION`           | `'8.2'`                                 | PHP version with which the scripts are executed                |
 | `COMPOSER_ARGS`         | `'--prefer-dist'`                       | Set of arguments passed to Composer                            |
 | `LINT_ARGS`             | `'-e php --colors --show-deprecated .'` | Set of arguments passed to PHP Parallel Lint                   |
 | `COMPOSER_DEPS_INSTALL` | `false`                                 | Whether or not to install Composer dependencies before linting |
