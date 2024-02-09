@@ -76,7 +76,6 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  # Don't enable `cancel-in-progress` because it interrupts the workflow
 
 jobs:
   build-assets:
@@ -91,6 +90,8 @@ jobs:
 ```
 
 This is not the simplest possible example, but it showcases all the recommendations.
+
+**Note**: Do not set `cancel-in-progress: true` to the `concurrency` setting because it interrupts the workflow.
 
 ## Configuration parameters
 
