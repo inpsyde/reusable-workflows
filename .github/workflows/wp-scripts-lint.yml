@@ -36,7 +36,7 @@ on:
         type: string
       STYLELINT_ARGS:
         description: Set of arguments passed to `wp-script lint-style`.
-        default: '--formatter github'
+        default: ''
         required: false
         type: string
       MARKDOWNLINT_ARGS:
@@ -132,7 +132,7 @@ jobs:
 
       - name: Lint style files
         if: ${{ contains(fromJSON(inputs.LINT_TOOLS), 'style') }}
-        run: ./node_modules/.bin/wp-scripts lint-style ${{ inputs.STYLELINT_ARGS }}
+        run: ./node_modules/.bin/wp-scripts lint-style ${{ inputs.STYLELINT_ARGS }} --formatter github
 
       - name: Lint markdown files
         if: ${{ contains(fromJSON(inputs.LINT_TOOLS), 'md-docs') }}

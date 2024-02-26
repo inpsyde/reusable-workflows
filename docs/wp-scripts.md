@@ -29,7 +29,7 @@ jobs:
 | `PACKAGE_MANAGER`       | `yarn`                         | Package manager with which the dependencies should be installed (`npm` or `yarn`) |
 | `LINT_TOOLS`            | `'["js", "style", "md-docs"]'` | Array of checks to be executed by @wordpress/scripts                              |
 | `ESLINT_ARGS`           | `''`                           | Set of arguments passed to `wp-script lint-js`                                    |
-| `STYLELINT_ARGS`        | `'--formatter github'`         | Set of arguments passed to `wp-script lint-style`                                 |
+| `STYLELINT_ARGS`        | `''`                           | Set of arguments passed to `wp-script lint-style`                                 |
 | `MARKDOWNLINT_ARGS`     | `''`                           | Set of arguments passed to `wp-script lint-md-docs`                               |
 | `PACKAGE_JSONLINT_ARGS` | `''`                           | Set of arguments passed to `wp-scripts lint-pkg-json`                             |
 
@@ -61,7 +61,7 @@ jobs:
     with:
       NODE_VERSION: 18
       ESLINT_ARGS: '-o eslint_report.json -f json'
-      STYLELINT_ARGS: '"./resources/**/*.scss" --formatter github'
+      STYLELINT_ARGS: '"./resources/**/*.scss"'
 ```
 
 ---
