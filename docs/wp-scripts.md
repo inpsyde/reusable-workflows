@@ -30,7 +30,7 @@ jobs:
 | `LINT_TOOLS`            | `'["js", "style", "md-docs"]'` | Array of checks to be executed by @wordpress/scripts                              |
 | `ESLINT_ARGS`           | `''`                           | Set of arguments passed to `wp-script lint-js`                                    |
 | `STYLELINT_ARGS`        | `'--formatter github'`         | Set of arguments passed to `wp-script lint-style`                                 |
-| `MARKDOWNLINT_ARGS`     | `'--ignore LICENSE.md`         | Set of arguments passed to `wp-script lint-md-docs`                               |
+| `MARKDOWNLINT_ARGS`     | `''`                           | Set of arguments passed to `wp-script lint-md-docs`                               |
 | `PACKAGE_JSONLINT_ARGS` | `''`                           | Set of arguments passed to `wp-scripts lint-pkg-json`                             |
 
 > :information_source: **By default, "pkg-json" is not part of the `LINT_TOOLS` input.**
