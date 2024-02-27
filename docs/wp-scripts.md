@@ -33,7 +33,9 @@ jobs:
 | `MARKDOWNLINT_ARGS`     | `''`                           | Set of arguments passed to `wp-script lint-md-docs`                               |
 | `PACKAGE_JSONLINT_ARGS` | `''`                           | Set of arguments passed to `wp-scripts lint-pkg-json`                             |
 
-> :information_source: **By default, "pkg-json" is not part of the `LINT_TOOLS` input.**
+> :information_source: **By default, "pkg-json" is not part of the `LINT_TOOLS` input.**  
+> :information_source: **The `--formatter github` flag is hardcoded into the `wp-script lint-style`
+command; it must not be passed via `STYLELINT_ARGS`.**
 
 #### Secrets
 
@@ -67,6 +69,7 @@ jobs:
 ---
 **Note**
 
-Stylelint [requires quotes](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-scripts/#lint-style) around file glob patterns.
+Stylelint [requires quotes](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-scripts/#lint-style)
+around file glob patterns.
 
 ---
