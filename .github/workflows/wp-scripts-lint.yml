@@ -36,15 +36,12 @@ on:
         type: string
       STYLELINT_ARGS:
         description: Set of arguments passed to `wp-script lint-style`.
-        default: '--formatter github'
+        default: ''
         required: false
         type: string
       MARKDOWNLINT_ARGS:
         description: Set of arguments passed to `wp-script lint-md-docs`.
-        # Gutenberg documentation says, that "node_modules" are ignored by default,
-        # but this seems not to be the case for markdown-lint-cli
-        # @link https://github.com/igorshubovych/markdownlint-cli/issues/405
-        default: '--ignore LICENSE.md --ignore node_modules'
+        default: ''
         required: false
         type: string
       PACKAGE_JSONLINT_ARGS:
@@ -135,7 +132,7 @@ jobs:
 
       - name: Lint style files
         if: ${{ contains(fromJSON(inputs.LINT_TOOLS), 'style') }}
-        run: ./node_modules/.bin/wp-scripts lint-style ${{ inputs.STYLELINT_ARGS }}
+        run: ./node_modules/.bin/wp-scripts lint-style ${{ inputs.STYLELINT_ARGS }} --formatter github
 
       - name: Lint markdown files
         if: ${{ contains(fromJSON(inputs.LINT_TOOLS), 'md-docs') }}
