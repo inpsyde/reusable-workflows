@@ -207,7 +207,7 @@ jobs:
         run: echo "artifact=${{ steps.plugin-data.outputs.archive-name }}" >> $GITHUB_OUTPUT
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.set-artifact-name.outputs.artifact }}
           path: dist/*
