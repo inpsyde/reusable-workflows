@@ -72,6 +72,10 @@ on:
       ENV_VARS:
         description: Additional environment variables as a JSON formatted object.
         required: false
+    outputs:
+      artifact:
+        description: The name of the generated release artifact
+        value: ${{ jobs.create-plugin-archive.outputs.artifact }}
 
 jobs:
   create-plugin-archive:
