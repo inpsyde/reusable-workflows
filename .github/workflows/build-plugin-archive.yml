@@ -132,7 +132,7 @@ jobs:
 
       - name: Install Composer dependencies
         # ⬑ The idea is to ensure we have non-production tools like Composer Asset Compiler and WordPress Translation Downloader available
-        uses: ramsey/composer-install@v2
+        uses: ramsey/composer-install@v3
         with:
           composer-options: --prefer-dist
 
@@ -174,7 +174,7 @@ jobs:
 
       - name: Install Composer dependencies without dev dependencies
         # ⬑ Now we want to get rid of dev dependencies and most probably skip composer scripts
-        uses: ramsey/composer-install@v2
+        uses: ramsey/composer-install@v3
         with:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
 
