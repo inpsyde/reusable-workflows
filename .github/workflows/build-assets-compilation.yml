@@ -87,7 +87,7 @@ jobs:
 
       - name: Set up SSH
         if: ${{ env.GITHUB_USER_SSH_KEY != '' }}
-        uses: webfactory/ssh-agent@v0.8.0
+        uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ env.GITHUB_USER_SSH_KEY }}
 
