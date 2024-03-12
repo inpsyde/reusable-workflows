@@ -40,6 +40,48 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/automatic-release.yml@main
 ```
 
+## Pre-releases on non-standard branches
+
+Composer has some boundaries on tag names, because it uses under the hood the PHP function `version_compare()`.
+Semantic-release doesn't account for these boundaries, so it can happen a created tag is not valid for Composer packages.
+A solution would be to add the [release.config.js file](https://github.com/inpsyde/reusable-workflows/blob/main/templates/automatic-release/release.config.js) in your repository and modify the `tagName` format accordingly.
+
+For example, using the [build-and-push-assets workflow](https://github.com/inpsyde/reusable-workflows/blob/main/.github/workflows/build-and-push-assets.yml) with a setting like this
+```yml
+name: Build and push assets
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['main', 'beta', 'alpha']
+
+jobs:
+  build-assets:
+    uses: inpsyde/reusable-workflows/.github/workflows/build-and-push-assets.yml@main
+    with:
+      BUILT_BRANCH_SUFFIX: "-built"
+```
+the `-built` branch is created after the building step of the assets, and you can run the automatic release on the same branch
+
+```yml
+name: Release
+on:
+  push:
+    branches:
+      - 'main-built'
+      - 'beta-built'
+      - 'alpha-built'
+jobs:
+  release:
+    uses: inpsyde/reusable-workflows/.github/workflows/automatic-release.yml@main
+```
+Since `alpha` and `beta` branches are marked as pre-releases, semantic-release will use the branch name in the tag name, generating tags like `1.0.0-beta-built.1`.
+Composer is not going to recognize this tag name.
+You can fix the issue including the `release.config.js` file in your repository and providing this setting:
+```js
+tagFormat: '<%- version.replace("-built", "") %>'
+```
+
 ### Configuration parameters
 
 #### Secrets
