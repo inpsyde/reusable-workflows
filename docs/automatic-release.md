@@ -68,7 +68,7 @@ on:
 jobs:
   release:
     uses: inpsyde/reusable-workflows/.github/workflows/automatic-release.yml@main
-    inputs:
+    with:
       MAIN_FILENAME: 'foobar.php'
     secrets:
       GITHUB_USER_TOKEN: ${{ secrets.WRITE_TOKEN }}
