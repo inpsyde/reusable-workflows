@@ -1,6 +1,12 @@
 name: Automatic Release
 on:
   workflow_call:
+    inputs:
+      MAIN_FILENAME:
+        description: Main file name where the WordPress plugin header is present
+        required: false
+        default: 'index.php'
+        type: string
     secrets:
       GITHUB_USER_TOKEN:
         description: Authentication token with write permission needed by the release bot (falls back to GITHUB_TOKEN).
@@ -54,10 +60,11 @@ jobs:
           repository: inpsyde/reusable-workflows
           path: workflow-repo
 
-      - name: Add release.config.js file if not provided
+      - name: Add release.config.js file if not provided and customize it
         if: ${{ env.HAS_CONFIG == 'false' }}
         run: |
           cp ${GITHUB_WORKSPACE}/workflow-repo/templates/automatic-release/release.config.js .
+          sed -i 's/index\.php/${{inputs.MAIN_FILENAME}}/g' release.config.js
 
       - name: Remove the workflow repository
         if: ${{ env.HAS_CONFIG == 'false' }}
