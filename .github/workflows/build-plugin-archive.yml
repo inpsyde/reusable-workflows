@@ -249,6 +249,12 @@ jobs:
       - name: Set plugin version header
         run: 'sed -Ei "s/Version: .*/Version: ${PLUGIN_VERSION}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
 
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: wp-cli
+
       - name: Install dist-archive command
         run: wp package install wp-cli/dist-archive-command
 
