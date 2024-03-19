@@ -129,7 +129,7 @@ jobs:
 
       - name: Set artifact name
         id: set-artifact-name
-        run: echo "artifact=${{ steps.plugin-data.outputs.archive-name }}" >> $GITHUB_OUTPUT
+        run: echo "artifact=${{ steps.plugin-data.outputs.archive-name }}-deps" >> $GITHUB_OUTPUT
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -225,7 +225,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ needs.create_archive.outputs.artifact }}-dist
+          name: ${{ steps.set-artifact-name.outputs.artifact }}
           path: .
   create-plugin-archive:
     timeout-minutes: 5
@@ -237,7 +237,7 @@ jobs:
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
-          name: ${{ needs.checkout-dependencies.outputs.artifact }}
+          name: ${{ needs.run-build-tools.outputs.artifact }}
       - name: Add commit hash to plugin header
         run: 'sed -Ei "s/SHA: .*/SHA: ${GIT_SHA}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
 
