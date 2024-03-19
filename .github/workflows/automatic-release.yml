@@ -58,7 +58,6 @@ jobs:
         if: ${{ env.HAS_CONFIG == 'false' }}
         run: |
           cp ${GITHUB_WORKSPACE}/workflow-repo/templates/automatic-release/release.config.js .
-          cat release.config.js
 
       - name: Remove the workflow repository
         if: ${{ env.HAS_CONFIG == 'false' }}
