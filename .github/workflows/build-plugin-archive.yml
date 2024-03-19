@@ -135,7 +135,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.set-artifact-name.outputs.artifact }}
-          path: ./*
+          path: |
+            ./*
+            !./.git
+            !./.ddev
   run-build-tools:
     timeout-minutes: 5
     runs-on: ubuntu-latest
