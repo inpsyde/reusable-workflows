@@ -2,7 +2,7 @@ name: Automatic Release
 on:
   workflow_call:
     inputs:
-      MAIN_FILENAME:
+      PLUGIN_MAIN_FILENAME:
         description: Main file name where the WordPress plugin header is present
         required: false
         default: 'index.php'
@@ -64,7 +64,7 @@ jobs:
         if: ${{ env.HAS_CONFIG == 'false' }}
         run: |
           cp ${GITHUB_WORKSPACE}/workflow-repo/templates/automatic-release/release.config.js .
-          sed -i 's/index\.php/${{inputs.MAIN_FILENAME}}/g' release.config.js
+          sed -i 's/index\.php/${{inputs.PLUGIN_MAIN_FILENAME}}/g' release.config.js
 
       - name: Remove the workflow repository
         if: ${{ env.HAS_CONFIG == 'false' }}

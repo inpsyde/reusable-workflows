@@ -44,9 +44,9 @@ jobs:
 
 ### Inputs
 
-| Name            | Required | Default       | Description                                                 |
-|-----------------|----------|---------------|-------------------------------------------------------------|
-| `MAIN_FILENAME` | false    | `'index.php'` | Main file name where the WordPress plugin header is present |
+| Name                   | Required | Default       | Description                                                 |
+|------------------------|----------|---------------|-------------------------------------------------------------|
+| `PLUGIN_MAIN_FILENAME` | false    | `'index.php'` | Main file name where the WordPress plugin header is present |
 
 
 
@@ -69,7 +69,7 @@ jobs:
   release:
     uses: inpsyde/reusable-workflows/.github/workflows/automatic-release.yml@main
     with:
-      MAIN_FILENAME: 'foobar.php'
+      PLUGIN_MAIN_FILENAME: 'foobar.php'
     secrets:
       GITHUB_USER_TOKEN: ${{ secrets.WRITE_TOKEN }}
 ```
