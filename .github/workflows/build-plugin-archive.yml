@@ -112,7 +112,7 @@ jobs:
           tools: wp-cli
 
       - name: Install Composer dependencies without dev dependencies
-        uses: ramsey/composer-install@v2
+        uses: ramsey/composer-install@v3
         with:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
 
