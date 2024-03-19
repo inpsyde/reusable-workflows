@@ -139,6 +139,7 @@ jobs:
   run-build-tools:
     timeout-minutes: 5
     runs-on: ubuntu-latest
+    needs: checkout-dependencies
     env:
       NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
       NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
@@ -206,6 +207,7 @@ jobs:
   create-plugin-archive:
     timeout-minutes: 5
     runs-on: ubuntu-latest
+    needs: run-build-tools
     env:
       ARCHIVE_NAME: ${{ inputs.ARCHIVE_NAME }}
     steps:
