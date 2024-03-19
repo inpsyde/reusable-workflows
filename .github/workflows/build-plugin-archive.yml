@@ -25,7 +25,7 @@ on:
         type: string
       COMPOSER_ARGS:
         description: Set of arguments passed to Composer.
-        default: '--no-dev --no-scripts --prefer-dist --optimize-autoloader'
+        default: '--no-dev --prefer-dist --optimize-autoloader'
         required: false
         type: string
       PHP_VERSION:
@@ -78,14 +78,12 @@ on:
         value: ${{ jobs.create-plugin-archive.outputs.artifact }}
 
 jobs:
-  create-plugin-archive:
+  checkout-dependencies:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     env:
       NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
       NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
-      NODE_CACHE_MODE: ''
-      ARCHIVE_NAME: ${{ inputs.ARCHIVE_NAME }}
       PLUGIN_FOLDER_NAME: ${{ inputs.PLUGIN_FOLDER_NAME }}
       ENV_VARS: ${{ secrets.ENV_VARS }}
       GIT_SHA: ${{ github.sha }}
@@ -118,28 +116,40 @@ jobs:
               .parse(process.env.ENV_VARS)
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
-      - name: Set up node cache mode
-        run: |
-          if [ "${{ inputs.PACKAGE_MANAGER }}" == 'npm' ] && { [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ]; }; then
-            echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV
-          elif [ "${{ inputs.PACKAGE_MANAGER }}" == 'yarn' ] && [ -f "${GITHUB_WORKSPACE}/yarn.lock" ]; then
-            echo "NODE_CACHE_MODE=yarn" >> $GITHUB_ENV
-          else
-            echo "No lock files found or unknown package manager"
-          fi
-
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.PHP_VERSION }}
           tools: wp-cli
 
-      - name: Install Composer dependencies
-        # ⬑ The idea is to ensure we have non-production tools like Composer Asset Compiler and WordPress Translation Downloader available
+      - name: Install Composer dependencies without dev dependencies
         uses: ramsey/composer-install@v2
         with:
-          composer-options: --prefer-dist
+          composer-options: ${{ inputs.COMPOSER_ARGS }}
 
+      - name: Set artifact name
+        id: set-artifact-name
+        run: echo "artifact=${{ steps.plugin-data.outputs.archive-name }}" >> $GITHUB_OUTPUT
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.set-artifact-name.outputs.artifact }}
+          path: dist/*
+  run-build-tools:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      NODE_CACHE_MODE: ''
+    outputs:
+      artifact: ${{ steps.set-artifact-name.outputs.artifact }}
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.checkout-dependencies.outputs.artifact }}
       - name: Check optional Composer build tools
         id: composer-tools
         run: |
@@ -150,6 +160,16 @@ jobs:
           }
           echo "assets-compiler=$( hasDep inpsyde/composer-assets-compiler )" >> $GITHUB_OUTPUT
           echo "translation-downloader=$( hasDep inpsyde/wp-translation-downloader )" >> $GITHUB_OUTPUT
+
+      - name: Set up node cache mode
+        run: |
+          if [ "${{ inputs.PACKAGE_MANAGER }}" == 'npm' ] && { [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ]; }; then
+            echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV
+          elif [ "${{ inputs.PACKAGE_MANAGER }}" == 'yarn' ] && [ -f "${GITHUB_WORKSPACE}/yarn.lock" ]; then
+            echo "NODE_CACHE_MODE=yarn" >> $GITHUB_ENV
+          else
+            echo "No lock files found or unknown package manager"
+          fi
 
       - name: Check for package.json
         id: check-for-package
@@ -175,13 +195,24 @@ jobs:
       - name: Run WordPress Translation Downloader
         if: steps.composer-tools.outputs.translation-downloader == '0'
         run: composer wp-translation-downloader:download
-
-      - name: Install Composer dependencies without dev dependencies
-        # ⬑ Now we want to get rid of dev dependencies and most probably skip composer scripts
-        uses: ramsey/composer-install@v2
+      - name: Set artifact name
+        id: set-artifact-name
+        run: echo "artifact=${{ needs.checkout-dependencies.outputs.artifact }}-built" >> $GITHUB_OUTPUT
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
-          composer-options: ${{ inputs.COMPOSER_ARGS }}
-
+          name: ${{ needs.create_archive.outputs.artifact }}-dist
+          path: .
+  create-plugin-archive:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    env:
+      ARCHIVE_NAME: ${{ inputs.ARCHIVE_NAME }}
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.checkout-dependencies.outputs.artifact }}
       - name: Add commit hash to plugin header
         run: 'sed -Ei "s/SHA: .*/SHA: ${GIT_SHA}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
 
@@ -193,7 +224,7 @@ jobs:
 
       - name: Execute custom code before archive creation
         run: |
-            ${{ inputs.PRE_SCRIPT }}
+          ${{ inputs.PRE_SCRIPT }}
 
       - name: Run WP-CLI command
         run: wp dist-archive . ./archive.zip --plugin-dirname=${{ steps.plugin-folder-name.outputs.plugin-folder-name }}
@@ -210,4 +241,3 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.set-artifact-name.outputs.artifact }}
-          path: dist/*
