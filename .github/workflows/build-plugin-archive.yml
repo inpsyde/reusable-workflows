@@ -208,7 +208,7 @@ jobs:
       - name: Install Composer Asset Compiler
         if: steps.composer-tools.outputs.assets-compiler == '0' && steps.check-for-package.outputs.has_package == 'true'
         run: |
-          composer global config --no-plugins allow-plugins.inpsyde/composer-assets-compiler
+          composer global config --no-plugins --no-interaction allow-plugins.inpsyde/composer-assets-compiler true
           composer global require inpsyde/composer-assets-compiler
       - name: Run Composer Asset Compiler
         if: steps.composer-tools.outputs.assets-compiler == '0' && steps.check-for-package.outputs.has_package == 'true'
@@ -217,7 +217,7 @@ jobs:
       - name: Install WordPress Translation Downloader
         if: steps.composer-tools.outputs.translation-downloader == '0'
         run: |
-          composer global config --no-plugins allow-plugins.inpsyde/wp-translation-downloader
+          composer global config --no-plugins --no-interaction allow-plugins.inpsyde/wp-translation-downloader true
           composer global require inpsyde/wp-translation-downloader
       - name: Run WordPress Translation Downloader
         if: steps.composer-tools.outputs.translation-downloader == '0'
