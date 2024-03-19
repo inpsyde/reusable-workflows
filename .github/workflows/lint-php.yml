@@ -5,7 +5,7 @@ on:
     inputs:
       PHP_VERSION:
         description: PHP version with which the scripts are executed.
-        default: '8.0'
+        default: '8.2'
         required: false
         type: string
       COMPOSER_ARGS:

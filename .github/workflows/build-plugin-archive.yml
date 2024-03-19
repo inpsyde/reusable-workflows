@@ -30,7 +30,7 @@ on:
         type: string
       PHP_VERSION:
         description: PHP version to use during packaging.
-        default: "8.0"
+        default: '8.2'
         required: false
         type: string
       ARCHIVE_NAME:
