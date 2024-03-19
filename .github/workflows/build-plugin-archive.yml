@@ -154,13 +154,29 @@ jobs:
       - name: Check optional Composer build tools
         id: composer-tools
         run: |
+          hasAssetConfig(){
+            test -f assets-compiler.json
+            local EXIT=$?
+            if [ ! $EXIT ]; then
+              echo "$EXIT"
+              exit 0
+            fi
+            jq '.extra | has("composer-asset-compiler")' < composer.json >/dev/null 2>&1
+            local EXIT=$?
+            echo "$EXIT"
+          }
+          hasTranslateConfig(){
+            jq '.extra | has("wp-translation-downloader")' < composer.json >/dev/null 2>&1
+            local EXIT=$?
+            echo "$EXIT"
+          }
           hasDep(){
             composer show -i -N -D --strict "${1}" >/dev/null 2>&1
             local EXIT=$?
             echo "$EXIT"
           }
-          echo "assets-compiler=$( hasDep inpsyde/composer-assets-compiler )" >> $GITHUB_OUTPUT
-          echo "translation-downloader=$( hasDep inpsyde/wp-translation-downloader )" >> $GITHUB_OUTPUT
+          echo "assets-compiler=$( hasAssetConfig )" >> $GITHUB_OUTPUT
+          echo "translation-downloader=$( hasTranslateConfig )" >> $GITHUB_OUTPUT
 
       - name: Set up node cache mode
         run: |
@@ -189,13 +205,20 @@ jobs:
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
           cache: ${{ env.NODE_CACHE_MODE }}
 
+      - name: Install Composer Asset Compiler
+        if: steps.composer-tools.outputs.assets-compiler == '0' && steps.check-for-package.outputs.has_package == 'true'
+        run: composer global require inpsyde/composer-assets-compiler
       - name: Run Composer Asset Compiler
         if: steps.composer-tools.outputs.assets-compiler == '0' && steps.check-for-package.outputs.has_package == 'true'
         run: composer compile-assets ${{ inputs.COMPILE_ASSETS_ARGS }}
 
+      - name: Install WordPress Translation Downloader
+        if: steps.composer-tools.outputs.translation-downloader == '0'
+        run: composer global require inpsyde/wp-translation-downloader
       - name: Run WordPress Translation Downloader
         if: steps.composer-tools.outputs.translation-downloader == '0'
         run: composer wp-translation-downloader:download
+
       - name: Set artifact name
         id: set-artifact-name
         run: echo "artifact=${{ needs.checkout-dependencies.outputs.artifact }}-built" >> $GITHUB_OUTPUT
