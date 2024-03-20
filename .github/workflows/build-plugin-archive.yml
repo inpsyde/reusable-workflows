@@ -83,7 +83,6 @@ jobs:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     env:
-      PLUGIN_FOLDER_NAME: ${{ inputs.PLUGIN_FOLDER_NAME }}
       ENV_VARS: ${{ secrets.ENV_VARS }}
       COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
       # Disables symlinking of local path repositories.
@@ -235,6 +234,7 @@ jobs:
     needs: run-build-tools
     env:
       ARCHIVE_NAME: ${{ inputs.ARCHIVE_NAME }}
+      PLUGIN_FOLDER_NAME: ${{ inputs.PLUGIN_FOLDER_NAME }}
       GIT_SHA: ${{ github.sha }}
       PLUGIN_VERSION: ${{ inputs.PLUGIN_VERSION }}
     steps:
