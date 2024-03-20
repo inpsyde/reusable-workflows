@@ -163,13 +163,14 @@ jobs:
             local EXIT=$?
             echo "$EXIT"
           }
-          hasDep(){
-            composer show -i -N -D --strict "${1}" >/dev/null 2>&1
+          hasScoperConfig(){
+            test -f scoper.inc.php
             local EXIT=$?
             echo "$EXIT"
           }
           echo "assets-compiler=$( hasAssetConfig )" >> $GITHUB_OUTPUT
           echo "translation-downloader=$( hasTranslateConfig )" >> $GITHUB_OUTPUT
+          echo "php-scoper=$( hasScoperConfig )" >> $GITHUB_OUTPUT
 
       - name: Set up node cache mode
         run: |
@@ -217,6 +218,19 @@ jobs:
         if: steps.composer-tools.outputs.translation-downloader == '0'
         run: composer wp-translation-downloader:download
 
+      - name: Install PHP Scoper
+        if: steps.composer-tools.outputs.php-scoper == '0'
+        run: |
+          composer global require humbug/php-scoper
+      - name: Run PHP Scoper
+        if: steps.composer-tools.outputs.php-scoper == '0'
+        run: |
+          "$(composer global config bin-dir --absolute --quiet)/php-scoper add-prefix --force --output-dir build"
+          composer --working-dir=build dump-autoload -o
+      - name: Move unchanged code to build directory
+        if: steps.composer-tools.outputs.php-scoper != '0'
+        run: mv * build 2>/dev/null
+
       - name: Set artifact name
         id: set-artifact-name
         run: echo "artifact=interim-built" >> $GITHUB_OUTPUT
@@ -225,8 +239,8 @@ jobs:
         with:
           name: ${{ steps.set-artifact-name.outputs.artifact }}
           path: |
-            .
-            !**/node_modules
+            build/
+            !build/**/node_modules
   create-plugin-archive:
     name: Create build archive
     timeout-minutes: 5
