@@ -144,6 +144,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{ needs.checkout-dependencies.outputs.artifact }}
+      - name: Setup PHP with tools
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: humbug/php-scoper
       - name: Check optional Composer build tools
         id: composer-tools
         run: |
@@ -218,14 +223,10 @@ jobs:
         if: steps.composer-tools.outputs.translation-downloader == '0'
         run: composer wp-translation-downloader:download
 
-      - name: Install PHP Scoper
-        if: steps.composer-tools.outputs.php-scoper == '0'
-        run: |
-          composer global require humbug/php-scoper
       - name: Run PHP Scoper
         if: steps.composer-tools.outputs.php-scoper == '0'
         run: |
-          "$(composer global config bin-dir --absolute --quiet)/php-scoper add-prefix --force --output-dir build"
+          php-scoper add-prefix --force --output-dir build
           composer --working-dir=build dump-autoload -o
       - name: Move unchanged code to build directory
         if: steps.composer-tools.outputs.php-scoper != '0'
