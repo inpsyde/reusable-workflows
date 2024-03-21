@@ -46,7 +46,8 @@ jobs:
 | `NPM_REGISTRY_DOMAIN` | `"https://npm.pkg.github.com/"`                               | Domain of the private npm registry                                                             |
 | `PACKAGE_MANAGER`     | `"yarn"`                                                      | Package manager with which the dependencies should be installed (`npm` or `yarn`)              |
 | `COMPOSER_ARGS`       | `'--no-dev --no-scripts --prefer-dist --optimize-autoloader'` | Set of arguments passed to Composer                                                            |
-| `PHP_VERSION`         | `"8.0"`                                                       | PHP version to use during packaging                                                            |
+| `PHP_VERSION`         | `"8.0"`                                                       | PHP version to use when gathering production dependencies                                      |
+| `PHP_VERSION_BUILD`   | `"8.0"`                                                       | PHP version to use when executing build tools                                                  |
 | `ARCHIVE_NAME`        | `""`                                                          | The name of the zip archive (falls back to the repository name)                                |
 | `PLUGIN_MAIN_FILE`    | `"index.php"`                                                 | The name of the main plugin file                                                               |
 | `PLUGIN_FOLDER_NAME`  | `""`                                                          | The name of the plugin folder (falls back to the archive name, if set, or the repository name) |
