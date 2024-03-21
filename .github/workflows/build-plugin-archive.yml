@@ -35,7 +35,7 @@ on:
         type: string
       PHP_VERSION_BUILD:
         description: PHP version to use when executing build tools.
-        default: "8.0"
+        default: "8.2"
         required: false
         type: string
       ARCHIVE_NAME:
@@ -152,7 +152,7 @@ jobs:
       - name: Setup PHP with tools
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: ${{ inputs.PHP_VERSION_BUILD }}
           tools: humbug/php-scoper
       - name: Check optional Composer build tools
         id: composer-tools
