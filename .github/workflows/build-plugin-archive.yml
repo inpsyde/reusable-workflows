@@ -200,15 +200,13 @@ jobs:
           composer global require inpsyde/composer-assets-compiler
           composer compile-assets ${{ inputs.COMPILE_ASSETS_ARGS }}
 
-      - name: Install WordPress Translation Downloader
+      - name: Install and run WordPress Translation Downloader
         if: steps.composer-tools.outputs.translation-downloader == '0'
         run: |
           composer global config --no-plugins --no-interaction allow-plugins.composer/installers true
           composer global config --no-plugins --no-interaction allow-plugins.inpsyde/wp-translation-downloader true
           composer global require inpsyde/wp-translation-downloader
-      - name: Run WordPress Translation Downloader
-        if: steps.composer-tools.outputs.translation-downloader == '0'
-        run: composer wp-translation-downloader:download
+          composer wp-translation-downloader:download
 
       - name: Set artifact name
         id: set-artifact-name
