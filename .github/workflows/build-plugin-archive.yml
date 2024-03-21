@@ -163,11 +163,6 @@ jobs:
             local EXIT=$?
             echo "$EXIT"
           }
-          hasDep(){
-            composer show -i -N -D --strict "${1}" >/dev/null 2>&1
-            local EXIT=$?
-            echo "$EXIT"
-          }
           echo "assets-compiler=$( hasAssetConfig )" >> $GITHUB_OUTPUT
           echo "translation-downloader=$( hasTranslateConfig )" >> $GITHUB_OUTPUT
 
