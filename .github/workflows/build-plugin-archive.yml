@@ -193,14 +193,12 @@ jobs:
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
           cache: ${{ env.NODE_CACHE_MODE }}
 
-      - name: Install Composer Asset Compiler
-        if: steps.composer-tools.outputs.assets-compiler == '0' && steps.check-for-package.outputs.has_package == 'true'
+      - name: Install and run Composer Asset Compiler
+        if: steps.composer-tools.outputs.assets-compiler == '0'
         run: |
           composer global config --no-plugins --no-interaction allow-plugins.inpsyde/composer-assets-compiler true
           composer global require inpsyde/composer-assets-compiler
-      - name: Run Composer Asset Compiler
-        if: steps.composer-tools.outputs.assets-compiler == '0' && steps.check-for-package.outputs.has_package == 'true'
-        run: composer compile-assets ${{ inputs.COMPILE_ASSETS_ARGS }}
+          composer compile-assets ${{ inputs.COMPILE_ASSETS_ARGS }}
 
       - name: Install WordPress Translation Downloader
         if: steps.composer-tools.outputs.translation-downloader == '0'
