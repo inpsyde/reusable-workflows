@@ -181,17 +181,8 @@ jobs:
             echo "No lock files found or unknown package manager"
           fi
 
-      - name: Check for package.json
-        id: check-for-package
-        run: |
-          if [ -f package.json ]; then
-            echo "has_package=true" >> $GITHUB_OUTPUT
-          else
-            echo "has_package=false" >> $GITHUB_OUTPUT
-          fi
-
       - name: Set up node
-        if: steps.check-for-package.outputs.has_package == 'true'
+        if: steps.composer-tools.outputs.assets-compiler == '0'
         uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.NODE_VERSION }}
