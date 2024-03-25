@@ -12,15 +12,14 @@ semantic-release plugins:
 - [npm](https://github.com/semantic-release/npm)
 - [exec](https://github.com/semantic-release/exec)
 
-Otherwise, the workflow will create the release with
-a [standard set of configurations](../templates/automatic-release/release.config.js), updating the version in the
+Otherwise, the workflow will create the release with a [standard set of configurations](../templates/automatic-release/release.config.js), updating the version in the
 following files:
 
 - `CHANGELOG.md`
 - `composer.json`
 - `package-lock.json`
 - `package.json`
-- `style.css` or `index.php`
+- `style.css` or the main plugin file (automatically discovered by the workflow)
 
 By default, every push to the `main` and `next` branches will release a stable version, and every push to the `alpha`
 and `beta` branches will create a pre-release version.
@@ -53,8 +52,9 @@ the [release.config.js file](https://github.com/inpsyde/reusable-workflows/blob/
 file must be added in your repository and the `tagName` format must be modified accordingly.
 
 ### Configuration parameters
+## Configuration parameters
 
-#### Secrets
+### Secrets
 
 | Name                | Required | Default | Description                                                                                       |
 |---------------------|----------|---------|---------------------------------------------------------------------------------------------------|
