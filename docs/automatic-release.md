@@ -19,7 +19,7 @@ following files:
 - `composer.json`
 - `package-lock.json`
 - `package.json`
-- `style.css`, `index.php` or your custom main file provided as input to the workflow
+- `style.css`, `index.php` or your custom main file which will be automatically discovered by the workflow
 
 By default, every push to the `main` and `next` branches will release a stable version, and every push to the `alpha`
 and `beta` branches will create a pre-release version.
@@ -42,14 +42,6 @@ jobs:
 
 ## Configuration parameters
 
-### Inputs
-
-| Name                   | Required | Default       | Description                                                 |
-|------------------------|----------|---------------|-------------------------------------------------------------|
-| `PLUGIN_MAIN_FILENAME` | false    | `'index.php'` | Main file name where the WordPress plugin header is present |
-
-
-
 ### Secrets
 
 | Name                | Required | Default | Description                                                                                       |
@@ -68,8 +60,6 @@ on:
 jobs:
   release:
     uses: inpsyde/reusable-workflows/.github/workflows/automatic-release.yml@main
-    with:
-      PLUGIN_MAIN_FILENAME: 'foobar.php'
     secrets:
       GITHUB_USER_TOKEN: ${{ secrets.WRITE_TOKEN }}
 ```
