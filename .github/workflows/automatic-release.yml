@@ -54,7 +54,7 @@ jobs:
           repository: inpsyde/reusable-workflows
           path: workflow-repo
 
-      - name: Add release.config.js file if not provided and customize it
+      - name: Add and customize release.config.js file if not provided
         if: ${{ env.HAS_CONFIG == 'false' }}
         run: |
           cp ${GITHUB_WORKSPACE}/workflow-repo/templates/automatic-release/release.config.js .

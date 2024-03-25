@@ -19,7 +19,7 @@ following files:
 - `composer.json`
 - `package-lock.json`
 - `package.json`
-- `style.css`, `index.php` or your custom main file which will be automatically discovered by the workflow
+- `style.css` or the main plugin file (automatically discovered by the workflow)
 
 By default, every push to the `main` and `next` branches will release a stable version, and every push to the `alpha`
 and `beta` branches will create a pre-release version.
