@@ -58,7 +58,7 @@ jobs:
         if: ${{ env.HAS_CONFIG == 'false' }}
         run: |
           cp ${GITHUB_WORKSPACE}/workflow-repo/templates/automatic-release/release.config.js .
-          FILE=$(find . -maxdepth 1 -type f -name '*.php' -exec grep -l 'Plugin Name:' {} + | xargs -I{} basename {}) || true
+          FILE=$(find . -maxdepth 1 -type f -name '*.php' -exec grep -l 'Plugin Name:' {} + | xargs -I{} basename {}) || false
           [ -n "$FILE" ] && sed "s/index\.php/$FILE/g" -i release.config.js
 
       - name: Remove the workflow repository
