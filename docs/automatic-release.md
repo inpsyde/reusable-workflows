@@ -19,7 +19,7 @@ following files:
 - `composer.json`
 - `package-lock.json`
 - `package.json`
-- `style.css` or `index.php`
+- `style.css` or the main plugin file (automatically discovered by the workflow)
 
 By default, every push to the `main` and `next` branches will release a stable version, and every push to the `alpha`
 and `beta` branches will create a pre-release version.
@@ -40,9 +40,9 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/automatic-release.yml@main
 ```
 
-### Configuration parameters
+## Configuration parameters
 
-#### Secrets
+### Secrets
 
 | Name                | Required | Default | Description                                                                                       |
 |---------------------|----------|---------|---------------------------------------------------------------------------------------------------|
