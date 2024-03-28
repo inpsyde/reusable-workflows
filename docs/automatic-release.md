@@ -40,18 +40,6 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/automatic-release.yml@main
 ```
 
-## Pre-releases on non-standard branches
-
-Composer has some boundaries on tag names, because it uses under the hood the PHP function `version_compare()`.
-Semantic-release doesn't account for these boundaries, so it can happen a created tag is not valid for Composer
-packages.
-
-This workflow already ships the solution in case you are using it after the [build-and-push-assets](https://github.com/inpsyde/reusable-workflows/blob/main/.github/workflows/build-and-push-assets.yml) one.
-If a custom solution is needed,
-the [release.config.js file](https://github.com/inpsyde/reusable-workflows/blob/main/templates/automatic-release/release.config.js)
-file must be added in your repository and the `tagName` format must be modified accordingly.
-
-### Configuration parameters
 ## Configuration parameters
 
 ### Secrets
