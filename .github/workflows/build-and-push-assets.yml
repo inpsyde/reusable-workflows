@@ -69,7 +69,12 @@ on:
         required: false
         type: string
       USE_BUILT_BRANCH:
-        description: Toggle to activate a target branch where compiled assets are pushed and the tag is moved to.
+        description: On push-to-branch events, to activate a target branch where compiled assets are pushed.
+        type: boolean
+        default: false
+        required: false
+      USE_RELEASE_BRANCH:
+        description: On tag events, to activate a target branch where compiled assets are pushed and the tag is moved to.
         type: boolean
         default: false
         required: false
@@ -143,13 +148,20 @@ jobs:
       LOCK_FILE: ''                                    # we'll override after checking files
       NO_CHANGES: ''                                   # we'll override if no changes to commit
       BUILT_BRANCH_SUFFIX: '-built'
+      RELEASE_BRANCH_NAME: 'release'
       USE_BUILT_BRANCH: ${{ inputs.USE_BUILT_BRANCH }}
+      USE_RELEASE_BRANCH: ${{ inputs.USE_RELEASE_BRANCH }}
     steps:
       - name: BUILT_BRANCH_SUFFIX deprecation notice
         if: ${{ inputs.BUILT_BRANCH_SUFFIX != '' }}
         run: |
           echo "::notice::The BUILT_BRANCH_SUFFIX variable is deprecated and will be removed soon. If you use it, please update your workflow to use USE_BUILT_BRANCH."
           echo "USE_BUILT_BRANCH=true" >> $GITHUB_ENV
+      - name: RELEASE_BRANCH_NAME deprecation notice
+        if: ${{ inputs.RELEASE_BRANCH_NAME != '' }}
+        run: |
+          echo "::notice::The RELEASE_BRANCH_NAME variable is deprecated and will be removed soon. If you use it, please update your workflow to use USE_RELEASE_BRANCH."
+          echo "USE_RELEASE_BRANCH=true" >> $GITHUB_ENV
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -201,7 +213,7 @@ jobs:
         if: ${{ github.ref_type == 'tag' }}
         run: |
           echo "TAG_NAME=$(echo ${GITHUB_REF#refs/*/})" >> $GITHUB_ENV
-          echo "RELEASE_BRANCH_ENABLED=${{ (needs.checks.outputs.is_development_branch_last_commit == 'yes' && inputs.RELEASE_BRANCH_NAME != '') && 'yes' || 'no' }}" >> $GITHUB_ENV
+          echo "RELEASE_BRANCH_ENABLED=${{ (needs.checks.outputs.is_development_branch_last_commit == 'yes' && env.USE_RELEASE_BRANCH == true) && 'yes' || 'no' }}" >> $GITHUB_ENV
 
       - name: Checkout and merge the built branch
         if: ${{ github.ref_type == 'branch' }}
@@ -217,7 +229,7 @@ jobs:
         if: ${{ github.ref_type == 'tag' && env.RELEASE_BRANCH_ENABLED == 'yes' }}
         run: |
           git checkout ${{ github.event.repository.default_branch }}
-          git checkout ${{ inputs.RELEASE_BRANCH_NAME }} || git checkout -b ${{ inputs.RELEASE_BRANCH_NAME }}
+          git checkout ${{ env.RELEASE_BRANCH_NAME }} || git checkout -b ${{ env.RELEASE_BRANCH_NAME }}
           git merge ${{ github.event.repository.default_branch }}
 
       - name: Checkout temporary tag branch
