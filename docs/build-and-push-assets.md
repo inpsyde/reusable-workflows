@@ -108,7 +108,7 @@ This is not the simplest possible example, but it showcases all the recommendati
 | `COMPILE_SCRIPT_DEV`  | `'build:dev'`                 | Script added to `npm run` or `yarn` to build development assets                                                                 |
 | `MODE`                | `''`                          | Mode for compiling assets (`prod` or `dev`)                                                                                     |
 | `ASSETS_TARGET_PATHS` | `'./assets'`                  | Target path(s) for compiled assets                                                                                              |
-| `USE_BUILT_BRANCH`    | `false`                       | Suffix to calculate the target branch for pushing assets on the `branch` event                                                  |
+| `USE_BUILT_BRANCH`    | `false`                       | On push-to-branch events, to activate a target branch where compiled assets are pushed                                          |
 | `USE_RELEASE_BRANCH`  | `false`                       | On tag events, target `release` branch where compiled assets are pushed and the tag is moved to                                 |
 | `PHP_VERSION`         | `'8.0'`                       | PHP version with which the PHP tools are to be executed                                                                         |
 | `PHP_TOOLS`           | `''`                          | PHP tools supported by [shivammathur/setup-php](https://github.com/shivammathur/setup-php#wrench-tools-support) to be installed |
