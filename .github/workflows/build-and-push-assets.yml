@@ -213,7 +213,7 @@ jobs:
         if: ${{ github.ref_type == 'tag' }}
         run: |
           echo "TAG_NAME=$(echo ${GITHUB_REF#refs/*/})" >> $GITHUB_ENV
-          echo "RELEASE_BRANCH_ENABLED=${{ (needs.checks.outputs.is_development_branch_last_commit == 'yes' && env.USE_RELEASE_BRANCH == true) && 'yes' || 'no' }}" >> $GITHUB_ENV
+          echo "RELEASE_BRANCH_ENABLED=${{ (needs.checks.outputs.is_development_branch_last_commit == 'yes' && env.USE_RELEASE_BRANCH) && 'yes' || 'no' }}" >> $GITHUB_ENV
 
       - name: Checkout and merge the built branch
         if: ${{ github.ref_type == 'branch' }}
@@ -283,7 +283,7 @@ jobs:
           git commit -m "[BOT] Add compiled assets for #${{ github.ref }}" --no-verify || ((echo "NO_CHANGES=yes" >> $GITHUB_ENV) && (echo "No changes to commit"))
 
       - name: Git push for branch
-        if: ${{ github.ref_type == 'branch' && (env.NO_CHANGES != 'yes' || env.USE_BUILT_BRANCH != '') }}
+        if: ${{ github.ref_type == 'branch' && (env.NO_CHANGES != 'yes' || env.USE_BUILT_BRANCH) }}
         run: git push
 
       - name: Git push for tag
