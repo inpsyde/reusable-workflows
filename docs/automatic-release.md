@@ -44,10 +44,10 @@ jobs:
 
 ### Secrets
 
-| Name                | Required | Default | Description                                                                                       |
-|---------------------|----------|---------|---------------------------------------------------------------------------------------------------|
-| `GITHUB_USER_TOKEN` | false    | `''`    | Authentication token with write permission needed by the release bot (falls back to GITHUB_TOKEN) |
-| `NPM_TOKEN`         | false    | `''`    | Authentication token with publish permission needed by the release bot to publish to the npm registry (falls back to GITHUB_TOKEN) |
+| Name                   | Required | Default | Description                                                                                                                        |
+|------------------------|----------|---------|------------------------------------------------------------------------------------------------------------------------------------|
+| `GITHUB_USER_TOKEN`    | false    | `''`    | Authentication token with write permission needed by the release bot (falls back to GITHUB_TOKEN)                                  |
+| `NPM_REGISTRY_TOKEN`   | false    | `''`    | Authentication token with publish permission needed by the release bot to publish to the npm registry (falls back to GITHUB_TOKEN) |
 
 **Example with configuration parameters:**
 
