@@ -285,7 +285,7 @@ you can use the branch name (i.e., `dev-main` for the `main` branch) as usual. I
 the built branch should be used. I.e., when `BUILT_BRANCH_SUFFIX` is `-built` and branch `main`,
 the `dev-main-built` branch should be used as the package version.
 
-If you defined `BUILT_BRANCH_NAME` then it wil depend on the logic in place. 
+For branches, If you defined `BUILT_BRANCH_NAME` then it will depend on the logic in place. 
 Read below for configuration examples.
 
 ---
