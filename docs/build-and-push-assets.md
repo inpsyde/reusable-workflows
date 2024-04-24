@@ -107,7 +107,7 @@ This is not the simplest possible example, but it showcases all the recommendati
 | `COMPILE_SCRIPT_PROD` | `'build'`                     | Script added to `npm run` or `yarn` to build production assets                                                                  |
 | `COMPILE_SCRIPT_DEV`  | `'build:dev'`                 | Script added to `npm run` or `yarn` to build development assets                                                                 |
 | `MODE`                | `''`                          | Mode for compiling assets (`prod` or `dev`)                                                                                     |
-| `ASSETS_TARGET_PATHS` | `'./assets'`                  | Target path(s) for compiled assets                                                                                              |
+| `ASSETS_TARGET_PATHS` | `'./assets/'`                 | Target path(s) for compiled assets. Read more below                                                                             |
 | `BUILT_BRANCH_SUFFIX` | `''`                          | Suffix to calculate the target branch for pushing assets on the `branch` event                                                  |
 | `RELEASE_BRANCH_NAME` | `''`                          | On tag events, target branch where compiled assets are pushed and the tag is moved to                                           |
 | `PHP_VERSION`         | `'8.0'`                       | PHP version with which the PHP tools are to be executed                                                                         |
@@ -173,9 +173,11 @@ jobs:
       MODE: ${{ github.ref_type == 'branch' && github.ref_name == 'production' && 'prod' || '' }}
 ```
 
-> Can I have multiple output folders for my package?
+> Can I have multiple output folders for my package, and what about files?
 
-Yes, the `inputs.ASSETS_TARGET_PATHS` accepts multiple space-separated paths:
+Yes, the `inputs.ASSETS_TARGET_PATHS` accepts multiple space-separated paths: 
+- If the path ends with a slash is treated as a folder. We will create it if it doesn't exist.
+- If the path **do not** end with a slash is treated as a file. We will create it if it doesn't exist.
 
 ```yaml
 name: Build and push assets
@@ -185,7 +187,7 @@ jobs:
   build-assets:
     uses: inpsyde/reusable-workflows/.github/workflows/build-and-push-assets.yml@main
     with:
-      ASSETS_TARGET_PATHS: "./assets ./modules/Foo/assets ./modules/Bar/assets"
+      ASSETS_TARGET_PATHS: "./assets/ ./modules/Foo/assets/ ./modules/Bar/assets/ ./my-file.txt"
     secrets:
       GITHUB_USER_EMAIL: ${{ secrets.INPSYDE_BOT_EMAIL }}
       GITHUB_USER_NAME: ${{ secrets.INPSYDE_BOT_USER }}
