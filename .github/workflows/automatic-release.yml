@@ -1,12 +1,6 @@
 name: Automatic Release
 on:
   workflow_call:
-    inputs:
-      NODE_VERSION:
-        description: Node version with which the release will be executed.
-        default: 18
-        required: false
-        type: string
     secrets:
       GITHUB_USER_TOKEN:
         description: Authentication token with write permission needed by the release bot (falls back to GITHUB_TOKEN).
@@ -23,10 +17,19 @@ jobs:
     env:
       HAS_CONFIG: false
     steps:
+      - name: Fetch semantic-release Node version
+        uses: actions/checkout@v4
+        with:
+          repository: semantic-release/semantic-release
+          sparse-checkout: |
+            package.json
+          sparse-checkout-cone-mode: false
+          path: semantic-release-repo
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ inputs.NODE_VERSION }}
+          node-version-file: semantic-release-repo/package.json
 
       - name: Install dependencies
         run: |
@@ -54,10 +57,12 @@ jobs:
           repository: inpsyde/reusable-workflows
           path: workflow-repo
 
-      - name: Add release.config.js file if not provided
+      - name: Add and customize release.config.js file if not provided
         if: ${{ env.HAS_CONFIG == 'false' }}
         run: |
           cp ${GITHUB_WORKSPACE}/workflow-repo/templates/automatic-release/release.config.js .
+          FILE=$(find . -maxdepth 1 -type f -name '*.php' -exec grep -l 'Plugin Name:' {} + | xargs -I{} basename {}) || true
+          [ -n "$FILE" ] && sed "s/index\.php/$FILE/g" -i release.config.js || true
 
       - name: Remove the workflow repository
         if: ${{ env.HAS_CONFIG == 'false' }}

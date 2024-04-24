@@ -3,7 +3,7 @@
 ## Introduction to GitHub Actions
 
 With [GitHub Actions](https://github.com/features/actions), you can create custom workflows for the
-software development lifecycle directly in your Github repository. These workflows consist of
+software development lifecycle directly in your GitHub repository. These workflows consist of
 different tasks, called actions, that can be executed automatically when certain events occur.
 
 At Inpsyde, we use GitHub Actions for a wide range of tasks. From various quality assurance tests
@@ -37,7 +37,11 @@ Please note that the individual workflows have different (optional) parameters t
 either as `input`s or `secret`s. To learn more, consult the documentation of the individual workflow
 groups here:
 
-[PHP](./docs/php.md)  
-[JavaScript](./docs/js.md)  
-[Sass](./docs/sass.md)  
-[Assets compilation](./docs/assets-compilation.md)  
+* Assets linting and formatting with [`@wordpress/scripts`](./docs/wp-scripts.md)
+* Linting, formatting, and testing tools for [PHP](./docs/php.md)
+* Unit tests for [JavaScript](./docs/js.md)
+* Assets compilation with [Composer Asset Compiler](./docs/assets-compilation.md) or
+  the [Build and push](./docs/build-and-push-assets.md) approach
+* [Create plugin archive](./docs/archive-creation.md)
+* [Automatic release](./docs/automatic-release.md)
+* [DDEV Playwright](./docs/ddev-playwright.md)

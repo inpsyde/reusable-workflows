@@ -19,7 +19,7 @@ following files:
 - `composer.json`
 - `package-lock.json`
 - `package.json`
-- `style.css` or `index.php`
+- `style.css` or the main plugin file (automatically discovered by the workflow)
 
 By default, every push to the `main` and `next` branches will release a stable version, and every push to the `alpha`
 and `beta` branches will create a pre-release version.
@@ -40,15 +40,14 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/automatic-release.yml@main
 ```
 
-### Configuration parameters
+## Configuration parameters
 
-#### Inputs
+### Secrets
 
-| Name                | Required | Default | Description                                                                                                                        |
-|---------------------|----------|---------|------------------------------------------------------------------------------------------------------------------------------------|
-| `NODE_VERSION`      | false    |18       | Node version with which the release will be executed                                                                               |
-| `GITHUB_USER_TOKEN` | false    |`''`     | Authentication token with write permission needed by the release bot (falls back to GITHUB_TOKEN)                                  |
-| `NPM_TOKEN`         | false    |`''`     | Authentication token with publish permission needed by the release bot to publish to the npm registry (falls back to GITHUB_TOKEN) |
+| Name                | Required | Default | Description                                                                                       |
+|---------------------|----------|---------|---------------------------------------------------------------------------------------------------|
+| `GITHUB_USER_TOKEN` | false    | `''`    | Authentication token with write permission needed by the release bot (falls back to GITHUB_TOKEN) |
+| `NPM_TOKEN`         | false    | `''`    | Authentication token with publish permission needed by the release bot to publish to the npm registry (falls back to GITHUB_TOKEN) |
 
 **Example with configuration parameters:**
 
@@ -62,8 +61,6 @@ on:
 jobs:
   release:
     uses: inpsyde/reusable-workflows/.github/workflows/automatic-release.yml@main
-    with:
-      NODE_VERSION: 16
     secrets:
       GITHUB_USER_TOKEN: ${{ secrets.WRITE_TOKEN }}
 ```

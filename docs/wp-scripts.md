@@ -29,11 +29,13 @@ jobs:
 | `PACKAGE_MANAGER`       | `yarn`                         | Package manager with which the dependencies should be installed (`npm` or `yarn`) |
 | `LINT_TOOLS`            | `'["js", "style", "md-docs"]'` | Array of checks to be executed by @wordpress/scripts                              |
 | `ESLINT_ARGS`           | `''`                           | Set of arguments passed to `wp-script lint-js`                                    |
-| `STYLELINT_ARGS`        | `'--formatter github'`         | Set of arguments passed to `wp-script lint-style`                                 |
-| `MARKDOWNLINT_ARGS`     | `'--ignore LICENSE.md`         | Set of arguments passed to `wp-script lint-md-docs`                               |
+| `STYLELINT_ARGS`        | `''`                           | Set of arguments passed to `wp-script lint-style`                                 |
+| `MARKDOWNLINT_ARGS`     | `''`                           | Set of arguments passed to `wp-script lint-md-docs`                               |
 | `PACKAGE_JSONLINT_ARGS` | `''`                           | Set of arguments passed to `wp-scripts lint-pkg-json`                             |
 
-> :information_source: **By default, "pkg-json" is not part of the `LINT_TOOLS` input.**
+> :information_source: **By default, "pkg-json" is not part of the `LINT_TOOLS` input.**  
+> :information_source: **The `--formatter github` flag is hardcoded into the `wp-script lint-style`
+command; it must not be passed via `STYLELINT_ARGS`.**
 
 #### Secrets
 
@@ -61,12 +63,13 @@ jobs:
     with:
       NODE_VERSION: 18
       ESLINT_ARGS: '-o eslint_report.json -f json'
-      STYLELINT_ARGS: '"./resources/**/*.scss" --formatter github'
+      STYLELINT_ARGS: '"./resources/**/*.scss"'
 ```
 
 ---
 **Note**
 
-Stylelint [requires quotes](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-scripts/#lint-style) around file glob patterns.
+Stylelint [requires quotes](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-scripts/#lint-style)
+around file glob patterns.
 
 ---

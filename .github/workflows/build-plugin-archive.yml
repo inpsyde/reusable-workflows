@@ -24,12 +24,17 @@ on:
         required: false
         type: string
       COMPOSER_ARGS:
-        description: Set of arguments passed to Composer.
-        default: '--no-dev --no-scripts --prefer-dist --optimize-autoloader'
+        description: Set of arguments passed to Composer when gathering production dependencies.
+        default: '--no-dev --prefer-dist --optimize-autoloader'
         required: false
         type: string
       PHP_VERSION:
-        description: PHP version to use during packaging.
+        description: PHP version to use when gathering production dependencies.
+        default: "8.0"
+        required: false
+        type: string
+      PHP_VERSION_BUILD:
+        description: PHP version to use when executing build tools.
         default: "8.0"
         required: false
         type: string
@@ -72,20 +77,18 @@ on:
       ENV_VARS:
         description: Additional environment variables as a JSON formatted object.
         required: false
+    outputs:
+      artifact:
+        description: The name of the generated release artifact
+        value: ${{ jobs.create-plugin-archive.outputs.artifact }}
 
 jobs:
-  create-plugin-archive:
+  checkout-dependencies:
+    name: Install production dependencies
     timeout-minutes: 5
     runs-on: ubuntu-latest
     env:
-      NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
-      NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
-      NODE_CACHE_MODE: ''
-      ARCHIVE_NAME: ${{ inputs.ARCHIVE_NAME }}
-      PLUGIN_FOLDER_NAME: ${{ inputs.PLUGIN_FOLDER_NAME }}
       ENV_VARS: ${{ secrets.ENV_VARS }}
-      GIT_SHA: ${{ github.sha }}
-      PLUGIN_VERSION: ${{ inputs.PLUGIN_VERSION }}
       COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
       # Disables symlinking of local path repositories.
       # During development, symlinking is preferable.
@@ -97,14 +100,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up archive name
-        id: plugin-data
-        run: echo "archive-name=${ARCHIVE_NAME:-${{ github.event.repository.name }}}" >> $GITHUB_OUTPUT
-
-      - name: Set up plugin folder name
-        id: plugin-folder-name
-        run: echo "plugin-folder-name=${PLUGIN_FOLDER_NAME:-${ARCHIVE_NAME:-${{ github.event.repository.name }}}}" >> $GITHUB_OUTPUT
-
       - name: Set up custom environment variables
         if: ${{ env.ENV_VARS }}
         uses: actions/github-script@v7
@@ -113,6 +108,68 @@ jobs:
             JSON
               .parse(process.env.ENV_VARS)
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.PHP_VERSION }}
+          tools: wp-cli
+
+      - name: Install Composer dependencies without dev dependencies
+        uses: ramsey/composer-install@v3
+        with:
+          composer-options: ${{ inputs.COMPOSER_ARGS }}
+
+      - name: Set artifact name
+        id: set-artifact-name
+        run: echo "artifact=interim-deps" >> $GITHUB_OUTPUT
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.set-artifact-name.outputs.artifact }}
+          path: |
+            ./*
+            !./.git
+            !./.ddev
+            !./.github
+  run-build-tools:
+    name: Process build steps
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    needs: checkout-dependencies
+    env:
+      NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      NODE_CACHE_MODE: ''
+    outputs:
+      artifact: ${{ steps.set-artifact-name.outputs.artifact }}
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.checkout-dependencies.outputs.artifact }}
+      - name: Check optional Composer build tools
+        id: composer-tools
+        run: |
+          hasAssetConfig(){
+            test -f assets-compiler.json
+            local EXIT=$?
+            if [ ! $EXIT ]; then
+              echo "$EXIT"
+              exit 0
+            fi
+            jq '.extra | has("composer-asset-compiler")' < composer.json >/dev/null 2>&1
+            local EXIT=$?
+            echo "$EXIT"
+          }
+          hasTranslateConfig(){
+            jq '.extra | has("wp-translation-downloader")' < composer.json >/dev/null 2>&1
+            local EXIT=$?
+            echo "$EXIT"
+          }
+          echo "assets-compiler=$( hasAssetConfig )" >> $GITHUB_OUTPUT
+          echo "translation-downloader=$( hasTranslateConfig )" >> $GITHUB_OUTPUT
 
       - name: Set up node cache mode
         run: |
@@ -124,59 +181,62 @@ jobs:
             echo "No lock files found or unknown package manager"
           fi
 
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ inputs.PHP_VERSION }}
-          tools: wp-cli
-
-      - name: Install Composer dependencies
-        # ⬑ The idea is to ensure we have non-production tools like Composer Asset Compiler and WordPress Translation Downloader available
-        uses: ramsey/composer-install@v2
-        with:
-          composer-options: --prefer-dist
-
-      - name: Check optional Composer build tools
-        id: composer-tools
-        run: |
-          hasDep(){
-            composer show -i -N -D --strict "${1}" >/dev/null 2>&1
-            local EXIT=$?
-            echo "$EXIT"
-          }
-          echo "assets-compiler=$( hasDep inpsyde/composer-assets-compiler )" >> $GITHUB_OUTPUT
-          echo "translation-downloader=$( hasDep inpsyde/wp-translation-downloader )" >> $GITHUB_OUTPUT
-
-      - name: Check for package.json
-        id: check-for-package
-        run: |
-          if [ -f package.json ]; then
-            echo "has_package=true" >> $GITHUB_OUTPUT
-          else
-            echo "has_package=false" >> $GITHUB_OUTPUT
-          fi
-
       - name: Set up node
-        if: steps.check-for-package.outputs.has_package == 'true'
+        if: steps.composer-tools.outputs.assets-compiler == '0'
         uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
           cache: ${{ env.NODE_CACHE_MODE }}
 
-      - name: Run Composer Asset Compiler
-        if: steps.composer-tools.outputs.assets-compiler == '0' && steps.check-for-package.outputs.has_package == 'true'
-        run: composer compile-assets ${{ inputs.COMPILE_ASSETS_ARGS }}
+      - name: Install and run Composer Asset Compiler
+        if: steps.composer-tools.outputs.assets-compiler == '0'
+        run: |
+          composer global config --no-plugins --no-interaction allow-plugins.inpsyde/composer-assets-compiler true
+          composer global require inpsyde/composer-assets-compiler
+          composer compile-assets ${{ inputs.COMPILE_ASSETS_ARGS }}
 
-      - name: Run WordPress Translation Downloader
+      - name: Install and run WordPress Translation Downloader
         if: steps.composer-tools.outputs.translation-downloader == '0'
-        run: composer wp-translation-downloader:download
+        run: |
+          composer global config --no-plugins --no-interaction allow-plugins.composer/installers true
+          composer global config --no-plugins --no-interaction allow-plugins.inpsyde/wp-translation-downloader true
+          composer global require inpsyde/wp-translation-downloader
+          composer wp-translation-downloader:download
 
-      - name: Install Composer dependencies without dev dependencies
-        # ⬑ Now we want to get rid of dev dependencies and most probably skip composer scripts
-        uses: ramsey/composer-install@v2
+      - name: Set artifact name
+        id: set-artifact-name
+        run: echo "artifact=interim-built" >> $GITHUB_OUTPUT
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
-          composer-options: ${{ inputs.COMPOSER_ARGS }}
+          name: ${{ steps.set-artifact-name.outputs.artifact }}
+          path: |
+            .
+            !**/node_modules
+  create-plugin-archive:
+    name: Create build archive
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    needs: run-build-tools
+    env:
+      ARCHIVE_NAME: ${{ inputs.ARCHIVE_NAME }}
+      PLUGIN_FOLDER_NAME: ${{ inputs.PLUGIN_FOLDER_NAME }}
+      GIT_SHA: ${{ github.sha }}
+      PLUGIN_VERSION: ${{ inputs.PLUGIN_VERSION }}
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.run-build-tools.outputs.artifact }}
+
+      - name: Set up plugin folder name
+        id: plugin-folder-name
+        run: echo "plugin-folder-name=${PLUGIN_FOLDER_NAME:-${ARCHIVE_NAME:-${{ github.event.repository.name }}}}" >> $GITHUB_OUTPUT
+
+      - name: Set up archive name
+        id: plugin-data
+        run: echo "archive-name=${ARCHIVE_NAME:-${{ github.event.repository.name }}}" >> $GITHUB_OUTPUT
 
       - name: Add commit hash to plugin header
         run: 'sed -Ei "s/SHA: .*/SHA: ${GIT_SHA}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
@@ -184,12 +244,18 @@ jobs:
       - name: Set plugin version header
         run: 'sed -Ei "s/Version: .*/Version: ${PLUGIN_VERSION}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
 
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.PHP_VERSION_BUILD }}
+          tools: wp-cli
+
       - name: Install dist-archive command
         run: wp package install wp-cli/dist-archive-command
 
       - name: Execute custom code before archive creation
         run: |
-            ${{ inputs.PRE_SCRIPT }}
+          ${{ inputs.PRE_SCRIPT }}
 
       - name: Run WP-CLI command
         run: wp dist-archive . ./archive.zip --plugin-dirname=${{ steps.plugin-folder-name.outputs.plugin-folder-name }}
@@ -203,7 +269,7 @@ jobs:
         run: echo "artifact=${{ steps.plugin-data.outputs.archive-name }}" >> $GITHUB_OUTPUT
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.set-artifact-name.outputs.artifact }}
-          path: dist/*
+          path: ./dist/*

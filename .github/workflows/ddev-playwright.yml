@@ -1,0 +1,196 @@
+name: Run Playwright tests using DDEV
+
+on:
+  workflow_call:
+    inputs:
+      PHP_VERSION:
+        description: PHP version which will override the version set in the DDEV config.
+        required: false
+        type: string
+      NODE_VERSION:
+        description: Node version which will override the version set in the DDEV config.
+        required: false
+        type: string
+      DDEV_ORCHESTRATE_CMD:
+        description: The command for setting up the DDEV website, such as `ddev orchestrate` from inpsyde/ddev-wordpress-plugin-template.
+        required: false
+        type: string
+      PLAYWRIGHT_INSTALL_CMD:
+        description: The command for installing Playwright and its dependencies, such as `yarn install && yarn playwright install --with-deps` or `ddev pw-install-host` from inpsyde/ddev-wordpress-plugin-template.
+        required: true
+        type: string
+      PLAYWRIGHT_RUN_CMD:
+        description: The command for running Playwright tests, such as `yarn playwright test` or `ddev pw-host test` from inpsyde/ddev-wordpress-plugin-template.
+        required: true
+        type: string
+      PLAYWRIGHT_DIR:
+        description: The path to the Playwright project.
+        required: false
+        default: 'tests/Playwright'
+        type: string
+      NGROK_START_CMD:
+        default: 'vendor/bin/ddev-share'
+        description: The command for starting Ngrok, such as `ddev-share` from inpsyde/ddev-tools.
+        required: false
+        type: string
+      BASEURL_ENV_NAME:
+        default: 'BASEURL'
+        description: The name of the env variable with the base URL for Playwright, used for overwriting it with the URL from Ngrok.
+        required: false
+        type: string
+    secrets:
+      COMPOSER_AUTH_JSON:
+        description: Authentication for privately hosted packages and repositories as a JSON formatted object.
+        required: false
+      NPM_REGISTRY_TOKEN:
+        description: Authentication for the private npm registry.
+        required: false
+      NGROK_AUTH_TOKEN:
+        description: Ngrok auth token; skips the installation of Ngrok if not provided.
+        required: false
+      ENV_VARS:
+        description: Additional environment variables as a JSON formatted object.
+        required: false
+      DDEV_ENV_VARS:
+        description: Additional environment variables for DDEV as a JSON formatted object.
+        required: false
+      SSH_KEY:
+        description: Private SSH key to be used to reach remote destinations.
+        required: false
+      SSH_KNOWN_HOSTS:
+        description: SSH hosts to be set in the `known_hosts` file.
+        required: false
+
+jobs:
+  ddev-playwright:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    env:
+      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      NGROK: ${{ secrets.NGROK_AUTH_TOKEN != '' }}
+      SSH_KEY: ${{ secrets.SSH_KEY }}
+      SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+    outputs:
+      artifact: ${{ steps.set-artifact-name.outputs.artifact }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up custom environment variables
+        env:
+          ENV_VARS: ${{ secrets.ENV_VARS }}
+        if: env.ENV_VARS
+        uses: actions/github-script@v7
+        with:
+          script: |
+            JSON
+              .parse(process.env.ENV_VARS)
+              .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
+            
+      - name: Set up SSH keys
+        if: ${{ env.SSH_KEY != '' }}
+        run: |
+            mkdir -p .ddev/homeadditions/.ssh
+            echo "${{ secrets.SSH_KEY }}" > .ddev/homeadditions/.ssh/id_rsa
+            echo "StrictHostKeyChecking=accept-new" > .ddev/homeadditions/.ssh/config
+            echo "CheckHostIP=no" >> .ddev/homeadditions/.ssh/config
+            echo "HashKnownHosts=no" >> .ddev/homeadditions/.ssh/config
+            chmod 700 .ddev/homeadditions/.ssh
+            chmod 600 .ddev/homeadditions/.ssh/id_rsa .ddev/homeadditions/.ssh/config
+
+      - name: Set up SSH knows hosts
+        if: ${{ env.SSH_KNOWN_HOSTS != '' }}
+        run: |
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > .ddev/homeadditions/.ssh/known_hosts
+
+      - name: Set up DDEV
+        uses: ddev/github-action-setup-ddev@v1
+        with:
+          autostart: false
+      
+      - name: Add CI env var inside DDEV
+        run: ddev config --web-environment-add="CI=true"
+
+      - name: Set up DDEV environment variables
+        env:
+          ENV_VARS: ${{ secrets.DDEV_ENV_VARS }}
+        if: env.ENV_VARS
+        uses: actions/github-script@v7
+        with:
+          script: |
+            JSON
+              .parse(process.env.ENV_VARS)
+              .forEach(envVar => {
+                core.setSecret(envVar.name);
+                core.setSecret(envVar.value);
+                exec.exec('ddev config --web-environment-add="' + envVar.name + '=' + envVar.value + '"');
+              });
+
+      - name: Add COMPOSER_AUTH into DDEV
+        env:
+          COMPOSER_AUTH_JSON: '${{ secrets.COMPOSER_AUTH_JSON }}'
+        if: env.COMPOSER_AUTH_JSON
+        run: echo '${{ env.COMPOSER_AUTH_JSON }}' > $GITHUB_WORKSPACE/auth.json
+
+      - name: Add NODE_AUTH_TOKEN into DDEV
+        env:
+          NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+        if: env.NPM_REGISTRY_TOKEN
+        run: |
+            cat <<EOF > $GITHUB_WORKSPACE/.npmrc
+            //npm.pkg.github.com/:_authToken=${{env.NPM_REGISTRY_TOKEN}}
+            @inpsyde:registry=https://npm.pkg.github.com/
+            EOF
+
+      - name: Configure DDEV PHP version
+        if: inputs.PHP_VERSION
+        run: ddev config --php-version ${{ inputs.PHP_VERSION }}
+
+      - name: Configure DDEV Node.js version
+        if: inputs.NODE_VERSION
+        run: ddev config --nodejs-version ${{ inputs.NODE_VERSION }}
+
+      - name: Start DDEV
+        run: ddev start
+
+      - name: Orchestrate DDEV
+        if: inputs.DDEV_ORCHESTRATE_CMD
+        run: ${{ inputs.DDEV_ORCHESTRATE_CMD }}
+
+      - name: Install Ngrok
+        if: env.NGROK != 'false'
+        run: curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list && sudo apt update && sudo apt install ngrok
+
+      - name: Add Ngrok auth token
+        env:
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+        if: env.NGROK != 'false'
+        run: ngrok config add-authtoken ${{ env.NGROK_AUTH_TOKEN }}
+
+      - name: Install Playwright
+        run: ${{ inputs.PLAYWRIGHT_INSTALL_CMD }}
+
+      - name: Start Ngrok
+        if: env.NGROK != 'false'
+        run: ${{ inputs.NGROK_START_CMD }}
+
+      - name: Get Ngrok URL and save in env
+        if: env.NGROK != 'false'
+        run: echo "${{ inputs.BASEURL_ENV_NAME }}=https://$( curl http://127.0.0.1:4040/api/tunnels | jq -r '.tunnels[0].public_url' | awk -F'^http[s]?://' '{print $2}' )" >> $GITHUB_ENV
+
+      - name: Run Playwright
+        run: ${{ inputs.PLAYWRIGHT_RUN_CMD }}
+
+      - name: Set artifact name
+        id: set-artifact-name
+        run: echo "artifact=playwright-report" >> $GITHUB_OUTPUT
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+            name: ${{ steps.set-artifact-name.outputs.artifact }}
+            path: |
+                ${{ inputs.PLAYWRIGHT_DIR }}/playwright-report/*
+                ${{ inputs.PLAYWRIGHT_DIR }}/test-results/*
+                ${{ inputs.PLAYWRIGHT_DIR }}/artifacts/test-results/*
