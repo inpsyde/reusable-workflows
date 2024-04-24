@@ -293,10 +293,12 @@ Read below for configuration examples.
 > `BUILT_BRANCH_NAME` configuration example
  
 ```yaml
-BUILT_BRANCH_NAME: "${{ (github.ref_name == 'dev-main' && 'main' || (github.ref_name == 'dev-beta' && 'beta' || (github.ref_name == 'dev-alpha' && 'alpha' || github.ref_name) ) ) }}"
+BUILT_BRANCH_NAME: "${{ (github.ref_name == 'dev-main' && 'main' || (github.ref_name == 'dev-beta' && 'beta' || (github.ref_name == 'dev-alpha' && 'alpha' || '') ) ) }}"
 ```
 
+The logic in the example above will behave like this:
 - If github.ref_name is equal to `dev-main`, the value of BUILT_BRANCH_NAME will be `main`.
 - If github.ref_name is equal to `dev-beta`, the value of BUILT_BRANCH_NAME will be `beta`.
 - If github.ref_name is equal to `dev-alpha`, the value of BUILT_BRANCH_NAME will be `alpha`.
-- If none of the above conditions are met, the value of BUILT_BRANCH_NAME will be the same as `github.ref_name`
+- If none of the above conditions are met, the value of BUILT_BRANCH_NAME will be `''`
+which is the default
