@@ -5,7 +5,7 @@ on:
       GITHUB_USER_TOKEN:
         description: Authentication token with write permission needed by the release bot (falls back to GITHUB_TOKEN).
         required: false
-      NPM_TOKEN:
+      NPM_REGISTRY_TOKEN:
         description: Authentication token with write permission needed by NPM to release a package (falls back to GITHUB_TOKEN).
         required: false
 
@@ -72,5 +72,5 @@ jobs:
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_USER_TOKEN != '' && secrets.GITHUB_USER_TOKEN || secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN != '' && secrets.NPM_TOKEN || secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN != '' && secrets.NPM_REGISTRY_TOKEN || secrets.GITHUB_TOKEN }}
         run: npx semantic-release
