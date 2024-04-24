@@ -97,21 +97,22 @@ This is not the simplest possible example, but it showcases all the recommendati
 
 ### Inputs
 
-| Name                  | Default                       | Description                                                                                                                     |
-|-----------------------|-------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
-| `NODE_OPTIONS`        | `''`                          | Space-separated list of command-line Node options                                                                               |
-| `NODE_VERSION`        | `18`                          | Node version with which the assets will be compiled                                                                             |
-| `NPM_REGISTRY_DOMAIN` | `https://npm.pkg.github.com/` | Domain of the private npm registry                                                                                              |
-| `PACKAGE_MANAGER`     | `yarn`                        | Package manager with which the dependencies should be installed (`npm` or `yarn`)                                               |
-| `WORKING_DIRECTORY`   | `'./'`                        | Working directory path                                                                                                          |
-| `COMPILE_SCRIPT_PROD` | `'build'`                     | Script added to `npm run` or `yarn` to build production assets                                                                  |
-| `COMPILE_SCRIPT_DEV`  | `'build:dev'`                 | Script added to `npm run` or `yarn` to build development assets                                                                 |
-| `MODE`                | `''`                          | Mode for compiling assets (`prod` or `dev`)                                                                                     |
-| `ASSETS_TARGET_PATHS` | `'./assets'`                  | Target path(s) for compiled assets                                                                                              |
-| `BUILT_BRANCH_SUFFIX` | `''`                          | Suffix to calculate the target branch for pushing assets on the `branch` event                                                  |
-| `RELEASE_BRANCH_NAME` | `''`                          | On tag events, target branch where compiled assets are pushed and the tag is moved to                                           |
-| `PHP_VERSION`         | `'8.0'`                       | PHP version with which the PHP tools are to be executed                                                                         |
-| `PHP_TOOLS`           | `''`                          | PHP tools supported by [shivammathur/setup-php](https://github.com/shivammathur/setup-php#wrench-tools-support) to be installed |
+| Name                  | Default                       | Description                                                                                                                                               |
+|-----------------------|-------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `NODE_OPTIONS`        | `''`                          | Space-separated list of command-line Node options                                                                                                         |
+| `NODE_VERSION`        | `18`                          | Node version with which the assets will be compiled                                                                                                       |
+| `NPM_REGISTRY_DOMAIN` | `https://npm.pkg.github.com/` | Domain of the private npm registry                                                                                                                        |
+| `PACKAGE_MANAGER`     | `yarn`                        | Package manager with which the dependencies should be installed (`npm` or `yarn`)                                                                         |
+| `WORKING_DIRECTORY`   | `'./'`                        | Working directory path                                                                                                                                    |
+| `COMPILE_SCRIPT_PROD` | `'build'`                     | Script added to `npm run` or `yarn` to build production assets                                                                                            |
+| `COMPILE_SCRIPT_DEV`  | `'build:dev'`                 | Script added to `npm run` or `yarn` to build development assets                                                                                           |
+| `MODE`                | `''`                          | Mode for compiling assets (`prod` or `dev`)                                                                                                               |
+| `ASSETS_TARGET_PATHS` | `'./assets'`                  | Target path(s) for compiled assets                                                                                                                        |
+| `BUILT_BRANCH_SUFFIX` | `''`                          | Suffix to calculate the target branch for pushing assets on the `branch` event                                                                            |
+| `BUILT_BRANCH_NAME`   | `''`                          | Sets the target branch for pushing assets on the `branch` event. Default is `github.ref_name``BUILT_BRANCH_SUFFIX`. Read below for configuration examples |
+| `RELEASE_BRANCH_NAME` | `''`                          | On tag events, target branch where compiled assets are pushed and the tag is moved to                                                                     |
+| `PHP_VERSION`         | `'8.0'`                       | PHP version with which the PHP tools are to be executed                                                                                                   |
+| `PHP_TOOLS`           | `''`                          | PHP tools supported by [shivammathur/setup-php](https://github.com/shivammathur/setup-php#wrench-tools-support) to be installed                           |
 
 
 ## Secrets
@@ -232,7 +233,7 @@ hash that triggered the compilation.
 As for the "noise", it will indeed be there. However, considering that all workflow commit messages
 start with the prefix `[BOT]`, it would be quite easy to ignore them without any cognitive effort.
 
-By defining `BUILT_BRANCH_SUFFIX`, you keep commits containing compiled assets separated in the built branch.
+By defining `BUILT_BRANCH_SUFFIX` or `BUILT_BRANCH_NAME`, you keep commits containing compiled assets separated in the built branch.
 
 ---
 
@@ -283,3 +284,19 @@ For branches, it depends on the `BUILT_BRANCH_SUFFIX` input value. If the input 
 you can use the branch name (i.e., `dev-main` for the `main` branch) as usual. If a suffix was defined,
 the built branch should be used. I.e., when `BUILT_BRANCH_SUFFIX` is `-built` and branch `main`,
 the `dev-main-built` branch should be used as the package version.
+
+If you defined `BUILT_BRANCH_NAME` then it wil depend on the logic in place. 
+Read below for configuration examples.
+
+---
+
+> `BUILT_BRANCH_NAME` configuration example
+ 
+```yaml
+BUILT_BRANCH_NAME: "${{ (github.ref_name == 'dev-main' && 'main' || (github.ref_name == 'dev-beta' && 'beta' || (github.ref_name == 'dev-alpha' && 'alpha' || github.ref_name) ) ) }}"
+```
+
+- If github.ref_name is equal to `dev-main`, the value of BUILT_BRANCH_NAME will be `main`.
+- If github.ref_name is equal to `dev-beta`, the value of BUILT_BRANCH_NAME will be `beta`.
+- If github.ref_name is equal to `dev-alpha`, the value of BUILT_BRANCH_NAME will be `alpha`.
+- If none of the above conditions are met, the value of BUILT_BRANCH_NAME will be the same as `github.ref_name`
