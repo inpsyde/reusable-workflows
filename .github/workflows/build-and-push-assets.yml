@@ -44,8 +44,13 @@ on:
         required: false
         type: string
       ASSETS_TARGET_PATHS:
-        description: Target path(s) for compiled assets.
-        default: './assets/'
+        description: Target directory path(s) for compiled assets.
+        default: './assets'
+        required: false
+        type: string
+      ASSETS_TARGET_FILES:
+        description: Target file path(s) for compiled assets.
+        default: ''
         required: false
         type: string
       BUILT_BRANCH_SUFFIX:
@@ -214,17 +219,9 @@ jobs:
           git checkout -b bot/compiled-assets/${{ github.sha }}
           echo "TAG_BRANCH_NAME=bot/compiled-assets/${{ github.sha }}" >> $GITHUB_ENV
 
-      - name: Prepare directories and files
+      - name: Prepare directories
         run: |
-          declare -a TARGET_PATHS_ARRAY=(${{ inputs.ASSETS_TARGET_PATHS }})
-          for path in "${TARGET_PATHS_ARRAY[@]}"; do
-            if [[ "${path}" == */ ]]; then
-              mkdir -p "${path}"
-            else
-              touch "$path"
-            fi
-          done
-
+          mkdir -p ${{ inputs.ASSETS_TARGET_PATHS }}
 
       - name: Set up node cache mode
         run: |
@@ -261,14 +258,10 @@ jobs:
 
       - name: Git add, commit
         run: |
-          declare -a TARGET_PATHS_ARRAY=(${{ inputs.ASSETS_TARGET_PATHS }})
-          for path in "${TARGET_PATHS_ARRAY[@]}"; do
-            if [[ "${path}" == */ ]]; then
-              git add -f "${path}"/*
-            else
-              git add -f "$path"
-            fi
-          done
+          declare -a TARGET_DIRECTORY_PATHS_ARRAY=(${{ inputs.ASSETS_TARGET_PATHS }})
+          for path in "${TARGET_DIRECTORY_PATHS_ARRAY[@]}"; do git add -f "${path}/*"; done
+          declare -a TARGET_FILES_PATHS_ARRAY=(${{ inputs.ASSETS_TARGET_FILES }})
+          for path in "${TARGET_FILES_PATHS_ARRAY[@]}"; do [[ -f "$path" ]] && git add -f "${path}"; done
           git add -A
           git commit -m "[BOT] Add compiled assets for #${{ github.ref }}" --no-verify || ((echo "NO_CHANGES=yes" >> $GITHUB_ENV) && (echo "No changes to commit"))
 
