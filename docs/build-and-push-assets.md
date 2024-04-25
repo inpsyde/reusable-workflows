@@ -176,9 +176,7 @@ jobs:
 
 > Can I have multiple output folders for my package?, and what about files?
 
-Yes, 
-- The `inputs.ASSETS_TARGET_PATHS` accepts multiple space-separated paths for **directories**
-- The `inputs.ASSETS_TARGET_FILES` accepts multiple space-separated paths for **files**
+Yes, `inputs.ASSETS_TARGET_PATHS` and `inputs.ASSETS_TARGET_FILES` accept multiple space-separated paths for directories and files, respectively.
 
 ```yaml
 name: Build and push assets
