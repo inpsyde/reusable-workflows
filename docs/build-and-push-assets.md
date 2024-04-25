@@ -174,7 +174,7 @@ jobs:
       MODE: ${{ github.ref_type == 'branch' && github.ref_name == 'production' && 'prod' || '' }}
 ```
 
-> Can I have multiple output folders for my package?, and what about files?
+> Can I have multiple output folders for my package? What about files?
 
 Yes, `inputs.ASSETS_TARGET_PATHS` and `inputs.ASSETS_TARGET_FILES` accept multiple space-separated paths for directories and files, respectively.
 
