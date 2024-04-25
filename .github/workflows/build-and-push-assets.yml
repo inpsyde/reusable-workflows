@@ -44,7 +44,7 @@ on:
         required: false
         type: string
       ASSETS_TARGET_PATHS:
-        description: Target directory path(s) for compiled assets.
+        description: Space-separated list of target directory paths for compiled assets.
         default: './assets'
         required: false
         type: string
