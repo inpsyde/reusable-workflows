@@ -49,7 +49,7 @@ on:
         required: false
         type: string
       ASSETS_TARGET_FILES:
-        description: Target file path(s) for compiled assets.
+        description: Space-separated list of target file paths for compiled assets.
         default: ''
         required: false
         type: string
