@@ -78,8 +78,8 @@ jobs:
   build-assets:
     uses: inpsyde/reusable-workflows/.github/workflows/build-and-push-assets.yml@main
     with:
-      BUILT_BRANCH_NAME: ${{ github.ref_name }}-built
-      RELEASE_BRANCH_NAME: release
+      BUILT_BRANCH_NAME: "${{ github.ref_name }}-built" # Optionally, to push compiled assets to built branch
+      RELEASE_BRANCH_NAME: 'release' # Optionally, to move tags to release branch
     secrets:
       GITHUB_USER_EMAIL: ${{ secrets.INPSYDE_BOT_EMAIL }}
       GITHUB_USER_NAME: ${{ secrets.INPSYDE_BOT_USER }}
