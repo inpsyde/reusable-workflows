@@ -10,22 +10,15 @@ To achieve that, the reusable workflow:
 
 ## Where are assets stored
 
-Two inputs can be used to define branches as assets storage - `BUILT_BRANCH_NAME` and `RELEASE_BRANCH_NAME`.
+Two inputs can be used to define branches as assets storage: `BUILT_BRANCH_NAME` and `RELEASE_BRANCH_NAME`.
 
-`BUILT_BRANCH_NAME` is used only for push-to-branch events. If defined, compiled assets
-will be stored in the branch with name equals current branch plus suffix. For instance,
-if `BUILT_BRANCH_NAME` equals `${{ github.ref_name }}-built` for pushing to the `main` branch, compiled assets will be stored
-in the `main-built` branch (a branch will be created if it does not exist).
+`BUILT_BRANCH_NAME` is used only for `branch` events. If defined, compiled assets will be stored in the branch of this name. For example, if `BUILT_BRANCH_NAME` is set to `${{ github.ref_name }}-built`, when pushing to the `main` branch, compiled assets will be stored in the `main-built` branch (the branch will be created if it does not exist).
 
-`RELEASE_BRANCH_NAME` is used only for tag events. If defined and the pushed tag points
-to the last commit of the default branch of the GitHub repository, compiled assets will be pushed
-to the release branch, and the tag will be moved there.
-If the input is undefined or the tag points to one of the previous commits,
-the compiled assets will be pushed to the detached commit, and the tag will be moved there.
+`RELEASE_BRANCH_NAME` is only used for tag events. If defined and the tag being pushed points to the latest commit of the default branch of the GitHub repository, compiled assets will be pushed to the branch of this name, and the tag will be moved there (the branch will be created if it does not exist).
 
 The main benefit of using `BUILT_BRANCH_NAME` is not to pollute the main development branch
 with commits containing compiled assets. With `RELEASE_BRANCH_NAME`, you can gain linear tag history
-if you always tag just the last commit from the main development branch.
+by always tagging only the latest commit from the main development branch.
 
 ## Build script
 
@@ -280,8 +273,7 @@ _ad-hoc_ "bot" user with an _ad-hoc_ private SSH key used only for the scope.
 
 For tags, the pushed tag name is always used.
 
-For branches, it depends on the `BUILT_BRANCH_NAME` input value. I.e., when `BUILT_BRANCH_NAME` is `${{ github.ref_name}}-built` and the branch triggering the workflow is `main`,
-the built branch name will resolve to `main-built`, then in `composer.json` you can require it like this: `my-package":"dev-main-built"`.
+For branches, it depends on the `BUILT_BRANCH_NAME` input value. For example, when `BUILT_BRANCH_NAME` is `${{ github.ref_name}}-built` and the branch triggering the workflow is `main`, the built branch name will resolve to `main-built`. In this case, require the `dev-main-built` branch in `composer.json`.
 
 ---
 
@@ -295,4 +287,4 @@ The logic in the example above will behave like this:
 - If `github.ref_name` is equal to `dev-main`, the value of `BUILT_BRANCH_NAME` will be `main`
 - If `github.ref_name` is equal to `dev-beta`, the value of `BUILT_BRANCH_NAME` will be `beta`
 - If `github.ref_name` is equal to `dev-alpha`, the value of `BUILT_BRANCH_NAME` will be `alpha`
-- If none of the above conditions are met, the value of `BUILT_BRANCH_NAME` will be `''` which is the default
+- If none of the above conditions are met, the value of `BUILT_BRANCH_NAME` will be `''`, which is the default
