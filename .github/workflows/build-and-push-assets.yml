@@ -49,7 +49,7 @@ on:
         required: false
         type: string
       BUILT_BRANCH_SUFFIX:
-        description: Suffix to calculate the target branch for pushing assets on the `branch` event.
+        description: Suffix to calculate the target branch for pushing assets on the `branch` event (deprecated).
         type: string
         default: ''
         required: false
@@ -144,8 +144,9 @@ jobs:
       NO_CHANGES: ''                                   # we'll override if no changes to commit
     steps:
       - name: Deprecation warning
-        if: ${{ inputs.BUILT_BRANCH_SUFFIX }}
-        run: "::warning::The BUILT_BRANCH_SUFFIX variable is deprecated and will be removed soon. If you use it, please update your workflow to use BUILT_BRANCH_NAME with ${{ github.ref_name }}-built"
+        if: ${{ inputs.BUILT_BRANCH_SUFFIX != '' }}
+        run: |
+          echo '::warning::The BUILT_BRANCH_SUFFIX variable is deprecated and will be removed soon. Please update your workflow to use BUILT_BRANCH_NAME with ${{ github.ref_name }}-built'
 
       - name: Checkout
         uses: actions/checkout@v4
