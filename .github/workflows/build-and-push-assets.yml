@@ -146,7 +146,7 @@ jobs:
       - name: Deprecation warning
         if: ${{ inputs.BUILT_BRANCH_SUFFIX != '' }}
         run: |
-          echo '::warning::The BUILT_BRANCH_SUFFIX variable is deprecated and will be removed soon. Please update your workflow to use BUILT_BRANCH_NAME with ${{ github.ref_name }}-built'
+          echo '::warning::The BUILT_BRANCH_SUFFIX input is deprecated and will be removed soon. Please update your workflow to use BUILT_BRANCH_NAME with ${{ github.ref_name }}-built.'
 
       - name: Checkout
         uses: actions/checkout@v4
