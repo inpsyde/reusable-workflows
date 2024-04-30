@@ -10,22 +10,19 @@ To achieve that, the reusable workflow:
 
 ## Where are assets stored
 
-Two inputs can be used to define branches as assets storage - `BUILT_BRANCH_SUFFIX` and `RELEASE_BRANCH_NAME`.
+Two inputs can be used to define branches as assets storage: `BUILT_BRANCH_NAME` and `RELEASE_BRANCH_NAME`.
 
-`BUILT_BRANCH_SUFFIX` is used only for push-to-branch events. If defined, compiled assets
-will be stored in the branch with name equals current branch plus suffix. For instance,
-if `BUILT_BRANCH_SUFFIX` equals `-built` for pushing to the `main` branch, compiled assets will be stored
-in the `main-built` branch (a branch will be created if it does not exist).
+`BUILT_BRANCH_NAME` is used only for `branch` events. If defined, compiled assets will be stored in the branch of this
+name. For example, if `BUILT_BRANCH_NAME` is set to `${{ github.ref_name }}-built`, when pushing to the `main` branch,
+compiled assets will be stored in the `main-built` branch (the branch will be created if it does not exist).
 
-`RELEASE_BRANCH_NAME` is used only for tag events. If defined and the pushed tag points
-to the last commit of the default branch of the GitHub repository, compiled assets will be pushed
-to the release branch, and the tag will be moved there.
-If the input is undefined or the tag points to one of the previous commits,
-the compiled assets will be pushed to the detached commit, and the tag will be moved there.
+`RELEASE_BRANCH_NAME` is only used for tag events. If defined and the tag being pushed points to the latest commit of
+the default branch of the GitHub repository, compiled assets will be pushed to the branch of this name, and the tag will
+be moved there (the branch will be created if it does not exist).
 
-The main benefit of using `BUILT_BRANCH_SUFFIX` is not to pollute the main development branch
+The main benefit of using `BUILT_BRANCH_NAME` is not to pollute the main development branch
 with commits containing compiled assets. With `RELEASE_BRANCH_NAME`, you can gain linear tag history
-if you always tag just the last commit from the main development branch.
+by always tagging only the latest commit from the main development branch.
 
 ## Build script
 
@@ -62,9 +59,9 @@ name: Build and push assets
 on:
   workflow_dispatch:
   push:
-    tags: ['*']
-    branches: ['*']
-    # Don't include paths if BUILT_BRANCH_SUFFIX or RELEASE_BRANCH_NAME are defined
+    tags: [ '*' ]
+    branches: [ '*' ]
+    # Don't include paths if BUILT_BRANCH_NAME or RELEASE_BRANCH_NAME are defined
     paths:
       - '**workflows/build-and-push-assets.yml' # the workflow file itself
       - '**.ts'
@@ -81,8 +78,8 @@ jobs:
   build-assets:
     uses: inpsyde/reusable-workflows/.github/workflows/build-and-push-assets.yml@main
     with:
-      BUILT_BRANCH_SUFFIX: '-built' # Optionally, to push compiled assets to built branch
-      RELEASE_BRANCH_NAME: 'release' # Optionally, to move tags to release branch
+      BUILT_BRANCH_NAME: ${{ github.ref_name }}-built # Optionally, to push compiled assets to built branch
+      RELEASE_BRANCH_NAME: release # Optionally, to move tags to release branch
     secrets:
       GITHUB_USER_EMAIL: ${{ secrets.INPSYDE_BOT_EMAIL }}
       GITHUB_USER_NAME: ${{ secrets.INPSYDE_BOT_USER }}
@@ -109,11 +106,11 @@ This is not the simplest possible example, but it showcases all the recommendati
 | `MODE`                | `''`                          | Mode for compiling assets (`prod` or `dev`)                                                                                     |
 | `ASSETS_TARGET_PATHS` | `'./assets'`                  | Space-separated list of target directory paths for compiled assets                                                              |
 | `ASSETS_TARGET_FILES` | `''`                          | Space-separated list of target file paths for compiled assets                                                                   |
-| `BUILT_BRANCH_SUFFIX` | `''`                          | Suffix to calculate the target branch for pushing assets on the `branch` event                                                  |
+| `BUILT_BRANCH_SUFFIX` | `''`                          | :warning: deprecated - Suffix to calculate the target branch for pushing assets on the `branch` event                           |
+| `BUILT_BRANCH_NAME`   | `''`                          | Sets the target branch for pushing assets on the `branch` event                                                                 |
 | `RELEASE_BRANCH_NAME` | `''`                          | On tag events, target branch where compiled assets are pushed and the tag is moved to                                           |
 | `PHP_VERSION`         | `'8.0'`                       | PHP version with which the PHP tools are to be executed                                                                         |
 | `PHP_TOOLS`           | `''`                          | PHP tools supported by [shivammathur/setup-php](https://github.com/shivammathur/setup-php#wrench-tools-support) to be installed |
-
 
 ## Secrets
 
@@ -197,7 +194,7 @@ jobs:
 
 ---
 
-> Will I have merge conflicts during PRs merging if I don't use `BUILT_BRANCH_SUFFIX`?
+> Will I have merge conflicts during PRs merging if I don't use `BUILT_BRANCH_NAME`?
 
 No, if you follow the recommendations in this document you shouldn't.
 
@@ -234,7 +231,7 @@ hash that triggered the compilation.
 As for the "noise", it will indeed be there. However, considering that all workflow commit messages
 start with the prefix `[BOT]`, it would be quite easy to ignore them without any cognitive effort.
 
-By defining `BUILT_BRANCH_SUFFIX`, you keep commits containing compiled assets separated in the built branch.
+By defining `BUILT_BRANCH_NAME`, you keep commits containing compiled assets separated in the built branch.
 
 ---
 
@@ -281,7 +278,21 @@ _ad-hoc_ "bot" user with an _ad-hoc_ private SSH key used only for the scope.
 
 For tags, the pushed tag name is always used.
 
-For branches, it depends on the `BUILT_BRANCH_SUFFIX` input value. If the input is not provided,
-you can use the branch name (i.e., `dev-main` for the `main` branch) as usual. If a suffix was defined,
-the built branch should be used. I.e., when `BUILT_BRANCH_SUFFIX` is `-built` and branch `main`,
-the `dev-main-built` branch should be used as the package version.
+For branches, it depends on the `BUILT_BRANCH_NAME` input value. For example, when `BUILT_BRANCH_NAME`
+is `${{ github.ref_name}}-built` and the branch triggering the workflow is `main`, the built branch name will resolve
+to `main-built`. In this case, require the `dev-main-built` branch in `composer.json`.
+
+---
+
+> `BUILT_BRANCH_NAME` configuration example
+
+```yaml
+BUILT_BRANCH_NAME: "${{ (github.ref_name == 'dev-main' && 'main' || (github.ref_name == 'dev-beta' && 'beta' || (github.ref_name == 'dev-alpha' && 'alpha' || '') ) ) }}"
+```
+
+The logic in the example above will behave like this:
+
+- If `github.ref_name` is equal to `dev-main`, the value of `BUILT_BRANCH_NAME` will be `main`
+- If `github.ref_name` is equal to `dev-beta`, the value of `BUILT_BRANCH_NAME` will be `beta`
+- If `github.ref_name` is equal to `dev-alpha`, the value of `BUILT_BRANCH_NAME` will be `alpha`
+- If none of the above conditions are met, the value of `BUILT_BRANCH_NAME` will be `''`, which is the default
