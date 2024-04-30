@@ -104,8 +104,9 @@ This is not the simplest possible example, but it showcases all the recommendati
 | `COMPILE_SCRIPT_PROD` | `'build'`                     | Script added to `npm run` or `yarn` to build production assets                                                                  |
 | `COMPILE_SCRIPT_DEV`  | `'build:dev'`                 | Script added to `npm run` or `yarn` to build development assets                                                                 |
 | `MODE`                | `''`                          | Mode for compiling assets (`prod` or `dev`)                                                                                     |
-| `ASSETS_TARGET_PATHS` | `'./assets'`                  | Target path(s) for compiled assets                                                                                              |
-| `BUILT_BRANCH_SUFFIX` | `''`                          | Suffix to calculate the target branch for pushing assets on the `branch` event (deprecated)                                     |
+| `ASSETS_TARGET_PATHS` | `'./assets'`                  | Space-separated list of target directory paths for compiled assets                                                              |
+| `ASSETS_TARGET_FILES` | `''`                          | Space-separated list of target file paths for compiled assets                                                                   |
+| `BUILT_BRANCH_SUFFIX` | `''`                          | :warning: deprecated - Suffix to calculate the target branch for pushing assets on the `branch` event                           |
 | `BUILT_BRANCH_NAME`   | `''`                          | Sets the target branch for pushing assets on the `branch` event                                                                 |
 | `RELEASE_BRANCH_NAME` | `''`                          | On tag events, target branch where compiled assets are pushed and the tag is moved to                                           |
 | `PHP_VERSION`         | `'8.0'`                       | PHP version with which the PHP tools are to be executed                                                                         |
@@ -170,9 +171,9 @@ jobs:
       MODE: ${{ github.ref_type == 'branch' && github.ref_name == 'production' && 'prod' || '' }}
 ```
 
-> Can I have multiple output folders for my package?
+> Can I have multiple output folders for my package? What about files?
 
-Yes, the `inputs.ASSETS_TARGET_PATHS` accepts multiple space-separated paths:
+Yes, `inputs.ASSETS_TARGET_PATHS` and `inputs.ASSETS_TARGET_FILES` accept multiple space-separated paths for directories and files, respectively.
 
 ```yaml
 name: Build and push assets
@@ -183,6 +184,7 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/build-and-push-assets.yml@main
     with:
       ASSETS_TARGET_PATHS: "./assets ./modules/Foo/assets ./modules/Bar/assets"
+      ASSETS_TARGET_FILES: "./my-generated-file.txt ./LICENSE"
     secrets:
       GITHUB_USER_EMAIL: ${{ secrets.INPSYDE_BOT_EMAIL }}
       GITHUB_USER_NAME: ${{ secrets.INPSYDE_BOT_USER }}
