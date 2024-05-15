@@ -94,8 +94,6 @@ jobs:
       # During development, symlinking is preferable.
       # In resulting builds, you will likely want to ship the actual install location and remove the source directory.
       COMPOSER_MIRROR_PATH_REPOS: 1
-    outputs:
-      artifact: ${{ steps.set-artifact-name.outputs.artifact }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -224,6 +222,8 @@ jobs:
       PLUGIN_FOLDER_NAME: ${{ inputs.PLUGIN_FOLDER_NAME }}
       GIT_SHA: ${{ github.sha }}
       PLUGIN_VERSION: ${{ inputs.PLUGIN_VERSION }}
+    outputs:
+      artifact: ${{ steps.set-artifact-name.outputs.artifact }}
     steps:
       - name: Download Artifact
         uses: actions/download-artifact@v4
