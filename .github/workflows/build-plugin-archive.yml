@@ -252,7 +252,9 @@ jobs:
           sed -Ei "s/SHA: .*/SHA: ${GIT_SHA}/g" ${{ inputs.PLUGIN_MAIN_FILE }}
 
       - name: Set plugin version header
-        run: 'sed -Ei "s/Version: .*/Version: ${PLUGIN_VERSION}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
+        run: |
+          cd interim-deps
+          sed -Ei "s/Version: .*/Version: ${PLUGIN_VERSION}/g" ${{ inputs.PLUGIN_MAIN_FILE }}
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -268,7 +270,7 @@ jobs:
           ${{ inputs.PRE_SCRIPT }}
 
       - name: Run WP-CLI command
-        run: wp dist-archive . ./archive.zip --plugin-dirname=${{ steps.plugin-folder-name.outputs.plugin-folder-name }}
+        run: wp dist-archive ./interim-deps ./archive.zip --plugin-dirname=${{ steps.plugin-folder-name.outputs.plugin-folder-name }}
 
         # GitHub Action artifacts would otherwise produce a zip within a zip
       - name: Unzip archive to dist/
