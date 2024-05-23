@@ -122,6 +122,9 @@ jobs:
         id: set-artifact-name
         run: echo "artifact=interim-deps" >> $GITHUB_OUTPUT
 
+      - name: List all files
+        run: ls -laR
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
