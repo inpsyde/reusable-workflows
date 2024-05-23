@@ -141,7 +141,7 @@ jobs:
       NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       NODE_CACHE_MODE: ''
     outputs:
-      artifact: ${{ steps.run-build-tools.outputs.artifact }}
+      artifact: ${{ steps.set-artifact-name.outputs.artifact }}
     steps:
       - name: Download Artifact
         uses: actions/download-artifact@v4
@@ -223,7 +223,7 @@ jobs:
       GIT_SHA: ${{ github.sha }}
       PLUGIN_VERSION: ${{ inputs.PLUGIN_VERSION }}
     outputs:
-      artifact: ${{ steps.create-plugin-archive.outputs.artifact }}
+      artifact: ${{ steps.set-artifact-name.outputs.artifact }}
     steps:
       - name: Download Artifact
         uses: actions/download-artifact@v4
@@ -238,18 +238,14 @@ jobs:
         id: plugin-data
         run: echo "archive-name=${ARCHIVE_NAME:-${{ github.event.repository.name }}}" >> $GITHUB_OUTPUT
 
-      - name: List files in current directory
-        run: |
-          ls -laR
-
       - name: Add commit hash to plugin header
         run: |
-          cd interim-built
+          cd interim-deps
           sed -Ei "s/SHA: .*/SHA: ${GIT_SHA}/g" ${{ inputs.PLUGIN_MAIN_FILE }}
 
       - name: Set plugin version header
         run: |
-          cd interim-built
+          cd interim-deps
           sed -Ei "s/Version: .*/Version: ${PLUGIN_VERSION}/g" ${{ inputs.PLUGIN_MAIN_FILE }}
 
       - name: Set up PHP
@@ -266,7 +262,10 @@ jobs:
           ${{ inputs.PRE_SCRIPT }}
 
       - name: Run WP-CLI command
-        run: wp dist-archive ./interim-deps ./archive.zip --plugin-dirname=${{ steps.plugin-folder-name.outputs.plugin-folder-name }}
+        run: |
+          ls -laR
+          rm -rf interim-deps/.git
+          wp dist-archive ./interim-deps ./archive.zip --plugin-dirname=${{ steps.plugin-folder-name.outputs.plugin-folder-name }}
 
         # GitHub Action artifacts would otherwise produce a zip within a zip
       - name: Unzip archive to dist/
