@@ -208,7 +208,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.run-build-tools.outputs.artifact }}
+          name: ${{ steps.set-artifact-name.outputs.artifact }}
           path: |
             .
             !**/node_modules
@@ -266,7 +266,7 @@ jobs:
           ${{ inputs.PRE_SCRIPT }}
 
       - name: Run WP-CLI command
-        run: wp dist-archive ./interim-built ./archive.zip --plugin-dirname=${{ steps.plugin-folder-name.outputs.plugin-folder-name }}
+        run: wp dist-archive ./interim-deps ./archive.zip --plugin-dirname=${{ steps.plugin-folder-name.outputs.plugin-folder-name }}
 
         # GitHub Action artifacts would otherwise produce a zip within a zip
       - name: Unzip archive to dist/
