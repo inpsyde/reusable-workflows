@@ -242,10 +242,14 @@ jobs:
         run: echo "archive-name=${ARCHIVE_NAME:-${{ github.event.repository.name }}}" >> $GITHUB_OUTPUT
 
       - name: List files in current directory
-        run: ls -la
+        run: |
+          cd interim-deps
+          ls -la
 
       - name: Add commit hash to plugin header
-        run: 'sed -Ei "s/SHA: .*/SHA: ${GIT_SHA}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
+        run: |
+          cd interim-deps
+          'sed -Ei "s/SHA: .*/SHA: ${GIT_SHA}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
 
       - name: Set plugin version header
         run: 'sed -Ei "s/Version: .*/Version: ${PLUGIN_VERSION}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
