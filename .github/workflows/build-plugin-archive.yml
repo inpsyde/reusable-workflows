@@ -249,7 +249,7 @@ jobs:
       - name: Add commit hash to plugin header
         run: |
           cd interim-deps
-          'sed -Ei "s/SHA: .*/SHA: ${GIT_SHA}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
+          sed -Ei "s/SHA: .*/SHA: ${GIT_SHA}/g" ${{ inputs.PLUGIN_MAIN_FILE }}
 
       - name: Set plugin version header
         run: 'sed -Ei "s/Version: .*/Version: ${PLUGIN_VERSION}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
