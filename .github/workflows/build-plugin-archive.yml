@@ -263,7 +263,6 @@ jobs:
 
       - name: Run WP-CLI command
         run: |
-          ls -laR
           rm -rf interim-deps/.git
           wp dist-archive ./interim-deps ./archive.zip --plugin-dirname=${{ steps.plugin-folder-name.outputs.plugin-folder-name }}
 
