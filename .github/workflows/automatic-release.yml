@@ -1,11 +1,12 @@
 name: Automatic Release
 on:
   workflow_call:
-    ADDITIONAL_DEPENDENCIES:
-      description: Will be installed with NPM globally.
-      type: string
-      default: ''
-      required: false
+    inputs:
+      ADDITIONAL_DEPENDENCIES:
+        description: Will be installed with NPM globally.
+        type: string
+        default: ''
+        required: false
     secrets:
       GITHUB_USER_TOKEN:
         description: Authentication token with write permission needed by the release bot (falls back to GITHUB_TOKEN).
