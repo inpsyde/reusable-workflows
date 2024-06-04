@@ -261,7 +261,6 @@ jobs:
 
       - name: Run WP-CLI command
         run: |
-          rm -rf interim-deps/.git
           wp dist-archive ./interim-deps ./archive.zip --plugin-dirname=${{ steps.plugin-folder-name.outputs.plugin-folder-name }}
 
         # GitHub Action artifacts would otherwise produce a zip within a zip
