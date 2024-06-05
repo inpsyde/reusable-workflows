@@ -1,23 +1,13 @@
 module.exports = {
   "branches": [
     "main",
-    "main-built",
     "next",
-    "next-built",
     {
       "name": "beta",
       "prerelease": true
     },
     {
-      "name": "beta-built",
-      "prerelease": true
-    },
-    {
       "name": "alpha",
-      "prerelease": true
-    },
-    {
-      "name": "alpha-built",
       "prerelease": true
     }
   ],
@@ -39,5 +29,5 @@ module.exports = {
     }]
   ],
   "preset": "angular",
-  "tagFormat": '<%- version.replace("-built", "") %>'
+  "tagFormat": "${version}"
 }
