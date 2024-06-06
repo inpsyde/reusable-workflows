@@ -42,12 +42,6 @@ jobs:
 
 ## Configuration parameters
 
-### Inputs
-
-| Name                      | Default | Description                          |
-|---------------------------|---------|--------------------------------------|
-| `ADDITIONAL_DEPENDENCIES` | `''`    | Will be installed with NPM globally. |
-
 ### Secrets
 
 | Name                | Required | Default | Description                                                                                       |
@@ -66,8 +60,6 @@ on:
 jobs:
   release:
     uses: inpsyde/reusable-workflows/.github/workflows/automatic-release.yml@main
-    with:
-      ADDITIONAL_DEPENDENCIES: "conventional-changelog-conventionalcommits@^7.0"
     secrets:
       GITHUB_USER_TOKEN: ${{ secrets.WRITE_TOKEN }}
 ```
