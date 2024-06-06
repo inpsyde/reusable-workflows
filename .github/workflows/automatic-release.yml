@@ -34,7 +34,8 @@ jobs:
             @semantic-release/git \
             @semantic-release/npm \
             @semantic-release/exec \
-            semantic-release
+            semantic-release \
+            conventional-changelog-conventionalcommits
 
       - name: Checkout
         uses: actions/checkout@v4
