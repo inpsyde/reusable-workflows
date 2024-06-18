@@ -220,7 +220,7 @@ jobs:
         run: |
           php-scoper add-prefix --force --output-dir build
           composer --working-dir=build dump-autoload -o
-          sed -i "s/'__composer_autoload_files'/\'__composer_autoload_${{ steps.plugin-data.outputs.archive-name }}'/g" "vendor/composer/autoload_real.php"
+          sed -i "s/'__composer_autoload_files'/\'__composer_autoload_${{ github.sha }}'/g" "vendor/composer/autoload_real.php"
       - name: Move unchanged code to build directory
         if: steps.composer-tools.outputs.php-scoper != '0'
         run: mv * build 2>/dev/null
