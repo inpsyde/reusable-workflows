@@ -30,22 +30,22 @@ on:
         required: false
         type: string
       ESLINT_ARGS:
-        description: Set of arguments passed to `wp-script lint-js`.
+        description: Set of arguments passed to `wp-scripts lint-js`.
         default: ''
         required: false
         type: string
       STYLELINT_ARGS:
-        description: Set of arguments passed to `wp-script lint-style`.
+        description: Set of arguments passed to `wp-scripts lint-style`.
         default: ''
         required: false
         type: string
       MARKDOWNLINT_ARGS:
-        description: Set of arguments passed to `wp-script lint-md-docs`.
+        description: Set of arguments passed to `wp-scripts lint-md-docs`.
         default: ''
         required: false
         type: string
       PACKAGE_JSONLINT_ARGS:
-        description: Set of arguments passed to `wp-script lint-pkg-json`.
+        description: Set of arguments passed to `wp-scripts lint-pkg-json`.
         default: ''
         required: false
         type: string

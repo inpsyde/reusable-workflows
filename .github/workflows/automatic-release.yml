@@ -34,7 +34,8 @@ jobs:
             @semantic-release/git \
             @semantic-release/npm \
             @semantic-release/exec \
-            semantic-release
+            semantic-release \
+            conventional-changelog-conventionalcommits
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -54,10 +55,12 @@ jobs:
           repository: inpsyde/reusable-workflows
           path: workflow-repo
 
-      - name: Add release.config.js file if not provided
+      - name: Add and customize release.config.js file if not provided
         if: ${{ env.HAS_CONFIG == 'false' }}
         run: |
           cp ${GITHUB_WORKSPACE}/workflow-repo/templates/automatic-release/release.config.js .
+          FILE=$(find . -maxdepth 1 -type f -name '*.php' -exec grep -l 'Plugin Name:' {} + | xargs -I{} basename {}) || true
+          [ -n "$FILE" ] && sed "s/index\.php/$FILE/g" -i release.config.js || true
 
       - name: Remove the workflow repository
         if: ${{ env.HAS_CONFIG == 'false' }}

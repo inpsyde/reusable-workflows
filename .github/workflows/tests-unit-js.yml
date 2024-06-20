@@ -52,6 +52,7 @@ jobs:
     env:
       NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
       NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      NODE_CACHE_MODE: ''
       GITHUB_USER_EMAIL: ${{ secrets.GITHUB_USER_EMAIL }}
       GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
       GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
@@ -81,15 +82,27 @@ jobs:
           git config --global user.email "${{ env.GITHUB_USER_EMAIL }}"
           git config --global user.name "${{ env.GITHUB_USER_NAME }}"
 
+      - name: Set up node cache mode
+        run: |
+          if [ "${{ inputs.PACKAGE_MANAGER }}" == 'npm' ] && { [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ]; }; then
+            echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV
+          elif [ "${{ inputs.PACKAGE_MANAGER }}" == 'yarn' ] && [ -f "${GITHUB_WORKSPACE}/yarn.lock" ]; then
+            echo "NODE_CACHE_MODE=yarn" >> $GITHUB_ENV
+          else
+            echo "No lock files found or unknown package manager"
+          fi
+
       - name: Set up node
         uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
-          cache: ${{ inputs.PACKAGE_MANAGER }}
+          cache: ${{ env.NODE_CACHE_MODE }}
 
       - name: Install dependencies
-        run: ${{ inputs.PACKAGE_MANAGER == 'yarn' && 'yarn' || 'npm install' }}
+        env:
+          ARGS: ${{ env.NODE_CACHE_MODE == 'yarn' && '--frozen-lockfile' || env.NODE_CACHE_MODE == 'npm' && 'ci' || 'install' }}
+        run: ${{ format('{0} {1}', inputs.PACKAGE_MANAGER, env.ARGS) }}
 
       - name: Run Jest
         run: ./node_modules/.bin/jest ${{ inputs.JEST_ARGS }}
