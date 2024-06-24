@@ -257,15 +257,10 @@ jobs:
         id: plugin-data
         run: echo "archive-name=${ARCHIVE_NAME:-${{ github.event.repository.name }}}" >> $GITHUB_OUTPUT
 
-      - name: List workspace
-        run: ls -als
-
       - name: Add commit hash to plugin header
-        #working-directory: ${{ needs.run-build-tools.outputs.artifact }}
         run: 'sed -Ei "s/SHA: .*/SHA: ${GIT_SHA}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
 
       - name: Set plugin version header
-        #working-directory: ${{ needs.run-build-tools.outputs.artifact }}
         run: 'sed -Ei "s/Version: .*/Version: ${PLUGIN_VERSION}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
 
       - name: Set up PHP
@@ -278,13 +273,12 @@ jobs:
         run: wp package install wp-cli/dist-archive-command
 
       - name: Execute custom code before archive creation
-        #working-directory: ${{ needs.run-build-tools.outputs.artifact }}
         run: |
           ${{ inputs.PRE_SCRIPT }}
 
       - name: Run WP-CLI command
         run: |
-          wp dist-archive ./${{ needs.run-build-tools.outputs.artifact }} ./archive.zip --plugin-dirname=${{ steps.plugin-folder-name.outputs.plugin-folder-name }}
+          wp dist-archive . ./archive.zip --plugin-dirname=${{ steps.plugin-folder-name.outputs.plugin-folder-name }}
 
         # GitHub Action artifacts would otherwise produce a zip within a zip
       - name: Unzip archive to dist/
