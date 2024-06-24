@@ -87,6 +87,8 @@ jobs:
     name: Install production dependencies
     timeout-minutes: 5
     runs-on: ubuntu-latest
+    outputs:
+      artifact: ${{ steps.set-artifact-name.outputs.artifact }}
     env:
       ENV_VARS: ${{ secrets.ENV_VARS }}
       COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
@@ -226,6 +228,7 @@ jobs:
       - name: Set artifact name
         id: set-artifact-name
         run: echo "artifact=interim-built" >> $GITHUB_OUTPUT
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
