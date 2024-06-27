@@ -200,6 +200,9 @@ jobs:
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
           cache: ${{ env.NODE_CACHE_MODE }}
 
+      - name: Debug GITHUB_ENV
+        run: cat $GITHUB_ENV
+
       - name: Install and run Composer Asset Compiler
         if: steps.composer-tools.outputs.assets-compiler == '0'
         run: |
@@ -221,6 +224,9 @@ jobs:
           php-scoper add-prefix --force --output-dir build
           composer --working-dir=build dump-autoload -o
           sed -i "s/'__composer_autoload_files'/\'__composer_autoload_files_${{ github.sha }}'/g" "build/vendor/composer/autoload_real.php"
+      - name: Create build directory
+        if: steps.composer-tools.outputs.php-scoper != '0'
+        run: mkdir -p build
       - name: Move unchanged code to build directory
         if: steps.composer-tools.outputs.php-scoper != '0'
         run: mv * build 2>/dev/null
