@@ -206,7 +206,7 @@ jobs:
           echo "Installing Composer Asset Compiler"
           composer global config --no-plugins --no-interaction allow-plugins.inpsyde/composer-assets-compiler true
           composer global require inpsyde/composer-assets-compiler
-          composer compile-assets ${{ inputs.COMPILE_ASSETS_ARGS }}
+          composer -vvv compile-assets ${{ inputs.COMPILE_ASSETS_ARGS }}
 
       - name: Install and run WordPress Translation Downloader
         if: steps.composer-tools.outputs.translation-downloader == '0'
