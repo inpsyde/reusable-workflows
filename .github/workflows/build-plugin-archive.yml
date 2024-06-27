@@ -157,6 +157,7 @@ jobs:
       - name: Check optional Composer build tools
         id: composer-tools
         run: |
+          ls -la
           hasAssetConfig(){
             test -f assets-compiler.json
             local EXIT=$?
@@ -181,6 +182,9 @@ jobs:
           echo "assets-compiler=$( hasAssetConfig )" >> $GITHUB_OUTPUT
           echo "translation-downloader=$( hasTranslateConfig )" >> $GITHUB_OUTPUT
           echo "php-scoper=$( hasScoperConfig )" >> $GITHUB_OUTPUT
+          echo "assets-compiler=$( hasAssetConfig )"
+          echo "translation-downloader=$( hasTranslateConfig )"
+          echo "php-scoper=$( hasScoperConfig )"
 
       - name: Set up node cache mode
         run: |
@@ -199,9 +203,6 @@ jobs:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
           cache: ${{ env.NODE_CACHE_MODE }}
-
-      - name: Debug GITHUB_ENV
-        run: echo "$GITHUB_ENV"
 
       - name: Install and run Composer Asset Compiler
         if: steps.composer-tools.outputs.assets-compiler == '0'
