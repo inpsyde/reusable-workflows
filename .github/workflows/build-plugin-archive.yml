@@ -214,7 +214,7 @@ jobs:
       - name: Install and run WordPress Translation Downloader
         if: steps.composer-tools.outputs.translation-downloader == '0'
         run: |
-            echo "Installing WordPress Translation Downloader"
+          echo "Installing WordPress Translation Downloader"
           composer global config --no-plugins --no-interaction allow-plugins.composer/installers true
           composer global config --no-plugins --no-interaction allow-plugins.inpsyde/wp-translation-downloader true
           composer global require inpsyde/wp-translation-downloader
@@ -223,7 +223,7 @@ jobs:
       - name: Run PHP Scoper
         if: steps.composer-tools.outputs.php-scoper == '0'
         run: |
-            echo "Installing PHP Scoper"
+          echo "Installing PHP Scoper"
           php-scoper add-prefix --force --output-dir build
           composer --working-dir=build dump-autoload -o
           sed -i "s/'__composer_autoload_files'/\'__composer_autoload_files_${{ github.sha }}'/g" "build/vendor/composer/autoload_real.php"
