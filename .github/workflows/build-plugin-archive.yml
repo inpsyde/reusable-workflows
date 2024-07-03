@@ -252,7 +252,7 @@ jobs:
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
-          name: ${{ needs.create-plugin-archive.outputs.artifact }}
+          name: ${{ needs.run-build-tools.outputs.artifact }}
 
       - name: Set up plugin folder name
         id: plugin-folder-name
