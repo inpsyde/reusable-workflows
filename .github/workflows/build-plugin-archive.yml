@@ -257,6 +257,8 @@ jobs:
       PLUGIN_FOLDER_NAME: ${{ inputs.PLUGIN_FOLDER_NAME }}
       GIT_SHA: ${{ github.sha }}
       PLUGIN_VERSION: ${{ inputs.PLUGIN_VERSION }}
+    outputs:
+      artifact: ${{ steps.set-artifact-name.outputs.artifact }}
     steps:
       - name: Download Artifact
         uses: actions/download-artifact@v4
