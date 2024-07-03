@@ -178,9 +178,15 @@ jobs:
             local EXIT=$?
             echo "$EXIT"
           }
+          hasRectorConfig(){
+            test -f rector.php
+            local EXIT=$?
+            echo "$EXIT"
+          }
           echo "assets-compiler=$( hasAssetConfig )" >> $GITHUB_OUTPUT
           echo "translation-downloader=$( hasTranslateConfig )" >> $GITHUB_OUTPUT
           echo "php-scoper=$( hasScoperConfig )" >> $GITHUB_OUTPUT
+          echo "rector=$( hasRectorConfig )" >> $GITHUB_OUTPUT
 
       - name: Set up node cache mode
         run: |
@@ -215,6 +221,11 @@ jobs:
           composer global require inpsyde/wp-translation-downloader
           composer wp-translation-downloader:download
 
+      - name: Run Rector
+        if: steps.composer-tools.outputs.rector == '0'
+        run: |
+          vendor/bin/rector
+          
       - name: Run PHP Scoper
         if: steps.composer-tools.outputs.php-scoper == '0'
         run: |
