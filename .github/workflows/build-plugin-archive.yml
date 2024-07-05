@@ -135,7 +135,7 @@ jobs:
             !./.github
   run-build-tools:
     name: Process build steps
-    timeout-minutes: 5
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     needs: checkout-dependencies
     env:
