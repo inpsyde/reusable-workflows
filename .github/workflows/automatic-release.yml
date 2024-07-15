@@ -9,7 +9,7 @@ on:
         description: Username for the GitHub user configuration.
         required: false
       GITHUB_USER_SSH_KEY:
-        description: Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`.
+        description: Private SSH key associated with the GitHub user for the token passed as `GITHUB_USER_TOKEN`.
         required: false
       GITHUB_USER_SSH_PUBLIC_KEY:
         description: Public SSH key associated with the GitHub user for the token passed as `GITHUB_USER_TOKEN`.
