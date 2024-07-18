@@ -66,6 +66,7 @@ jobs:
       - name: Set up signing commits
         if: ${{ env.GITHUB_USER_SSH_PUBLIC_KEY != '' }}
         run: |
+          : # Create empty SSH private key file so Git does not complain.
           touch "${{ runner.temp }}/signingkey"
           echo "${{ env.GITHUB_USER_SSH_PUBLIC_KEY }}" > "${{ runner.temp }}/signingkey.pub"
           git config --global commit.gpgsign true
