@@ -234,7 +234,10 @@ jobs:
           sed -i "s/'__composer_autoload_files'/\'__composer_autoload_files_${{ github.sha }}'/g" "build/vendor/composer/autoload_real.php"
       - name: Move unchanged code to build directory
         if: steps.composer-tools.outputs.php-scoper != '0'
-        run: mv * build 2>/dev/null
+        run: |
+          shopt -s extglob
+          mkdir build
+          mv !(build) build
 
       - name: Set artifact name
         id: set-artifact-name
