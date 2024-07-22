@@ -81,8 +81,8 @@ jobs:
       BUILT_BRANCH_NAME: ${{ github.ref_name }}-built # Optionally, to push compiled assets to built branch
       RELEASE_BRANCH_NAME: release # Optionally, to move tags to release branch
     secrets:
-      GITHUB_USER_EMAIL: ${{ secrets.INPSYDE_BOT_EMAIL }}
-      GITHUB_USER_NAME: ${{ secrets.INPSYDE_BOT_USER }}
+      GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
+      GITHUB_USER_NAME: ${{ secrets.DEPLOYBOT_USER }}
       NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_PACKAGES_READ_ACCESS_TOKEN }}
 ```
 
@@ -153,10 +153,10 @@ jobs:
       BUILT_BRANCH_NAME: ${{ github.ref_name }}-built # Optionally, to push compiled assets to built branch
       RELEASE_BRANCH_NAME: release # Optionally, to move tags to release branch
     secrets:
-      GITHUB_USER_EMAIL: ${{ secrets.INPSYDE_BOT_EMAIL }}
-      GITHUB_USER_NAME: ${{ secrets.INPSYDE_BOT_USER }}
-      GITHUB_USER_SSH_KEY: ${{ secrets.INPSYDE_BOT_SSH_PRIVATE_KEY }}
-      GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.INPSYDE_BOT_SSH_PUBLIC_KEY }}
+      GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
+      GITHUB_USER_NAME: ${{ secrets.DEPLOYBOT_USER }}
+      GITHUB_USER_SSH_KEY: ${{ secrets.DEPLOYBOT_SSH_PRIVATE_KEY }}
+      GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.DEPLOYBOT_SSH_PUBLIC_KEY }}
       NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_PACKAGES_READ_ACCESS_TOKEN }}
 ```
 
@@ -224,8 +224,8 @@ jobs:
       ASSETS_TARGET_PATHS: "./assets ./modules/Foo/assets ./modules/Bar/assets"
       ASSETS_TARGET_FILES: "./my-generated-file.txt ./LICENSE"
     secrets:
-      GITHUB_USER_EMAIL: ${{ secrets.INPSYDE_BOT_EMAIL }}
-      GITHUB_USER_NAME: ${{ secrets.INPSYDE_BOT_USER }}
+      GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
+      GITHUB_USER_NAME: ${{ secrets.DEPLOYBOT_USER }}
       ENV_VARS: >-
         [{"name":"EXAMPLE_USERNAME", "value":"${{ secrets.USERNAME }}"}]
 ```
