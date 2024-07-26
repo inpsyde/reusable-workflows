@@ -276,7 +276,7 @@ jobs:
           git commit -m "[BOT] Add compiled assets for #${{ github.ref }}" --no-verify || ((echo "NO_CHANGES=yes" >> $GITHUB_ENV) && (echo "No changes to commit"))
 
       - name: Git push for branch
-        if: ${{ github.ref_type == 'branch' && (env.NO_CHANGES != 'yes' || inputs.BUILT_BRANCH_SUFFIX != '') }}
+        if: ${{ github.ref_type == 'branch' && (env.NO_CHANGES != 'yes' || inputs.BUILT_BRANCH_SUFFIX != '' || inputs.BUILT_BRANCH_NAME != '') }}
         run: git push
 
       - name: Git push for tag
