@@ -91,6 +91,9 @@ on:
       GITHUB_USER_SSH_KEY:
         description: Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`.
         required: false
+      GITHUB_USER_SSH_PUBLIC_KEY:
+        description: Public SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`.
+        required: false
       ENV_VARS:
         description: Additional environment variables as a JSON formatted object.
         required: false
@@ -142,6 +145,7 @@ jobs:
       GITHUB_USER_EMAIL: ${{ secrets.GITHUB_USER_EMAIL }}
       GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
       GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
+      GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.GITHUB_USER_SSH_PUBLIC_KEY }}
       COMPILE_SCRIPT: ''
       TAG_NAME: ''                                     # we'll override if the push is for tag
       TAG_BRANCH_NAME: ''                              # we'll override if the push is for tag
@@ -171,6 +175,16 @@ jobs:
           git config --global user.name "${{ env.GITHUB_USER_NAME }}"
           git config --global advice.addIgnoredFile false
           git config --global push.autoSetupRemote true
+
+      - name: Set up signing commits
+        if: ${{ env.GITHUB_USER_SSH_PUBLIC_KEY != '' }}
+        run: |
+          : # Create empty SSH private key file so Git does not complain.
+          touch "${{ runner.temp }}/signingkey"
+          echo "${{ env.GITHUB_USER_SSH_PUBLIC_KEY }}" > "${{ runner.temp }}/signingkey.pub"
+          git config --global commit.gpgsign true
+          git config --global gpg.format ssh
+          git config --global user.signingkey "${{ runner.temp }}/signingkey.pub"
 
       - name: Set up custom environment variables
         env:
@@ -297,3 +311,9 @@ jobs:
           git checkout --detach
           git branch -d ${{ env.TAG_BRANCH_NAME }}
           git push origin --delete ${{ env.TAG_BRANCH_NAME }}
+
+      - name: Delete signing key files
+        if: ${{ always() && env.GITHUB_USER_SSH_PUBLIC_KEY != '' }}
+        run: |
+          rm "${{ runner.temp }}/signingkey"
+          rm "${{ runner.temp }}/signingkey.pub"

@@ -81,8 +81,8 @@ jobs:
       BUILT_BRANCH_NAME: ${{ github.ref_name }}-built # Optionally, to push compiled assets to built branch
       RELEASE_BRANCH_NAME: release # Optionally, to move tags to release branch
     secrets:
-      GITHUB_USER_EMAIL: ${{ secrets.INPSYDE_BOT_EMAIL }}
-      GITHUB_USER_NAME: ${{ secrets.INPSYDE_BOT_USER }}
+      GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
+      GITHUB_USER_NAME: ${{ secrets.DEPLOYBOT_USER }}
       NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_PACKAGES_READ_ACCESS_TOKEN }}
 ```
 
@@ -114,13 +114,51 @@ This is not the simplest possible example, but it showcases all the recommendati
 
 ## Secrets
 
-| Name                  | Description                                                                  |
-|-----------------------|------------------------------------------------------------------------------|
-| `NPM_REGISTRY_TOKEN`  | Authentication for the private npm registry                                  |
-| `GITHUB_USER_EMAIL`   | Email address for the GitHub user configuration                              |
-| `GITHUB_USER_NAME`    | Username for the GitHub user configuration                                   |
-| `GITHUB_USER_SSH_KEY` | Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME` |
-| `ENV_VARS`            | Additional environment variables as a JSON formatted object                  |
+| Name                         | Description                                                                  |
+|------------------------------|------------------------------------------------------------------------------|
+| `NPM_REGISTRY_TOKEN`         | Authentication for the private npm registry                                  |
+| `GITHUB_USER_EMAIL`          | Email address for the GitHub user configuration                              |
+| `GITHUB_USER_NAME`           | Username for the GitHub user configuration                                   |
+| `GITHUB_USER_SSH_KEY`        | Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME` |
+| `GITHUB_USER_SSH_PUBLIC_KEY` | Public SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`  |
+| `ENV_VARS`                   | Additional environment variables as a JSON formatted object                  |
+
+**Example with signed commits using SSH key:**
+
+```yml
+name: Build and push assets
+
+on:
+  workflow_dispatch:
+  push:
+    tags: [ '*' ]
+    branches: [ '*' ]
+    # Don't include paths if BUILT_BRANCH_NAME or RELEASE_BRANCH_NAME are defined
+    paths:
+      - '**workflows/build-and-push-assets.yml' # the workflow file itself
+      - '**.ts'
+      - '**.scss'
+      - '**.js'
+      - '**package.json'
+      - '**tsconfig.json'
+      - '**yarn.lock'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  build-assets:
+    uses: inpsyde/reusable-workflows/.github/workflows/build-and-push-assets.yml@main
+    with:
+      BUILT_BRANCH_NAME: ${{ github.ref_name }}-built # Optionally, to push compiled assets to built branch
+      RELEASE_BRANCH_NAME: release # Optionally, to move tags to release branch
+    secrets:
+      GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
+      GITHUB_USER_NAME: ${{ secrets.DEPLOYBOT_USER }}
+      GITHUB_USER_SSH_KEY: ${{ secrets.DEPLOYBOT_SSH_PRIVATE_KEY }}
+      GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.DEPLOYBOT_SSH_PUBLIC_KEY }}
+      NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_PACKAGES_READ_ACCESS_TOKEN }}
+```
 
 ## FAQ
 
@@ -186,8 +224,8 @@ jobs:
       ASSETS_TARGET_PATHS: "./assets ./modules/Foo/assets ./modules/Bar/assets"
       ASSETS_TARGET_FILES: "./my-generated-file.txt ./LICENSE"
     secrets:
-      GITHUB_USER_EMAIL: ${{ secrets.INPSYDE_BOT_EMAIL }}
-      GITHUB_USER_NAME: ${{ secrets.INPSYDE_BOT_USER }}
+      GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
+      GITHUB_USER_NAME: ${{ secrets.DEPLOYBOT_USER }}
       ENV_VARS: >-
         [{"name":"EXAMPLE_USERNAME", "value":"${{ secrets.USERNAME }}"}]
 ```
