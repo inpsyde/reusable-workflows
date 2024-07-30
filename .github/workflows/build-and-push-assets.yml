@@ -228,7 +228,7 @@ jobs:
 
       - name: Git pull on re-run
         if: ${{ (github.run_attempt > 1) && (github.ref_type != 'tag') }}
-        run: git show-ref -q refs/remotes/origin/$(git branch --show-current) && git pull
+        run: git show-ref -q refs/remotes/origin/$(git branch --show-current) && git pull || true
 
       - name: Checkout and merge the release branch
         if: ${{ github.ref_type == 'tag' && env.RELEASE_BRANCH_ENABLED == 'yes' }}
