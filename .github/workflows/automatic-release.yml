@@ -116,5 +116,5 @@ jobs:
       - name: Delete signing key files
         if: ${{ always() && env.GITHUB_USER_SSH_PUBLIC_KEY != '' }}
         run: |
-          rm "${{ runner.temp }}/signingkey"
-          rm "${{ runner.temp }}/signingkey.pub"
+          rm -f "${{ runner.temp }}/signingkey"
+          rm -f "${{ runner.temp }}/signingkey.pub"
