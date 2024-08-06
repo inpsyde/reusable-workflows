@@ -223,18 +223,18 @@ jobs:
       - name: Checkout and merge the built branch
         if: ${{ github.ref_type == 'branch' }}
         run: |
-          git checkout ${{ env.BUILT_BRANCH_NAME }} || git checkout -b ${{ env.BUILT_BRANCH_NAME }}
+          git show-ref -q refs/remotes/origin/${{ env.BUILT_BRANCH_NAME }} && git checkout ${{ env.BUILT_BRANCH_NAME }} || git checkout -b ${{ env.BUILT_BRANCH_NAME }}
           git merge ${{ github.ref_name }}
 
       - name: Git pull on re-run
         if: ${{ (github.run_attempt > 1) && (github.ref_type != 'tag') }}
-        run: git pull
+        run: git show-ref -q refs/remotes/origin/$(git branch --show-current) && git pull || true
 
       - name: Checkout and merge the release branch
         if: ${{ github.ref_type == 'tag' && env.RELEASE_BRANCH_ENABLED == 'yes' }}
         run: |
           git checkout ${{ github.event.repository.default_branch }}
-          git checkout ${{ inputs.RELEASE_BRANCH_NAME }} || git checkout -b ${{ inputs.RELEASE_BRANCH_NAME }}
+          git show-ref -q refs/remotes/origin/${{ inputs.RELEASE_BRANCH_NAME }} && git checkout ${{ inputs.RELEASE_BRANCH_NAME }} || git checkout -b ${{ inputs.RELEASE_BRANCH_NAME }}
           git merge ${{ github.event.repository.default_branch }}
 
       - name: Checkout temporary tag branch
