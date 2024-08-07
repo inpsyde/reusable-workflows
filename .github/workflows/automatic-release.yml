@@ -2,6 +2,9 @@ name: Automatic Release
 on:
   workflow_call:
     secrets:
+      NODE_AUTH_TOKEN:
+        description: Authentication to publish node packages
+        required: false
       GITHUB_USER_EMAIL:
         description: Email address for the GitHub user configuration.
         required: false
@@ -25,6 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       HAS_CONFIG: false
+      NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
       GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
       GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.GITHUB_USER_SSH_PUBLIC_KEY }}
     steps:
