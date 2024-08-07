@@ -1,4 +1,4 @@
-# Inpsyde Reusable Workflows
+# Syde Reusable Workflows
 
 ## Introduction to GitHub Actions
 
@@ -6,7 +6,7 @@ With [GitHub Actions](https://github.com/features/actions), you can create custo
 software development lifecycle directly in your GitHub repository. These workflows consist of
 different tasks, called actions, that can be executed automatically when certain events occur.
 
-At Inpsyde, we use GitHub Actions for a wide range of tasks. From various quality assurance tests
+At Syde, we use GitHub Actions for a wide range of tasks. From various quality assurance tests
 (e.g. static analysis checks, PHPUnit tests, etc.), to asset (pre)compilation
 with [Composer Asset Compiler](https://github.com/inpsyde/composer-asset-compiler), release
 generation, deployments (CI/CD), and container registry management: all automatable, recurring tasks
@@ -16,7 +16,7 @@ are performed in GitHub Actions.
 
 To avoid code duplication of GitHub Actions workflow files across thousands of repositories, we
 utilize [reusable workflows](https://docs.github.com/en/actions/using-workflows/reusing-workflows).
-This allows us to DRY (don't repeat yourself) configurations, so we don't have to copy and paste
+This allows us to DRY (don't repeat yourself) configurations so we don't have to copy and paste
 workflows from one repository to another.
 
 ## Calling reusable workflows
