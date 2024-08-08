@@ -1,8 +1,24 @@
 name: Automatic Release
 on:
   workflow_call:
+    inputs:
+      NODE_OPTIONS:
+        description: Space-separated list of command-line Node options.
+        type: string
+        default: ''
+        required: false
+      NODE_VERSION:
+        description: Node version with which the automatic release is to be executed.
+        default: 18
+        required: false
+        type: string
+      NPM_REGISTRY_DOMAIN:
+        description: Domain of the private npm registry.
+        default: https://npm.pkg.github.com/
+        required: false
+        type: string
     secrets:
-      NODE_AUTH_TOKEN:
+      NPM_REGISTRY_TOKEN:
         description: Authentication to publish node packages
         required: false
       GITHUB_USER_EMAIL:
@@ -28,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       HAS_CONFIG: false
-      NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
       GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.GITHUB_USER_SSH_PUBLIC_KEY }}
     steps:
@@ -45,6 +61,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: semantic-release-repo/package.json
+          registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}    
 
       - name: Install dependencies
         run: |
