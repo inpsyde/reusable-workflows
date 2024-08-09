@@ -16,9 +16,9 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/build-assets-compilation.yml@main
 ```
 
-### Configuration parameters
+## Configuration parameters
 
-#### Inputs
+### Inputs
 
 | Name                  | Default                       | Description                                                                       |
 |-----------------------|-------------------------------|-----------------------------------------------------------------------------------|
@@ -30,7 +30,7 @@ jobs:
 | `COMPOSER_ARGS`       | `'--prefer-dist'`             | Set of arguments passed to Composer                                               |
 | `COMPILE_ASSETS_ARGS` | `'-v --env=root'`             | Set of arguments passed to Composer Asset Compiler                                |
 
-#### Secrets
+### Secrets
 
 | Name                  | Description                                                                              |
 |-----------------------|------------------------------------------------------------------------------------------|
