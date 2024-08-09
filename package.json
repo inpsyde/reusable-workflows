@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "devDependencies": {
+    "@wordpress/scripts": "^28.4.0"
+  },
+  "scripts": {
+    "lint-docs": "npx wp-scripts lint-md-docs ."
+  }
+}
