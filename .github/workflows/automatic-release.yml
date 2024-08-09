@@ -51,7 +51,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: semantic-release-repo/package.json
-          registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
 
       - name: Install dependencies
         run: |
