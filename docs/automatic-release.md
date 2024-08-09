@@ -42,10 +42,17 @@ jobs:
 
 ## Configuration parameters
 
+### Inputs
+
+| Name                  | Required | Default                         | Description                        |
+|-----------------------|----------|---------------------------------|------------------------------------|
+| `NPM_REGISTRY_DOMAIN` | false    | `'https://npm.pkg.github.com/'` | Domain of the private npm registry |
+
 ### Secrets
 
 | Name                         | Required | Default | Description                                                                                         |
 |------------------------------|----------|---------|-----------------------------------------------------------------------------------------------------|
+| `NPM_REGISTRY_TOKEN`         | false    | `''`    | Authentication for the private npm registry                                                         |
 | `GITHUB_USER_EMAIL`          | false    | `''`    | Email address for the GitHub user configuration                                                     |
 | `GITHUB_USER_NAME`           | false    | `''`    | Username for the GitHub user configuration                                                          |
 | `GITHUB_USER_SSH_KEY`        | false    | `''`    | Private SSH key associated with the GitHub user for the token passed as `GITHUB_USER_TOKEN`         |
