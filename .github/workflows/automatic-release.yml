@@ -9,7 +9,7 @@ on:
         type: string
     secrets:
       NPM_REGISTRY_TOKEN:
-        description: Authentication to publish node packages
+        description: Authentication for the private npm registry.
         required: false
       GITHUB_USER_EMAIL:
         description: Email address for the GitHub user configuration.
@@ -47,7 +47,7 @@ jobs:
           sparse-checkout-cone-mode: false
           path: semantic-release-repo
 
-      - name: Setup Node.js
+      - name: Setup up node
         uses: actions/setup-node@v4
         with:
           node-version-file: semantic-release-repo/package.json
