@@ -1,7 +1,16 @@
 name: Automatic Release
 on:
   workflow_call:
+    inputs:
+      NPM_REGISTRY_DOMAIN:
+        description: Domain of the private npm registry.
+        default: https://npm.pkg.github.com/
+        required: false
+        type: string
     secrets:
+      NPM_REGISTRY_TOKEN:
+        description: Authentication to publish node packages
+        required: false
       GITHUB_USER_EMAIL:
         description: Email address for the GitHub user configuration.
         required: false
@@ -17,9 +26,6 @@ on:
       GITHUB_USER_TOKEN:
         description: Authentication token with write permission needed by the release bot (falls back to `GITHUB_TOKEN`).
         required: false
-      NPM_REGISTRY_TOKEN:
-        description: Authentication token with write permission needed by NPM to release a package (falls back to GITHUB_TOKEN).
-        required: false
 
 jobs:
   release:
@@ -28,6 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       HAS_CONFIG: false
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
       GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.GITHUB_USER_SSH_PUBLIC_KEY }}
     steps:
@@ -44,6 +51,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: semantic-release-repo/package.json
+          registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
 
       - name: Install dependencies
         run: |
@@ -115,7 +123,6 @@ jobs:
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_USER_TOKEN != '' && secrets.GITHUB_USER_TOKEN || secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN != '' && secrets.NPM_REGISTRY_TOKEN || secrets.GITHUB_TOKEN }}
         run: npx semantic-release
 
       - name: Delete signing key files
