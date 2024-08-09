@@ -47,7 +47,7 @@ jobs:
           sparse-checkout-cone-mode: false
           path: semantic-release-repo
 
-      - name: Setup up node
+      - name: Set up node
         uses: actions/setup-node@v4
         with:
           node-version-file: semantic-release-repo/package.json
