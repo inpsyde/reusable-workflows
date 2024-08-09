@@ -192,8 +192,8 @@ The following table provides an overview when `COMPILE_SCRIPT_DEV` or `COMPILE_S
 |--------|--------------------|-----------------------|
 | `''`   | push to branch     | `COMPILE_SCRIPT_DEV`  |
 | `''`   | create release/tag | `COMPILE_SCRIPT_PROD` |
-| `dev`  | _not evaluated_    | `COMPILE_SCRIPT_DEV`  |
-| `prod` | _not evaluated_    | `COMPILE_SCRIPT_PROD` |
+| `dev`  | *not evaluated*    | `COMPILE_SCRIPT_DEV`  |
+| `prod` | *not evaluated*    | `COMPILE_SCRIPT_PROD` |
 
 **Example:** I want to push to a branch `production` and "production"-ready assets should be
 compiled:
@@ -308,7 +308,7 @@ By passing a key associated with the GitHub user defined in the required `GITHUB
 workflow can install these packages.
 
 Please note that in such cases it is a good practice not to use a "personal" GitHub user, but an
-_ad-hoc_ "bot" user with an _ad-hoc_ private SSH key used only for the scope.
+*ad-hoc* "bot" user with an *ad-hoc* private SSH key used only for the scope.
 
 ---
 
