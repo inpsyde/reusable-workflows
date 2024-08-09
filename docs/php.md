@@ -17,9 +17,9 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/coding-standards-php.yml@main
 ```
 
-### Configuration parameters
+### Configuration parameters {#coding-standards-analysis-configuration-parameters}
 
-#### Inputs
+#### Inputs {#coding-standards-analysis-inputs}
 
 | Name            | Default                                                  | Description                                     |
 |-----------------|----------------------------------------------------------|-------------------------------------------------|
@@ -28,7 +28,7 @@ jobs:
 | `PHPCS_ARGS`    | `'--report-full --report-checkstyle=./phpcs-report.xml'` | Set of arguments passed to PHP_CodeSniffer      |
 | `CS2PR_ARGS`    | `'--graceful-warnings ./phpcs-report.xml'`               | Set of arguments passed to cs2pr                |
 
-#### Secrets
+#### Secrets {#coding-standards-analysis-secrets}
 
 | Name                 | Description                                                                              |
 |----------------------|------------------------------------------------------------------------------------------|
@@ -74,9 +74,9 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/static-analysis-php.yml@main
 ```
 
-### Configuration parameters
+### Configuration parameters {#static-code-analysis-configuration-parameters}
 
-#### Inputs
+#### Inputs {#static-code-analysis-inputs}
 
 | Name            | Default                               | Description                                     |
 |-----------------|---------------------------------------|-------------------------------------------------|
@@ -84,7 +84,7 @@ jobs:
 | `COMPOSER_ARGS` | `'--prefer-dist'`                     | Set of arguments passed to Composer             |
 | `PSALM_ARGS`    | `'--output-format=github --no-cache'` | Set of arguments passed to Psalm                |
 
-#### Secrets
+#### Secrets {#static-code-analysis-secrets}
 
 | Name                 | Description                                                                              |
 |----------------------|------------------------------------------------------------------------------------------|
@@ -130,9 +130,9 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/tests-unit-php.yml@main
 ```
 
-### Configuration parameters
+### Configuration parameters {#unit-tests-php-configuration-parameters}
 
-#### Inputs
+#### Inputs {#unit-tests-php-inputs}
 
 | Name            | Default             | Description                                     |
 |-----------------|---------------------|-------------------------------------------------|
@@ -140,7 +140,7 @@ jobs:
 | `COMPOSER_ARGS` | `'--prefer-dist'`   | Set of arguments passed to Composer             |
 | `PHPUNIT_ARGS`  | `'--coverage-text'` | Set of arguments passed to PHPUnit              |
 
-#### Secrets
+#### Secrets {#unit-tests-php-secrets}
 
 | Name                 | Description                                                                              |
 |----------------------|------------------------------------------------------------------------------------------|
@@ -181,9 +181,9 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/lint-php.yml@main
 ```
 
-### Configuration parameters
+### Configuration parameters {#lint-php-configuration-parameters}
 
-#### Inputs
+#### Inputs {#lint-php-inputs}
 
 | Name                    | Default                                 | Description                                                    |
 |-------------------------|-----------------------------------------|----------------------------------------------------------------|
@@ -192,7 +192,7 @@ jobs:
 | `LINT_ARGS`             | `'-e php --colors --show-deprecated .'` | Set of arguments passed to PHP Parallel Lint                   |
 | `COMPOSER_DEPS_INSTALL` | `false`                                 | Whether or not to install Composer dependencies before linting |
 
-#### Secrets
+#### Secrets {#lint-php-secrets}
 
 | Name                 | Description                                                                              |
 |----------------------|------------------------------------------------------------------------------------------|
