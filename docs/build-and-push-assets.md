@@ -260,7 +260,7 @@ same as the two commits would have been made as a single commit including both.
 > commit belongs to which "real" commit?
 
 As a side effect of using the
-recommended [concurrency settings] (https://docs.github.com/en/actions/using-jobs/using-concurrency)
+recommended [concurrency settings](https://docs.github.com/en/actions/using-jobs/using-concurrency)
 , the git history will be linear. The compilation commit would normally refer to the previous
 commit, whatever that is. In the case of cherry-picking or another non-linear branch merging, this "
 linearity" could be compromised. For this reason, the workflow adds to the commit message the commit
