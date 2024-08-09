@@ -51,7 +51,7 @@ is moved** to point to the commit that contains the compiled assets.
   to avoid running the workflow when no asset sources are changed. However, it should not be used
   for built branches and release branch strategies because the sync should happen on every push.
 
-## Simple usage example:
+## Simple usage example
 
 ```yml
 name: Build and push assets
