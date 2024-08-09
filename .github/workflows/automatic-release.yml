@@ -123,7 +123,7 @@ jobs:
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_USER_TOKEN != '' && secrets.GITHUB_USER_TOKEN || secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+#          NPM_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
         run: npx semantic-release
 
       - name: Delete signing key files
