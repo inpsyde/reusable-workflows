@@ -10,22 +10,19 @@ To achieve that, the reusable workflow:
 
 ## Where are assets stored
 
-Two inputs can be used to define branches as assets storage - `BUILT_BRANCH_SUFFIX` and `RELEASE_BRANCH_NAME`.
+Two inputs can be used to define branches as assets storage: `BUILT_BRANCH_NAME` and `RELEASE_BRANCH_NAME`.
 
-`BUILT_BRANCH_SUFFIX` is used only for push-to-branch events. If defined, compiled assets
-will be stored in the branch with name equals current branch plus suffix. For instance,
-if `BUILT_BRANCH_SUFFIX` equals `-built` for pushing to the `main` branch, compiled assets will be stored
-in the `main-built` branch (a branch will be created if it does not exist).
+`BUILT_BRANCH_NAME` is used only for `branch` events. If defined, compiled assets will be stored in the branch of this
+name. For example, if `BUILT_BRANCH_NAME` is set to `${{ github.ref_name }}-built`, when pushing to the `main` branch,
+compiled assets will be stored in the `main-built` branch (the branch will be created if it does not exist).
 
-`RELEASE_BRANCH_NAME` is used only for tag events. If defined and the pushed tag points
-to the last commit of the default branch of the GitHub repository, compiled assets will be pushed
-to the release branch, and the tag will be moved there.
-If the input is undefined or the tag points to one of the previous commits,
-the compiled assets will be pushed to the detached commit, and the tag will be moved there.
+`RELEASE_BRANCH_NAME` is only used for tag events. If defined and the tag being pushed points to the latest commit of
+the default branch of the GitHub repository, compiled assets will be pushed to the branch of this name, and the tag will
+be moved there (the branch will be created if it does not exist).
 
-The main benefit of using `BUILT_BRANCH_SUFFIX` is not to pollute the main development branch
+The main benefit of using `BUILT_BRANCH_NAME` is not to pollute the main development branch
 with commits containing compiled assets. With `RELEASE_BRANCH_NAME`, you can gain linear tag history
-if you always tag just the last commit from the main development branch.
+by always tagging only the latest commit from the main development branch.
 
 ## Build script
 
@@ -62,9 +59,9 @@ name: Build and push assets
 on:
   workflow_dispatch:
   push:
-    tags: ['*']
-    branches: ['*']
-    # Don't include paths if BUILT_BRANCH_SUFFIX or RELEASE_BRANCH_NAME are defined
+    tags: [ '*' ]
+    branches: [ '*' ]
+    # Don't include paths if BUILT_BRANCH_NAME or RELEASE_BRANCH_NAME are defined
     paths:
       - '**workflows/build-and-push-assets.yml' # the workflow file itself
       - '**.ts'
@@ -76,21 +73,22 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   build-assets:
     uses: inpsyde/reusable-workflows/.github/workflows/build-and-push-assets.yml@main
     with:
-      BUILT_BRANCH_SUFFIX: '-built' # Optionally, to push compiled assets to built branch
-      RELEASE_BRANCH_NAME: 'release' # Optionally, to move tags to release branch
+      BUILT_BRANCH_NAME: ${{ github.ref_name }}-built # Optionally, to push compiled assets to built branch
+      RELEASE_BRANCH_NAME: release # Optionally, to move tags to release branch
     secrets:
-      GITHUB_USER_EMAIL: ${{ secrets.INPSYDE_BOT_EMAIL }}
-      GITHUB_USER_NAME: ${{ secrets.INPSYDE_BOT_USER }}
+      GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
+      GITHUB_USER_NAME: ${{ secrets.DEPLOYBOT_USER }}
       NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_PACKAGES_READ_ACCESS_TOKEN }}
 ```
 
 This is not the simplest possible example, but it showcases all the recommendations.
+
+**Note**: Do not set `cancel-in-progress: true` to the `concurrency` setting because it interrupts the workflow.
 
 ## Configuration parameters
 
@@ -106,22 +104,61 @@ This is not the simplest possible example, but it showcases all the recommendati
 | `COMPILE_SCRIPT_PROD` | `'build'`                     | Script added to `npm run` or `yarn` to build production assets                                                                  |
 | `COMPILE_SCRIPT_DEV`  | `'build:dev'`                 | Script added to `npm run` or `yarn` to build development assets                                                                 |
 | `MODE`                | `''`                          | Mode for compiling assets (`prod` or `dev`)                                                                                     |
-| `ASSETS_TARGET_PATHS` | `'./assets'`                  | Target path(s) for compiled assets                                                                                              |
-| `BUILT_BRANCH_SUFFIX` | `''`                          | Suffix to calculate the target branch for pushing assets on the `branch` event                                                  |
+| `ASSETS_TARGET_PATHS` | `'./assets'`                  | Space-separated list of target directory paths for compiled assets                                                              |
+| `ASSETS_TARGET_FILES` | `''`                          | Space-separated list of target file paths for compiled assets                                                                   |
+| `BUILT_BRANCH_SUFFIX` | `''`                          | :warning: deprecated - Suffix to calculate the target branch for pushing assets on the `branch` event                           |
+| `BUILT_BRANCH_NAME`   | `''`                          | Sets the target branch for pushing assets on the `branch` event                                                                 |
 | `RELEASE_BRANCH_NAME` | `''`                          | On tag events, target branch where compiled assets are pushed and the tag is moved to                                           |
 | `PHP_VERSION`         | `'8.2'`                       | PHP version with which the PHP tools are to be executed                                                                         |
 | `PHP_TOOLS`           | `''`                          | PHP tools supported by [shivammathur/setup-php](https://github.com/shivammathur/setup-php#wrench-tools-support) to be installed |
 
-
 ## Secrets
 
-| Name                  | Description                                                                  |
-|-----------------------|------------------------------------------------------------------------------|
-| `NPM_REGISTRY_TOKEN`  | Authentication for the private npm registry                                  |
-| `GITHUB_USER_EMAIL`   | Email address for the GitHub user configuration                              |
-| `GITHUB_USER_NAME`    | Username for the GitHub user configuration                                   |
-| `GITHUB_USER_SSH_KEY` | Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME` |
-| `ENV_VARS`            | Additional environment variables as a JSON formatted object                  |
+| Name                         | Description                                                                  |
+|------------------------------|------------------------------------------------------------------------------|
+| `NPM_REGISTRY_TOKEN`         | Authentication for the private npm registry                                  |
+| `GITHUB_USER_EMAIL`          | Email address for the GitHub user configuration                              |
+| `GITHUB_USER_NAME`           | Username for the GitHub user configuration                                   |
+| `GITHUB_USER_SSH_KEY`        | Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME` |
+| `GITHUB_USER_SSH_PUBLIC_KEY` | Public SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`  |
+| `ENV_VARS`                   | Additional environment variables as a JSON formatted object                  |
+
+**Example with signed commits using SSH key:**
+
+```yml
+name: Build and push assets
+
+on:
+  workflow_dispatch:
+  push:
+    tags: [ '*' ]
+    branches: [ '*' ]
+    # Don't include paths if BUILT_BRANCH_NAME or RELEASE_BRANCH_NAME are defined
+    paths:
+      - '**workflows/build-and-push-assets.yml' # the workflow file itself
+      - '**.ts'
+      - '**.scss'
+      - '**.js'
+      - '**package.json'
+      - '**tsconfig.json'
+      - '**yarn.lock'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  build-assets:
+    uses: inpsyde/reusable-workflows/.github/workflows/build-and-push-assets.yml@main
+    with:
+      BUILT_BRANCH_NAME: ${{ github.ref_name }}-built # Optionally, to push compiled assets to built branch
+      RELEASE_BRANCH_NAME: release # Optionally, to move tags to release branch
+    secrets:
+      GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
+      GITHUB_USER_NAME: ${{ secrets.DEPLOYBOT_USER }}
+      GITHUB_USER_SSH_KEY: ${{ secrets.DEPLOYBOT_SSH_PRIVATE_KEY }}
+      GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.DEPLOYBOT_SSH_PUBLIC_KEY }}
+      NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_PACKAGES_READ_ACCESS_TOKEN }}
+```
 
 ## FAQ
 
@@ -172,9 +209,9 @@ jobs:
       MODE: ${{ github.ref_type == 'branch' && github.ref_name == 'production' && 'prod' || '' }}
 ```
 
-> Can I have multiple output folders for my package?
+> Can I have multiple output folders for my package? What about files?
 
-Yes, the `inputs.ASSETS_TARGET_PATHS` accepts multiple space-separated paths:
+Yes, `inputs.ASSETS_TARGET_PATHS` and `inputs.ASSETS_TARGET_FILES` accept multiple space-separated paths for directories and files, respectively.
 
 ```yaml
 name: Build and push assets
@@ -185,16 +222,17 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/build-and-push-assets.yml@main
     with:
       ASSETS_TARGET_PATHS: "./assets ./modules/Foo/assets ./modules/Bar/assets"
+      ASSETS_TARGET_FILES: "./my-generated-file.txt ./LICENSE"
     secrets:
-      GITHUB_USER_EMAIL: ${{ secrets.INPSYDE_BOT_EMAIL }}
-      GITHUB_USER_NAME: ${{ secrets.INPSYDE_BOT_USER }}
+      GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
+      GITHUB_USER_NAME: ${{ secrets.DEPLOYBOT_USER }}
       ENV_VARS: >-
         [{"name":"EXAMPLE_USERNAME", "value":"${{ secrets.USERNAME }}"}]
 ```
 
 ---
 
-> Will I have merge conflicts during PRs merging if I don't use `BUILT_BRANCH_SUFFIX`?
+> Will I have merge conflicts during PRs merging if I don't use `BUILT_BRANCH_NAME`?
 
 No, if you follow the recommendations in this document you shouldn't.
 
@@ -231,7 +269,7 @@ hash that triggered the compilation.
 As for the "noise", it will indeed be there. However, considering that all workflow commit messages
 start with the prefix `[BOT]`, it would be quite easy to ignore them without any cognitive effort.
 
-By defining `BUILT_BRANCH_SUFFIX`, you keep commits containing compiled assets separated in the built branch.
+By defining `BUILT_BRANCH_NAME`, you keep commits containing compiled assets separated in the built branch.
 
 ---
 
@@ -278,7 +316,21 @@ _ad-hoc_ "bot" user with an _ad-hoc_ private SSH key used only for the scope.
 
 For tags, the pushed tag name is always used.
 
-For branches, it depends on the `BUILT_BRANCH_SUFFIX` input value. If the input is not provided,
-you can use the branch name (i.e., `dev-main` for the `main` branch) as usual. If a suffix was defined,
-the built branch should be used. I.e., when `BUILT_BRANCH_SUFFIX` is `-built` and branch `main`,
-the `dev-main-built` branch should be used as the package version.
+For branches, it depends on the `BUILT_BRANCH_NAME` input value. For example, when `BUILT_BRANCH_NAME`
+is `${{ github.ref_name}}-built` and the branch triggering the workflow is `main`, the built branch name will resolve
+to `main-built`. In this case, require the `dev-main-built` branch in `composer.json`.
+
+---
+
+> `BUILT_BRANCH_NAME` configuration example
+
+```yaml
+BUILT_BRANCH_NAME: "${{ (github.ref_name == 'dev-main' && 'main' || (github.ref_name == 'dev-beta' && 'beta' || (github.ref_name == 'dev-alpha' && 'alpha' || '') ) ) }}"
+```
+
+The logic in the example above will behave like this:
+
+- If `github.ref_name` is equal to `dev-main`, the value of `BUILT_BRANCH_NAME` will be `main`
+- If `github.ref_name` is equal to `dev-beta`, the value of `BUILT_BRANCH_NAME` will be `beta`
+- If `github.ref_name` is equal to `dev-alpha`, the value of `BUILT_BRANCH_NAME` will be `alpha`
+- If none of the above conditions are met, the value of `BUILT_BRANCH_NAME` will be `''`, which is the default
