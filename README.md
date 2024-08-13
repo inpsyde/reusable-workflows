@@ -45,3 +45,7 @@ groups here:
 * [Create plugin archive](./docs/archive-creation.md)
 * [Automatic release](./docs/automatic-release.md)
 * [DDEV Playwright](./docs/ddev-playwright.md)
+
+**Note:**
+
+Workflow files prefixed with `_` are specific to the repository and are not intended to be reused.
