@@ -4,6 +4,6 @@
     "@wordpress/scripts": "^28.4.0"
   },
   "scripts": {
-    "lint-docs": "npx wp-scripts lint-md-docs ."
+    "lint:md": "wp-scripts lint-md-docs"
   }
 }
