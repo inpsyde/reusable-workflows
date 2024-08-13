@@ -1,4 +1,4 @@
-# Build and push assets
+## Build and push assets
 
 This action can be used to build assets in a controlled and isolated environment via GitHub Actions.
 
