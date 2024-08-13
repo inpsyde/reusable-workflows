@@ -48,4 +48,4 @@ groups here:
 
 **Note:**
 
-Workflow files prefixed with `_` are specific to the repository and are not intended to be reused.
+Workflow files prefixed with `_` are specific to the repository and cannot be reused.
