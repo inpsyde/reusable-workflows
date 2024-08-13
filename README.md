@@ -1,4 +1,4 @@
-## Syde Reusable Workflows
+# Syde Reusable Workflows
 
 ## Introduction to GitHub Actions
 
