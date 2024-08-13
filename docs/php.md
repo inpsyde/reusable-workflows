@@ -1,4 +1,5 @@
 # Reusable workflows – PHP
+<!-- markdownlint-disable MD024 -->
 
 ## Coding standards analysis
 
@@ -17,9 +18,9 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/coding-standards-php.yml@main
 ```
 
-### Configuration parameters {#coding-standards-analysis-configuration-parameters}
+### Configuration parameters
 
-#### Inputs {#coding-standards-analysis-inputs}
+#### Inputs
 
 | Name            | Default                                                  | Description                                     |
 |-----------------|----------------------------------------------------------|-------------------------------------------------|
@@ -28,7 +29,7 @@ jobs:
 | `PHPCS_ARGS`    | `'--report-full --report-checkstyle=./phpcs-report.xml'` | Set of arguments passed to PHP_CodeSniffer      |
 | `CS2PR_ARGS`    | `'--graceful-warnings ./phpcs-report.xml'`               | Set of arguments passed to cs2pr                |
 
-#### Secrets {#coding-standards-analysis-secrets}
+#### Secrets
 
 | Name                 | Description                                                                              |
 |----------------------|------------------------------------------------------------------------------------------|
@@ -74,9 +75,9 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/static-analysis-php.yml@main
 ```
 
-### Configuration parameters {#static-code-analysis-configuration-parameters}
+### Configuration parameters
 
-#### Inputs {#static-code-analysis-inputs}
+#### Inputs
 
 | Name            | Default                               | Description                                     |
 |-----------------|---------------------------------------|-------------------------------------------------|
@@ -84,7 +85,7 @@ jobs:
 | `COMPOSER_ARGS` | `'--prefer-dist'`                     | Set of arguments passed to Composer             |
 | `PSALM_ARGS`    | `'--output-format=github --no-cache'` | Set of arguments passed to Psalm                |
 
-#### Secrets {#static-code-analysis-secrets}
+#### Secrets
 
 | Name                 | Description                                                                              |
 |----------------------|------------------------------------------------------------------------------------------|
@@ -130,9 +131,9 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/tests-unit-php.yml@main
 ```
 
-### Configuration parameters {#unit-tests-php-configuration-parameters}
+### Configuration parameters
 
-#### Inputs {#unit-tests-php-inputs}
+#### Inputs
 
 | Name            | Default             | Description                                     |
 |-----------------|---------------------|-------------------------------------------------|
@@ -140,7 +141,7 @@ jobs:
 | `COMPOSER_ARGS` | `'--prefer-dist'`   | Set of arguments passed to Composer             |
 | `PHPUNIT_ARGS`  | `'--coverage-text'` | Set of arguments passed to PHPUnit              |
 
-#### Secrets {#unit-tests-php-secrets}
+#### Secrets
 
 | Name                 | Description                                                                              |
 |----------------------|------------------------------------------------------------------------------------------|
@@ -181,9 +182,9 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/lint-php.yml@main
 ```
 
-### Configuration parameters {#lint-php-configuration-parameters}
+### Configuration parameters
 
-#### Inputs {#lint-php-inputs}
+#### Inputs
 
 | Name                    | Default                                 | Description                                                    |
 |-------------------------|-----------------------------------------|----------------------------------------------------------------|
@@ -192,7 +193,7 @@ jobs:
 | `LINT_ARGS`             | `'-e php --colors --show-deprecated .'` | Set of arguments passed to PHP Parallel Lint                   |
 | `COMPOSER_DEPS_INSTALL` | `false`                                 | Whether or not to install Composer dependencies before linting |
 
-#### Secrets {#lint-php-secrets}
+#### Secrets
 
 | Name                 | Description                                                                              |
 |----------------------|------------------------------------------------------------------------------------------|
