@@ -12,7 +12,7 @@ To achieve that, the reusable workflow:
 6. Runs `wp dist-archive` to create the final archive (with builtin support for a `.distignore` file)
 7. Uploads it as an artifact for download or further processing
 
-## Simple usage example:
+## Simple usage example
 
 ```yml
 name: Create release package

@@ -51,7 +51,7 @@ is moved** to point to the commit that contains the compiled assets.
   to avoid running the workflow when no asset sources are changed. However, it should not be used
   for built branches and release branch strategies because the sync should happen on every push.
 
-## Simple usage example:
+## Simple usage example
 
 ```yml
 name: Build and push assets
@@ -192,8 +192,8 @@ The following table provides an overview when `COMPILE_SCRIPT_DEV` or `COMPILE_S
 |--------|--------------------|-----------------------|
 | `''`   | push to branch     | `COMPILE_SCRIPT_DEV`  |
 | `''`   | create release/tag | `COMPILE_SCRIPT_PROD` |
-| `dev`  | _not evaluated_    | `COMPILE_SCRIPT_DEV`  |
-| `prod` | _not evaluated_    | `COMPILE_SCRIPT_PROD` |
+| `dev`  | *not evaluated*    | `COMPILE_SCRIPT_DEV`  |
+| `prod` | *not evaluated*    | `COMPILE_SCRIPT_PROD` |
 
 **Example:** I want to push to a branch `production` and "production"-ready assets should be
 compiled:
@@ -260,7 +260,7 @@ same as the two commits would have been made as a single commit including both.
 > commit belongs to which "real" commit?
 
 As a side effect of using the
-recommended [concurrency settings] (https://docs.github.com/en/actions/using-jobs/using-concurrency)
+recommended [concurrency settings](https://docs.github.com/en/actions/using-jobs/using-concurrency)
 , the git history will be linear. The compilation commit would normally refer to the previous
 commit, whatever that is. In the case of cherry-picking or another non-linear branch merging, this "
 linearity" could be compromised. For this reason, the workflow adds to the commit message the commit
@@ -308,7 +308,7 @@ By passing a key associated with the GitHub user defined in the required `GITHUB
 workflow can install these packages.
 
 Please note that in such cases it is a good practice not to use a "personal" GitHub user, but an
-_ad-hoc_ "bot" user with an _ad-hoc_ private SSH key used only for the scope.
+*ad-hoc* "bot" user with an *ad-hoc* private SSH key used only for the scope.
 
 ---
 
