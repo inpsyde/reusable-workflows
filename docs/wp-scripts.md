@@ -26,7 +26,7 @@ jobs:
 | `NODE_OPTIONS`          | `''`                           | Space-separated list of command-line Node options                                 |
 | `NODE_VERSION`          | `18`                           | Node version with which the assets will be compiled                               |
 | `NPM_REGISTRY_DOMAIN`   | `https://npm.pkg.github.com/`  | Domain of the private npm registry                                                |
-| `PACKAGE_MANAGER`       | `yarn`                         | Package manager with which the dependencies should be installed (`npm` or `yarn`) |
+| `PACKAGE_MANAGER`       | `npm`                          | Package manager with which the dependencies should be installed (`npm` or `yarn`) |
 | `LINT_TOOLS`            | `'["js", "style", "md-docs"]'` | Array of checks to be executed by @wordpress/scripts                              |
 | `ESLINT_ARGS`           | `''`                           | Set of arguments passed to `wp-script lint-js`                                    |
 | `STYLELINT_ARGS`        | `''`                           | Set of arguments passed to `wp-script lint-style`                                 |

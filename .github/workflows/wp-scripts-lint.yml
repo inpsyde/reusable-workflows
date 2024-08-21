@@ -20,7 +20,7 @@ on:
         type: string
       PACKAGE_MANAGER:
         description: Package manager with which the dependencies should be installed (`npm` or `yarn`).
-        default: 'yarn'
+        default: 'npm'
         required: false
         type: string
       LINT_TOOLS:
