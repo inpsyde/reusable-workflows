@@ -1,7 +1,16 @@
 name: Automatic Release
 on:
   workflow_call:
+    inputs:
+      NPM_REGISTRY_DOMAIN:
+        description: Domain of the private npm registry.
+        default: https://npm.pkg.github.com/
+        required: false
+        type: string
     secrets:
+      NPM_REGISTRY_TOKEN:
+        description: Authentication for the private npm registry.
+        required: false
       GITHUB_USER_EMAIL:
         description: Email address for the GitHub user configuration.
         required: false
@@ -25,6 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       HAS_CONFIG: false
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
       GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.GITHUB_USER_SSH_PUBLIC_KEY }}
     steps:
@@ -37,10 +47,11 @@ jobs:
           sparse-checkout-cone-mode: false
           path: semantic-release-repo
 
-      - name: Setup Node.js
+      - name: Set up node
         uses: actions/setup-node@v4
         with:
           node-version-file: semantic-release-repo/package.json
+          registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
 
       - name: Install dependencies
         run: |
