@@ -7,8 +7,8 @@ This reusable workflow:
 3. If the Ngrok auth token is provided, it sets up Ngrok. Ngrok can be needed if some third-party service, e.g., webhooks, must access the website.
    1. Launches Ngrok, using `vendor/bin/ddev-share` from [inpsyde/ddev-tools](https://github.com/inpsyde/ddev-tools) by default.
    2. Saves the URL to the specified env variable, `BASEURL` by default.
-4. Installs Playwright and its dependencies via the provided command, such as `yarn install && yarn playwright install --with-deps` or `ddev pw-install-host` from [inpsyde/ddev-wordpress-plugin-template](https://github.com/inpsyde/ddev-wordpress-plugin-template).
-5. Runs Playwright tests via the provided command, such as `yarn playwright test` or `ddev pw-host test` from [inpsyde/ddev-wordpress-plugin-template](https://github.com/inpsyde/ddev-wordpress-plugin-template).
+4. Installs Playwright and its dependencies via the provided command, such as `npm install && npx playwright install --with-deps` or `ddev pw-install-host` from [inpsyde/ddev-wordpress-plugin-template](https://github.com/inpsyde/ddev-wordpress-plugin-template).
+5. Runs Playwright tests via the provided command, such as `npx playwright test` or `ddev pw-host test` from [inpsyde/ddev-wordpress-plugin-template](https://github.com/inpsyde/ddev-wordpress-plugin-template).
 
 It is possible to add any env variables for the "host" and for DDEV.
 
@@ -54,16 +54,16 @@ jobs:
 
 ### Inputs
 
-| Name                     | Default                   | Description                                                                                                                                                                                                                                          |
-|--------------------------|---------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `PHP_VERSION`            | `""`                      | PHP version which will override the version set in the DDEV config                                                                                                                                                                                   |
-| `NODE_VERSION`           | `""`                      | Node version which will override the version set in the DDEV config                                                                                                                                                                                  |
-| `DDEV_ORCHESTRATE_CMD`   | `""`                      | The command for setting up the DDEV website, such as `ddev orchestrate` from [inpsyde/ddev-wordpress-plugin-template](https://github.com/inpsyde/ddev-wordpress-plugin-template)                                                                     |
-| `PLAYWRIGHT_INSTALL_CMD` | `""`                      | The command for installing Playwright and its deps, such as `yarn install && yarn playwright install --with-deps` or `ddev pw-install-host` from [inpsyde/ddev-wordpress-plugin-template](https://github.com/inpsyde/ddev-wordpress-plugin-template) |
-| `PLAYWRIGHT_RUN_CMD`     | `""`                      | The command for running Playwright tests, such as `yarn playwright test` or `ddev pw-host test` from [inpsyde/ddev-wordpress-plugin-template](https://github.com/inpsyde/ddev-wordpress-plugin-template)                                             |
-| `PLAYWRIGHT_DIR`         | `"tests/Playwright"`      | The path to the Playwright project                                                                                                                                                                                                                   | 
-| `NGROK_START_CMD`        | `"vendor/bin/ddev-share"` | The command for starting Ngrok, such as `ddev-share` from [inpsyde/ddev-tools](https://github.com/inpsyde/ddev-tools)                                                                                                                                |
-| `BASEURL_ENV_NAME`       | `"BASEURL"`               | The name of the env variable with the base URL for Playwright, used for overwriting it with the URL from Ngrok                                                                                                                                       |
+| Name                     | Default                   | Description                                                                                                                                                                                                                                        |
+|--------------------------|---------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `PHP_VERSION`            | `""`                      | PHP version which will override the version set in the DDEV config                                                                                                                                                                                 |
+| `NODE_VERSION`           | `""`                      | Node version which will override the version set in the DDEV config                                                                                                                                                                                |
+| `DDEV_ORCHESTRATE_CMD`   | `""`                      | The command for setting up the DDEV website, such as `ddev orchestrate` from [inpsyde/ddev-wordpress-plugin-template](https://github.com/inpsyde/ddev-wordpress-plugin-template)                                                                   |
+| `PLAYWRIGHT_INSTALL_CMD` | `""`                      | The command for installing Playwright and its deps, such as `npm install && npx playwright install --with-deps` or `ddev pw-install-host` from [inpsyde/ddev-wordpress-plugin-template](https://github.com/inpsyde/ddev-wordpress-plugin-template) |
+| `PLAYWRIGHT_RUN_CMD`     | `""`                      | The command for running Playwright tests, such as `npx playwright test` or `ddev pw-host test` from [inpsyde/ddev-wordpress-plugin-template](https://github.com/inpsyde/ddev-wordpress-plugin-template)                                            |
+| `PLAYWRIGHT_DIR`         | `"tests/Playwright"`      | The path to the Playwright project                                                                                                                                                                                                                 | 
+| `NGROK_START_CMD`        | `"vendor/bin/ddev-share"` | The command for starting Ngrok, such as `ddev-share` from [inpsyde/ddev-tools](https://github.com/inpsyde/ddev-tools)                                                                                                                              |
+| `BASEURL_ENV_NAME`       | `"BASEURL"`               | The name of the env variable with the base URL for Playwright, used for overwriting it with the URL from Ngrok                                                                                                                                     |
 
 ## Secrets
 
