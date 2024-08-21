@@ -279,8 +279,11 @@ jobs:
           git add -A
           git commit -m "[BOT] Add compiled assets for #${{ github.ref }}" --no-verify || ((echo "NO_CHANGES=yes" >> $GITHUB_ENV) && (echo "No changes to commit"))
 
+#      The logic should be like the following:
+#      If we have changes in our assets we commit and push them.
+#      If we push not to the same branch, we always push commits (because they originated from the development branch).
       - name: Git push for branch
-        if: ${{ github.ref_type == 'branch' && (env.NO_CHANGES != 'yes' || inputs.BUILT_BRANCH_NAME != '') }}
+        if: ${{ github.ref_type == 'branch' && (env.NO_CHANGES != 'yes') }}
         run: git push
 
       - name: Git push for tag
