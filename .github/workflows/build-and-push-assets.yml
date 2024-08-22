@@ -284,11 +284,11 @@ jobs:
         run: git push
 
       - name: Git push for tag
-        if: ${{ github.ref_type == 'tag' && (env.NO_CHANGES != 'yes' || env.RELEASE_BRANCH_ENABLED == 'yes') }}
+        if: ${{ github.ref_type == 'tag' && env.RELEASE_BRANCH_ENABLED == 'yes' }}
         run: git push
 
       - name: Move tag
-        if: ${{ github.ref_type == 'tag' && (env.NO_CHANGES != 'yes' || env.RELEASE_BRANCH_ENABLED == 'yes') }}
+        if: ${{ github.ref_type == 'tag' && env.RELEASE_BRANCH_ENABLED == 'yes' }}
         run: |
           git tag -d ${{ env.TAG_NAME }}
           git push origin :refs/tags/${{ env.TAG_NAME }}
@@ -296,7 +296,7 @@ jobs:
           git push origin --tags
 
       - name: Delete temporary tag branch
-        if: ${{ always() && (env.TAG_BRANCH_NAME != '' && env.NO_CHANGES != 'yes') }}
+        if: ${{ always() && env.TAG_BRANCH_NAME != '' }}
         run: |
           git checkout --detach
           git branch -d ${{ env.TAG_BRANCH_NAME }}
