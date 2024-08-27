@@ -164,12 +164,12 @@ jobs:
               echo "$EXIT"
               exit 0
             fi
-            jq '.extra | has("composer-asset-compiler")' < composer.json >/dev/null 2>&1
+            jq '.extra | has("composer-asset-compiler")' --exit-status < composer.json >/dev/null 2>&1
             local EXIT=$?
             echo "$EXIT"
           }
           hasTranslateConfig(){
-            jq '.extra | has("wp-translation-downloader")' < composer.json >/dev/null 2>&1
+            jq '.extra | has("wp-translation-downloader")' --exit-status < composer.json >/dev/null 2>&1
             local EXIT=$?
             echo "$EXIT"
           }
