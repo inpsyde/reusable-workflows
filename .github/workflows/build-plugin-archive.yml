@@ -236,8 +236,9 @@ jobs:
         if: steps.composer-tools.outputs.php-scoper != '0'
         run: |
           shopt -s extglob
+          shopt -s dotglob
           mkdir build
-          mv !(build) .* build
+          mv !(build) build
 
       - name: Set artifact name
         id: set-artifact-name
