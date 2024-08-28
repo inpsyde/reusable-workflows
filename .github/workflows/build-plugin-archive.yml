@@ -237,7 +237,7 @@ jobs:
         run: |
           shopt -s extglob
           mkdir build
-          mv !(build) build
+          mv !(build) .* build
 
       - name: Set artifact name
         id: set-artifact-name
