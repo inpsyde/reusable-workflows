@@ -284,11 +284,11 @@ jobs:
         run: git push
 
       - name: Git push for tag
-        if: ${{ github.ref_type == 'tag' && ((env.NO_CHANGES != 'yes' && env.RELEASE_BRANCH_ENABLED == 'no') || (env.RELEASE_BRANCH_ENABLED == 'yes')) }}
+        if: ${{ github.ref_type == 'tag' && (env.NO_CHANGES != 'yes' || env.RELEASE_BRANCH_ENABLED == 'yes') }}
         run: git push
 
       - name: Move tag
-        if: ${{ github.ref_type == 'tag' && ((env.NO_CHANGES != 'yes' && env.RELEASE_BRANCH_ENABLED == 'no') || (env.RELEASE_BRANCH_ENABLED == 'yes')) }}
+        if: ${{ github.ref_type == 'tag' && (env.NO_CHANGES != 'yes' || env.RELEASE_BRANCH_ENABLED == 'yes') }}
         run: |
           git tag -d ${{ env.TAG_NAME }}
           git push origin :refs/tags/${{ env.TAG_NAME }}
