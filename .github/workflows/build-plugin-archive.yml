@@ -133,6 +133,7 @@ jobs:
             !./.git
             !./.ddev
             !./.github
+          include-hidden-files: true
   run-build-tools:
     name: Process build steps
     timeout-minutes: 10
@@ -252,6 +253,7 @@ jobs:
           path: |
             build/
             !build/**/node_modules
+          include-hidden-files: true
   create-plugin-archive:
     name: Create build archive
     timeout-minutes: 5
@@ -314,3 +316,4 @@ jobs:
         with:
           name: ${{ steps.set-artifact-name.outputs.artifact }}
           path: ./dist/*
+          include-hidden-files: true
