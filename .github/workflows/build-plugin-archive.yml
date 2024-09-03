@@ -154,7 +154,8 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.PHP_VERSION_BUILD }}
-          tools: humbug/php-scoper:dev-main, rector
+          tools: humbug/php-scoper, rector
+
       - name: Check optional Composer build tools
         id: composer-tools
         run: |
