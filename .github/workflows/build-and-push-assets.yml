@@ -53,11 +53,6 @@ on:
         default: ''
         required: false
         type: string
-      BUILT_BRANCH_SUFFIX:
-        description: Suffix to calculate the target branch for pushing assets on the `branch` event (deprecated).
-        type: string
-        default: ''
-        required: false
       BUILT_BRANCH_NAME:
         description: Sets the target branch for pushing assets on the `branch` event.
         type: string
@@ -90,6 +85,9 @@ on:
         required: true
       GITHUB_USER_SSH_KEY:
         description: Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`.
+        required: false
+      GITHUB_USER_SSH_PUBLIC_KEY:
+        description: Public SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`.
         required: false
       ENV_VARS:
         description: Additional environment variables as a JSON formatted object.
@@ -142,17 +140,13 @@ jobs:
       GITHUB_USER_EMAIL: ${{ secrets.GITHUB_USER_EMAIL }}
       GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
       GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
+      GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.GITHUB_USER_SSH_PUBLIC_KEY }}
       COMPILE_SCRIPT: ''
       TAG_NAME: ''                                     # we'll override if the push is for tag
       TAG_BRANCH_NAME: ''                              # we'll override if the push is for tag
       LOCK_FILE: ''                                    # we'll override after checking files
       NO_CHANGES: ''                                   # we'll override if no changes to commit
     steps:
-      - name: Deprecation warning
-        if: ${{ inputs.BUILT_BRANCH_SUFFIX != '' }}
-        run: |
-          echo '::warning::The BUILT_BRANCH_SUFFIX input is deprecated and will be removed soon. Please update your workflow to use BUILT_BRANCH_NAME with ${{ github.ref_name }}-built.'
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -171,6 +165,16 @@ jobs:
           git config --global user.name "${{ env.GITHUB_USER_NAME }}"
           git config --global advice.addIgnoredFile false
           git config --global push.autoSetupRemote true
+
+      - name: Set up signing commits
+        if: ${{ env.GITHUB_USER_SSH_PUBLIC_KEY != '' }}
+        run: |
+          : # Create empty SSH private key file so Git does not complain.
+          touch "${{ runner.temp }}/signingkey"
+          echo "${{ env.GITHUB_USER_SSH_PUBLIC_KEY }}" > "${{ runner.temp }}/signingkey.pub"
+          git config --global commit.gpgsign true
+          git config --global gpg.format ssh
+          git config --global user.signingkey "${{ runner.temp }}/signingkey.pub"
 
       - name: Set up custom environment variables
         env:
@@ -198,7 +202,7 @@ jobs:
       - name: Set branch environment variables
         if: ${{ github.ref_type == 'branch' }}
         run: |
-          echo "BUILT_BRANCH_NAME=${{ inputs.BUILT_BRANCH_NAME && inputs.BUILT_BRANCH_NAME || format('{0}{1}', github.ref_name, inputs.BUILT_BRANCH_SUFFIX) }}" >> $GITHUB_ENV
+          echo "BUILT_BRANCH_NAME=${{ inputs.BUILT_BRANCH_NAME && inputs.BUILT_BRANCH_NAME || github.ref_name }}" >> $GITHUB_ENV
 
       - name: Set tag environment variables
         if: ${{ github.ref_type == 'tag' }}
@@ -209,18 +213,18 @@ jobs:
       - name: Checkout and merge the built branch
         if: ${{ github.ref_type == 'branch' }}
         run: |
-          git checkout ${{ env.BUILT_BRANCH_NAME }} || git checkout -b ${{ env.BUILT_BRANCH_NAME }}
+          git show-ref -q refs/remotes/origin/${{ env.BUILT_BRANCH_NAME }} && git checkout ${{ env.BUILT_BRANCH_NAME }} || git checkout -b ${{ env.BUILT_BRANCH_NAME }}
           git merge ${{ github.ref_name }}
 
       - name: Git pull on re-run
         if: ${{ (github.run_attempt > 1) && (github.ref_type != 'tag') }}
-        run: git pull
+        run: git show-ref -q refs/remotes/origin/$(git branch --show-current) && git pull || true
 
       - name: Checkout and merge the release branch
         if: ${{ github.ref_type == 'tag' && env.RELEASE_BRANCH_ENABLED == 'yes' }}
         run: |
           git checkout ${{ github.event.repository.default_branch }}
-          git checkout ${{ inputs.RELEASE_BRANCH_NAME }} || git checkout -b ${{ inputs.RELEASE_BRANCH_NAME }}
+          git show-ref -q refs/remotes/origin/${{ inputs.RELEASE_BRANCH_NAME }} && git checkout ${{ inputs.RELEASE_BRANCH_NAME }} || git checkout -b ${{ inputs.RELEASE_BRANCH_NAME }}
           git merge ${{ github.event.repository.default_branch }}
 
       - name: Checkout temporary tag branch
@@ -276,7 +280,7 @@ jobs:
           git commit -m "[BOT] Add compiled assets for #${{ github.ref }}" --no-verify || ((echo "NO_CHANGES=yes" >> $GITHUB_ENV) && (echo "No changes to commit"))
 
       - name: Git push for branch
-        if: ${{ github.ref_type == 'branch' && (env.NO_CHANGES != 'yes' || inputs.BUILT_BRANCH_SUFFIX != '') }}
+        if: ${{ github.ref_type == 'branch' && (env.NO_CHANGES != 'yes' || inputs.BUILT_BRANCH_NAME != '') }}
         run: git push
 
       - name: Git push for tag
@@ -297,3 +301,9 @@ jobs:
           git checkout --detach
           git branch -d ${{ env.TAG_BRANCH_NAME }}
           git push origin --delete ${{ env.TAG_BRANCH_NAME }}
+
+      - name: Delete signing key files
+        if: ${{ always() && env.GITHUB_USER_SSH_PUBLIC_KEY != '' }}
+        run: |
+          rm -f "${{ runner.temp }}/signingkey"
+          rm -f "${{ runner.temp }}/signingkey.pub"

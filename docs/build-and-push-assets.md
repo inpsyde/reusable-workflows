@@ -51,7 +51,7 @@ is moved** to point to the commit that contains the compiled assets.
   to avoid running the workflow when no asset sources are changed. However, it should not be used
   for built branches and release branch strategies because the sync should happen on every push.
 
-## Simple usage example:
+## Simple usage example
 
 ```yml
 name: Build and push assets
@@ -81,8 +81,8 @@ jobs:
       BUILT_BRANCH_NAME: ${{ github.ref_name }}-built # Optionally, to push compiled assets to built branch
       RELEASE_BRANCH_NAME: release # Optionally, to move tags to release branch
     secrets:
-      GITHUB_USER_EMAIL: ${{ secrets.INPSYDE_BOT_EMAIL }}
-      GITHUB_USER_NAME: ${{ secrets.INPSYDE_BOT_USER }}
+      GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
+      GITHUB_USER_NAME: ${{ secrets.DEPLOYBOT_USER }}
       NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_PACKAGES_READ_ACCESS_TOKEN }}
 ```
 
@@ -106,7 +106,6 @@ This is not the simplest possible example, but it showcases all the recommendati
 | `MODE`                | `''`                          | Mode for compiling assets (`prod` or `dev`)                                                                                     |
 | `ASSETS_TARGET_PATHS` | `'./assets'`                  | Space-separated list of target directory paths for compiled assets                                                              |
 | `ASSETS_TARGET_FILES` | `''`                          | Space-separated list of target file paths for compiled assets                                                                   |
-| `BUILT_BRANCH_SUFFIX` | `''`                          | :warning: deprecated - Suffix to calculate the target branch for pushing assets on the `branch` event                           |
 | `BUILT_BRANCH_NAME`   | `''`                          | Sets the target branch for pushing assets on the `branch` event                                                                 |
 | `RELEASE_BRANCH_NAME` | `''`                          | On tag events, target branch where compiled assets are pushed and the tag is moved to                                           |
 | `PHP_VERSION`         | `'8.0'`                       | PHP version with which the PHP tools are to be executed                                                                         |
@@ -114,13 +113,51 @@ This is not the simplest possible example, but it showcases all the recommendati
 
 ## Secrets
 
-| Name                  | Description                                                                  |
-|-----------------------|------------------------------------------------------------------------------|
-| `NPM_REGISTRY_TOKEN`  | Authentication for the private npm registry                                  |
-| `GITHUB_USER_EMAIL`   | Email address for the GitHub user configuration                              |
-| `GITHUB_USER_NAME`    | Username for the GitHub user configuration                                   |
-| `GITHUB_USER_SSH_KEY` | Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME` |
-| `ENV_VARS`            | Additional environment variables as a JSON formatted object                  |
+| Name                         | Description                                                                  |
+|------------------------------|------------------------------------------------------------------------------|
+| `NPM_REGISTRY_TOKEN`         | Authentication for the private npm registry                                  |
+| `GITHUB_USER_EMAIL`          | Email address for the GitHub user configuration                              |
+| `GITHUB_USER_NAME`           | Username for the GitHub user configuration                                   |
+| `GITHUB_USER_SSH_KEY`        | Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME` |
+| `GITHUB_USER_SSH_PUBLIC_KEY` | Public SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`  |
+| `ENV_VARS`                   | Additional environment variables as a JSON formatted object                  |
+
+**Example with signed commits using SSH key:**
+
+```yml
+name: Build and push assets
+
+on:
+  workflow_dispatch:
+  push:
+    tags: [ '*' ]
+    branches: [ '*' ]
+    # Don't include paths if BUILT_BRANCH_NAME or RELEASE_BRANCH_NAME are defined
+    paths:
+      - '**workflows/build-and-push-assets.yml' # the workflow file itself
+      - '**.ts'
+      - '**.scss'
+      - '**.js'
+      - '**package.json'
+      - '**tsconfig.json'
+      - '**yarn.lock'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  build-assets:
+    uses: inpsyde/reusable-workflows/.github/workflows/build-and-push-assets.yml@main
+    with:
+      BUILT_BRANCH_NAME: ${{ github.ref_name }}-built # Optionally, to push compiled assets to built branch
+      RELEASE_BRANCH_NAME: release # Optionally, to move tags to release branch
+    secrets:
+      GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
+      GITHUB_USER_NAME: ${{ secrets.DEPLOYBOT_USER }}
+      GITHUB_USER_SSH_KEY: ${{ secrets.DEPLOYBOT_SSH_PRIVATE_KEY }}
+      GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.DEPLOYBOT_SSH_PUBLIC_KEY }}
+      NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_PACKAGES_READ_ACCESS_TOKEN }}
+```
 
 ## FAQ
 
@@ -154,8 +191,8 @@ The following table provides an overview when `COMPILE_SCRIPT_DEV` or `COMPILE_S
 |--------|--------------------|-----------------------|
 | `''`   | push to branch     | `COMPILE_SCRIPT_DEV`  |
 | `''`   | create release/tag | `COMPILE_SCRIPT_PROD` |
-| `dev`  | _not evaluated_    | `COMPILE_SCRIPT_DEV`  |
-| `prod` | _not evaluated_    | `COMPILE_SCRIPT_PROD` |
+| `dev`  | *not evaluated*    | `COMPILE_SCRIPT_DEV`  |
+| `prod` | *not evaluated*    | `COMPILE_SCRIPT_PROD` |
 
 **Example:** I want to push to a branch `production` and "production"-ready assets should be
 compiled:
@@ -186,8 +223,8 @@ jobs:
       ASSETS_TARGET_PATHS: "./assets ./modules/Foo/assets ./modules/Bar/assets"
       ASSETS_TARGET_FILES: "./my-generated-file.txt ./LICENSE"
     secrets:
-      GITHUB_USER_EMAIL: ${{ secrets.INPSYDE_BOT_EMAIL }}
-      GITHUB_USER_NAME: ${{ secrets.INPSYDE_BOT_USER }}
+      GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
+      GITHUB_USER_NAME: ${{ secrets.DEPLOYBOT_USER }}
       ENV_VARS: >-
         [{"name":"EXAMPLE_USERNAME", "value":"${{ secrets.USERNAME }}"}]
 ```
@@ -222,7 +259,7 @@ same as the two commits would have been made as a single commit including both.
 > commit belongs to which "real" commit?
 
 As a side effect of using the
-recommended [concurrency settings] (https://docs.github.com/en/actions/using-jobs/using-concurrency)
+recommended [concurrency settings](https://docs.github.com/en/actions/using-jobs/using-concurrency)
 , the git history will be linear. The compilation commit would normally refer to the previous
 commit, whatever that is. In the case of cherry-picking or another non-linear branch merging, this "
 linearity" could be compromised. For this reason, the workflow adds to the commit message the commit
@@ -270,7 +307,7 @@ By passing a key associated with the GitHub user defined in the required `GITHUB
 workflow can install these packages.
 
 Please note that in such cases it is a good practice not to use a "personal" GitHub user, but an
-_ad-hoc_ "bot" user with an _ad-hoc_ private SSH key used only for the scope.
+*ad-hoc* "bot" user with an *ad-hoc* private SSH key used only for the scope.
 
 ---
 
