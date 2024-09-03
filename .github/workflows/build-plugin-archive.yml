@@ -227,7 +227,7 @@ jobs:
         run: |
           rector
           
-      - name: Run PHP Scoper
+      - name: Run PHP-Scoper
         if: steps.composer-tools.outputs.php-scoper == '0'
         run: |
           php-scoper add-prefix --force --output-dir build
