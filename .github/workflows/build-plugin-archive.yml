@@ -235,8 +235,7 @@ jobs:
       - name: Move unchanged code to build directory
         if: steps.composer-tools.outputs.php-scoper != '0'
         run: |
-          shopt -s extglob
-          shopt -s dotglob
+          shopt -s extglob dotglob
           mkdir build
           mv !(build) build
 
