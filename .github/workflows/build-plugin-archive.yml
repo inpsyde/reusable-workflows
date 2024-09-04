@@ -134,6 +134,7 @@ jobs:
             !./.ddev
             !./.github
           include-hidden-files: true
+
   run-build-tools:
     name: Process build steps
     timeout-minutes: 10
