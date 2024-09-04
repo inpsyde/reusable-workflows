@@ -53,11 +53,6 @@ on:
         default: ''
         required: false
         type: string
-      BUILT_BRANCH_SUFFIX:
-        description: Suffix to calculate the target branch for pushing assets on the `branch` event (deprecated).
-        type: string
-        default: ''
-        required: false
       BUILT_BRANCH_NAME:
         description: Sets the target branch for pushing assets on the `branch` event.
         type: string
@@ -149,14 +144,8 @@ jobs:
       COMPILE_SCRIPT: ''
       TAG_NAME: ''                                     # we'll override if the push is for tag
       TAG_BRANCH_NAME: ''                              # we'll override if the push is for tag
-      LOCK_FILE: ''                                    # we'll override after checking files
       NO_CHANGES: ''                                   # we'll override if no changes to commit
     steps:
-      - name: Deprecation warning
-        if: ${{ inputs.BUILT_BRANCH_SUFFIX != '' }}
-        run: |
-          echo '::warning::The BUILT_BRANCH_SUFFIX input is deprecated and will be removed soon. Please update your workflow to use BUILT_BRANCH_NAME with ${{ github.ref_name }}-built.'
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -212,7 +201,7 @@ jobs:
       - name: Set branch environment variables
         if: ${{ github.ref_type == 'branch' }}
         run: |
-          echo "BUILT_BRANCH_NAME=${{ inputs.BUILT_BRANCH_NAME && inputs.BUILT_BRANCH_NAME || format('{0}{1}', github.ref_name, inputs.BUILT_BRANCH_SUFFIX) }}" >> $GITHUB_ENV
+          echo "BUILT_BRANCH_NAME=${{ inputs.BUILT_BRANCH_NAME && inputs.BUILT_BRANCH_NAME || github.ref_name }}" >> $GITHUB_ENV
 
       - name: Set tag environment variables
         if: ${{ github.ref_type == 'tag' }}
@@ -290,7 +279,7 @@ jobs:
           git commit -m "[BOT] Add compiled assets for #${{ github.ref }}" --no-verify || ((echo "NO_CHANGES=yes" >> $GITHUB_ENV) && (echo "No changes to commit"))
 
       - name: Git push for branch
-        if: ${{ github.ref_type == 'branch' && (env.NO_CHANGES != 'yes' || inputs.BUILT_BRANCH_SUFFIX != '' || inputs.BUILT_BRANCH_NAME != '') }}
+        if: ${{ github.ref_type == 'branch' }}
         run: git push
 
       - name: Git push for tag
@@ -306,7 +295,7 @@ jobs:
           git push origin --tags
 
       - name: Delete temporary tag branch
-        if: ${{ always() && (env.TAG_BRANCH_NAME != '' && env.NO_CHANGES != 'yes') }}
+        if: ${{ always() && env.TAG_BRANCH_NAME != '' && env.NO_CHANGES != 'yes' }}
         run: |
           git checkout --detach
           git branch -d ${{ env.TAG_BRANCH_NAME }}
