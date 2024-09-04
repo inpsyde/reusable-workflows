@@ -144,7 +144,6 @@ jobs:
       COMPILE_SCRIPT: ''
       TAG_NAME: ''                                     # we'll override if the push is for tag
       TAG_BRANCH_NAME: ''                              # we'll override if the push is for tag
-      LOCK_FILE: ''                                    # we'll override after checking files
       NO_CHANGES: ''                                   # we'll override if no changes to commit
     steps:
       - name: Checkout
