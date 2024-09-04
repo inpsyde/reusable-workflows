@@ -256,6 +256,7 @@ jobs:
             build/
             !build/**/node_modules
           include-hidden-files: true
+
   create-plugin-archive:
     name: Create build archive
     timeout-minutes: 5
