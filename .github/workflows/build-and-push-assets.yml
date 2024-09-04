@@ -146,6 +146,15 @@ jobs:
       TAG_BRANCH_NAME: ''                              # we'll override if the push is for tag
       NO_CHANGES: ''                                   # we'll override if no changes to commit
     steps:
+      - name: PACKAGE_MANAGER deprecation warning
+        if: ${{ inputs.PACKAGE_MANAGER != '' }}
+        run: |
+          if [ "${{ inputs.PACKAGE_MANAGER }}" == 'npm' ]; then
+            echo "::warning::The PACKAGE_MANAGER input is deprecated and will be removed soon. Please remove it. The workflow already uses npm by default."
+          else
+            echo "::warning::The PACKAGE_MANAGER input is deprecated and will be removed soon. Please update your workflow to use npm."          
+          fi
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
