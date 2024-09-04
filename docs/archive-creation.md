@@ -7,10 +7,12 @@ To achieve that, the reusable workflow:
 1. Installs dependencies (including dev-dependencies) defined in `composer.json`
 2. Executes `inpsyde/composer-assets-compiler` if required & configured by the package
 3. Executes `inpsyde/wp-translation-downloader` if required & configured by the package
-4. Re-installs dependencies without dev-dependencies
-5. Sets current commit hash and plugin version in the plugin's main file
-6. Runs `wp dist-archive` to create the final archive (with builtin support for a `.distignore` file)
-7. Uploads it as an artifact for download or further processing
+4. Executes PHP-Scoper if configured by the package
+5. Executes Rector if configured by the package
+6. Re-installs dependencies without dev-dependencies
+7. Sets current commit hash and plugin version in the plugin's main file
+8. Runs `wp dist-archive` to create the final archive (with builtin support for a `.distignore` file)
+9. Uploads it as an artifact for download or further processing
 
 ## Simple usage example
 
