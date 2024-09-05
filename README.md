@@ -6,8 +6,8 @@ With [GitHub Actions](https://github.com/features/actions), you can create custo
 software development lifecycle directly in your GitHub repository. These workflows consist of
 different tasks, called actions, that can be executed automatically when certain events occur.
 
-At Syde, we use GitHub Actions for a wide range of tasks. From various quality assurance tests
-(e.g. static analysis checks, PHPUnit tests, etc.), to asset (pre)compilation
+At Syde, we use GitHub Actions for a wide range of tasks. From various quality assurance tests (
+e.g., static analysis checks, PHPUnit tests, etc.), to asset (pre)compilation
 with [Composer Asset Compiler](https://github.com/inpsyde/composer-asset-compiler), release
 generation, deployments (CI/CD), and container registry management: all automatable, recurring tasks
 are performed in GitHub Actions.
