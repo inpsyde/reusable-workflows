@@ -147,6 +147,15 @@ jobs:
     outputs:
       artifact: ${{ steps.set-artifact-name.outputs.artifact }}
     steps:
+      - name: PACKAGE_MANAGER deprecation warning
+        if: ${{ inputs.PACKAGE_MANAGER != '' }}
+        run: |
+          if [ "${{ inputs.PACKAGE_MANAGER }}" == 'npm' ]; then
+            echo "::warning::The PACKAGE_MANAGER input is deprecated and will be removed soon. Please remove it. The workflow already uses npm by default."
+          else
+            echo "::warning::The PACKAGE_MANAGER input is deprecated and will be removed soon. Please update your workflow to use npm."          
+          fi
+
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
@@ -229,7 +238,7 @@ jobs:
         if: steps.composer-tools.outputs.rector == '0'
         run: |
           rector
-          
+
       - name: Run PHP-Scoper
         if: steps.composer-tools.outputs.php-scoper == '0'
         run: |
