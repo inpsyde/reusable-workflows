@@ -2,7 +2,8 @@
 
 This workflow utilizes
 the [Composer Asset Compiler](https://github.com/inpsyde/composer-asset-compiler) to compile assets.
-For details, refer to [Pre-compilation](https://github.com/inpsyde/composer-asset-compiler#pre-compilation).
+For details, refer
+to [Pre-compilation](https://github.com/inpsyde/composer-asset-compiler#pre-compilation).
 
 **Simplest possible example:**
 
@@ -25,8 +26,8 @@ jobs:
 | `NODE_OPTIONS`        | `''`                          | Space-separated list of command-line Node options                                 |
 | `NODE_VERSION`        | `18`                          | Node version with which the assets will be compiled                               |
 | `NPM_REGISTRY_DOMAIN` | `https://npm.pkg.github.com/` | Domain of the private npm registry                                                |
-| `PACKAGE_MANAGER`     | `yarn`                        | Package manager with which the dependencies should be installed (`npm` or `yarn`) |
-| `PHP_VERSION`         | `"8.0"`                       | PHP version with which the assets compilation is to be executed                   |
+| `PACKAGE_MANAGER`     | `'yarn'`                      | Package manager with which the dependencies should be installed (`npm` or `yarn`) |
+| `PHP_VERSION`         | `'8.0'`                       | PHP version with which the assets compilation is to be executed                   |
 | `COMPOSER_ARGS`       | `'--prefer-dist'`             | Set of arguments passed to Composer                                               |
 | `COMPILE_ASSETS_ARGS` | `'-v --env=root'`             | Set of arguments passed to Composer Asset Compiler                                |
 
