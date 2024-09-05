@@ -10,26 +10,29 @@ To achieve that, the reusable workflow:
 
 ## Where are assets stored
 
-Two inputs can be used to define branches as assets storage: `BUILT_BRANCH_NAME` and `RELEASE_BRANCH_NAME`.
+Two inputs can be used to define branches as assets storage: `BUILT_BRANCH_NAME` and
+`RELEASE_BRANCH_NAME`.
 
-`BUILT_BRANCH_NAME` is used only for `branch` events. If defined, compiled assets will be stored in the branch of this
-name. For example, if `BUILT_BRANCH_NAME` is set to `${{ github.ref_name }}-built`, when pushing to the `main` branch,
-compiled assets will be stored in the `main-built` branch (the branch will be created if it does not exist).
+`BUILT_BRANCH_NAME` is used only for `branch` events. If defined, compiled assets will be stored in
+the branch of this name. For example, if `BUILT_BRANCH_NAME` is set to
+`${{ github.ref_name }}-built`, when pushing to the `main` branch, compiled assets will be stored in
+the `main-built` branch (the branch will be created if it does not exist).
 
-`RELEASE_BRANCH_NAME` is only used for tag events. If defined and the tag being pushed points to the latest commit of
-the default branch of the GitHub repository, compiled assets will be pushed to the branch of this name, and the tag will
-be moved there (the branch will be created if it does not exist).
+`RELEASE_BRANCH_NAME` is only used for tag events. If defined and the tag being pushed points to the
+latest commit of the default branch of the GitHub repository, compiled assets will be pushed to the
+branch of this name, and the tag will be moved there (the branch will be created if it does not
+exist).
 
-The main benefit of using `BUILT_BRANCH_NAME` is not to pollute the main development branch
-with commits containing compiled assets. With `RELEASE_BRANCH_NAME`, you can gain linear tag history
-by always tagging only the latest commit from the main development branch.
+The main benefit of using `BUILT_BRANCH_NAME` is not to pollute the main development branch with
+commits containing compiled assets. With `RELEASE_BRANCH_NAME`, you can gain linear tag history by
+always tagging only the latest commit from the main development branch.
 
 ## Build script
 
 In step *2* above, the assets are "built", whatever that means for a package. For maximum
 flexibility, the workflow relies on a "script" to be defined in `package.json`. There are two
-possible building scripts: a "*dev*" script which is executed on regular pushes to branches, and
-a "*prod*" script, which is executed when a tag is pushed.
+possible building scripts: a "*dev*" script which is executed on regular pushes to branches, and a "
+*prod*" script, which is executed when a tag is pushed.
 
 By default, the two scripts are `encore dev` and `encore prod`, but can be configured
 via [inputs](#inputs).
@@ -41,8 +44,8 @@ is moved** to point to the commit that contains the compiled assets.
 
 ## Recommendations for consuming packages
 
-- The consuming packages compiled assets' target folder(s) must be **git-ignored** and marked
-  as `linguist-generated` in `.gitattributes`.
+- The consuming packages compiled assets' target folder(s) must be **git-ignored** and marked as
+  `linguist-generated` in `.gitattributes`.
 - The calling workflows should
   use ["concurrency" settings](https://docs.github.com/en/actions/using-jobs/using-concurrency) to
   avoid conflicts when a push happens before the current workflow is not completed.
@@ -68,8 +71,8 @@ on:
       - '**.scss'
       - '**.js'
       - '**package.json'
-      - '**package-lock.json'
       - '**tsconfig.json'
+      - '**yarn.lock'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -88,27 +91,29 @@ jobs:
 
 This is not the simplest possible example, but it showcases all the recommendations.
 
-**Note**: Do not set `cancel-in-progress: true` to the `concurrency` setting because it interrupts the workflow.
+**Note**: Do not set `cancel-in-progress: true` to the `concurrency` setting because it interrupts
+the workflow.
 
 ## Configuration parameters
 
 ### Inputs
 
-| Name                  | Default                       | Description                                                                                                                    |
-|-----------------------|-------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
-| `NODE_OPTIONS`        | `''`                          | Space-separated list of command-line Node options                                                                              |
-| `NODE_VERSION`        | `18`                          | Node version with which the assets will be compiled                                                                            |
-| `NPM_REGISTRY_DOMAIN` | `https://npm.pkg.github.com/` | Domain of the private npm registry                                                                                             |
-| `WORKING_DIRECTORY`   | `'./'`                        | Working directory path                                                                                                         |
-| `COMPILE_SCRIPT_PROD` | `'build'`                     | Script added to `npm run` to build production assets                                                                  |
-| `COMPILE_SCRIPT_DEV`  | `'build:dev'`                 | Script added to `npm run` to build development assets                                                                 |
-| `MODE`                | `''`                          | Mode for compiling assets (`prod` or `dev`)                                                                                    |
-| `ASSETS_TARGET_PATHS` | `'./assets'`                  | Space-separated list of target directory paths for compiled assets                                                             |
-| `ASSETS_TARGET_FILES` | `''`                          | Space-separated list of target file paths for compiled assets                                                                  |
-| `BUILT_BRANCH_NAME`   | `''`                          | Sets the target branch for pushing assets on the `branch` event                                                                |
-| `RELEASE_BRANCH_NAME` | `''`                          | On tag events, target branch where compiled assets are pushed and the tag is moved to                                          |
-| `PHP_VERSION`         | `'8.0'`                       | PHP version with which the PHP tools are to be executed                                                                        |
-| `PHP_TOOLS`           | `''`                          | PHP tools supported by [shivammathur/setup-php](https://github.com/shivammathur/setup-php#wrench-tools-support) to be installed |
+| Name                  | Default                         | Description                                                                                                                     |
+|-----------------------|---------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
+| `NODE_OPTIONS`        | `''`                            | Space-separated list of command-line Node options                                                                               |
+| `NODE_VERSION`        | `18`                            | Node version with which the assets will be compiled                                                                             |
+| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                                                              |
+| `PACKAGE_MANAGER`     | `'yarn'`                        | Package manager with which the dependencies should be installed (`npm` or `yarn`)                                               |
+| `WORKING_DIRECTORY`   | `'./'`                          | Working directory path                                                                                                          |
+| `COMPILE_SCRIPT_PROD` | `'build'`                       | Script added to `npm run` or `yarn` to build production assets                                                                  |
+| `COMPILE_SCRIPT_DEV`  | `'build:dev'`                   | Script added to `npm run` or `yarn` to build development assets                                                                 |
+| `MODE`                | `''`                            | Mode for compiling assets (`prod` or `dev`)                                                                                     |
+| `ASSETS_TARGET_PATHS` | `'./assets'`                    | Space-separated list of target directory paths for compiled assets                                                              |
+| `ASSETS_TARGET_FILES` | `''`                            | Space-separated list of target file paths for compiled assets                                                                   |
+| `BUILT_BRANCH_NAME`   | `''`                            | Sets the target branch for pushing assets on the `branch` event                                                                 |
+| `RELEASE_BRANCH_NAME` | `''`                            | On tag events, target branch where compiled assets are pushed and the tag is moved to                                           |
+| `PHP_VERSION`         | `'8.0'`                         | PHP version with which the PHP tools are to be executed                                                                         |
+| `PHP_TOOLS`           | `''`                            | PHP tools supported by [shivammathur/setup-php](https://github.com/shivammathur/setup-php#wrench-tools-support) to be installed |
 
 ## Secrets
 
@@ -138,8 +143,8 @@ on:
       - '**.scss'
       - '**.js'
       - '**package.json'
-      - '**package-lock.json'
       - '**tsconfig.json'
+      - '**yarn.lock'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -209,7 +214,8 @@ jobs:
 
 > Can I have multiple output folders for my package? What about files?
 
-Yes, `inputs.ASSETS_TARGET_PATHS` and `inputs.ASSETS_TARGET_FILES` accept multiple space-separated paths for directories and files, respectively.
+Yes, `inputs.ASSETS_TARGET_PATHS` and `inputs.ASSETS_TARGET_FILES` accept multiple space-separated
+paths for directories and files, respectively.
 
 ```yaml
 name: Build and push assets
@@ -267,7 +273,8 @@ hash that triggered the compilation.
 As for the "noise", it will indeed be there. However, considering that all workflow commit messages
 start with the prefix `[BOT]`, it would be quite easy to ignore them without any cognitive effort.
 
-By defining `BUILT_BRANCH_NAME`, you keep commits containing compiled assets separated in the built branch.
+By defining `BUILT_BRANCH_NAME`, you keep commits containing compiled assets separated in the built
+branch.
 
 ---
 
@@ -314,8 +321,10 @@ Please note that in such cases it is a good practice not to use a "personal" Git
 
 For tags, the pushed tag name is always used.
 
-For branches, it depends on the `BUILT_BRANCH_NAME` input value. For example, when `BUILT_BRANCH_NAME`
-is `${{ github.ref_name}}-built` and the branch triggering the workflow is `main`, the built branch name will resolve
+For branches, it depends on the `BUILT_BRANCH_NAME` input value. For example, when
+`BUILT_BRANCH_NAME`
+is `${{ github.ref_name}}-built` and the branch triggering the workflow is `main`, the built branch
+name will resolve
 to `main-built`. In this case, require the `dev-main-built` branch in `composer.json`.
 
 ---
@@ -331,4 +340,5 @@ The logic in the example above will behave like this:
 - If `github.ref_name` is equal to `dev-main`, the value of `BUILT_BRANCH_NAME` will be `main`
 - If `github.ref_name` is equal to `dev-beta`, the value of `BUILT_BRANCH_NAME` will be `beta`
 - If `github.ref_name` is equal to `dev-alpha`, the value of `BUILT_BRANCH_NAME` will be `alpha`
-- If none of the above conditions are met, the value of `BUILT_BRANCH_NAME` will be `''`, which is the default
+- If none of the above conditions are met, the value of `BUILT_BRANCH_NAME` will be `''`, which is
+  the default

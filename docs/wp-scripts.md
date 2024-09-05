@@ -3,15 +3,16 @@
 ## Lint
 
 This workflow runs [ESLint](https://eslint.org/), [Stylelint](https://stylelint.io/),
-and [markdownlint](https://github.com/DavidAnson/markdownlint) wrapped in the
-the [`@wordpress/scripts`](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-scripts/)
+and [markdownlint](https://github.com/DavidAnson/markdownlint) wrapped in the [
+`@wordpress/scripts`](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-scripts/)
 library. It does so by executing the `wp-scripts` binary in the `./node_modules/.bin/` folder.
 
 **Simplest possible example:**
 
 ```yml
 name: Static code analysis assets
-on: [push]
+on:
+  push:
 jobs:
   wp-scripts-lint:
     uses: inpsyde/reusable-workflows/.github/workflows/wp-scripts-lint.yml@main
@@ -21,16 +22,17 @@ jobs:
 
 #### Inputs
 
-| Name                    | Default                        | Description                                                                       |
-|-------------------------|--------------------------------|-----------------------------------------------------------------------------------|
-| `NODE_OPTIONS`          | `''`                           | Space-separated list of command-line Node options                                 |
-| `NODE_VERSION`          | `18`                           | Node version with which the assets will be compiled                               |
-| `NPM_REGISTRY_DOMAIN`   | `https://npm.pkg.github.com/`  | Domain of the private npm registry                                                |
-| `LINT_TOOLS`            | `'["js", "style", "md-docs"]'` | Array of checks to be executed by @wordpress/scripts                              |
-| `ESLINT_ARGS`           | `''`                           | Set of arguments passed to `wp-script lint-js`                                    |
-| `STYLELINT_ARGS`        | `''`                           | Set of arguments passed to `wp-script lint-style`                                 |
-| `MARKDOWNLINT_ARGS`     | `''`                           | Set of arguments passed to `wp-script lint-md-docs`                               |
-| `PACKAGE_JSONLINT_ARGS` | `''`                           | Set of arguments passed to `wp-scripts lint-pkg-json`                             |
+| Name                    | Default                         | Description                                                                       |
+|-------------------------|---------------------------------|-----------------------------------------------------------------------------------|
+| `NODE_OPTIONS`          | `''`                            | Space-separated list of command-line Node options                                 |
+| `NODE_VERSION`          | `18`                            | Node version with which the assets will be compiled                               |
+| `NPM_REGISTRY_DOMAIN`   | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                |
+| `PACKAGE_MANAGER`       | `'yarn'`                        | Package manager with which the dependencies should be installed (`npm` or `yarn`) |
+| `LINT_TOOLS`            | `'["js", "style", "md-docs"]'`  | Array of checks to be executed by @wordpress/scripts                              |
+| `ESLINT_ARGS`           | `''`                            | Set of arguments passed to `wp-script lint-js`                                    |
+| `STYLELINT_ARGS`        | `''`                            | Set of arguments passed to `wp-script lint-style`                                 |
+| `MARKDOWNLINT_ARGS`     | `''`                            | Set of arguments passed to `wp-script lint-md-docs`                               |
+| `PACKAGE_JSONLINT_ARGS` | `''`                            | Set of arguments passed to `wp-scripts lint-pkg-json`                             |
 
 > :information_source: **By default, "pkg-json" is not part of the `LINT_TOOLS` input.**  
 > :information_source: **The `--formatter github` flag is hardcoded into the `wp-script lint-style`

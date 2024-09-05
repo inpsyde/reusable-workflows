@@ -25,7 +25,7 @@ jobs:
 
 | Name            | Default                                                  | Description                                     |
 |-----------------|----------------------------------------------------------|-------------------------------------------------|
-| `PHP_VERSION`   | `"8.0"`                                                  | PHP version with which the scripts are executed |
+| `PHP_VERSION`   | `'8.0'`                                                  | PHP version with which the scripts are executed |
 | `COMPOSER_ARGS` | `'--prefer-dist'`                                        | Set of arguments passed to Composer             |
 | `PHPCS_ARGS`    | `'--report-full --report-checkstyle=./phpcs-report.xml'` | Set of arguments passed to PHP_CodeSniffer      |
 | `CS2PR_ARGS`    | `'--graceful-warnings ./phpcs-report.xml'`               | Set of arguments passed to cs2pr                |
@@ -61,8 +61,8 @@ versions.
 
 ## Static code analysis
 
-This workflow runs [Psalm](https://psalm.dev/). It does so by executing the binary in
-the `./vendor/bin/` folder.
+This workflow runs [Psalm](https://psalm.dev/). It does so by executing the binary in the
+`./vendor/bin/` folder.
 
 **Simplest possible example:**
 
@@ -117,8 +117,8 @@ with multiple PHP versions, use the [Lint PHP](#lint-php) workflow.
 
 ## Unit tests PHP
 
-This workflow runs [PHPUnit](https://phpunit.de/). It does so by executing the binary in
-the `./vendor/bin/` folder.
+This workflow runs [PHPUnit](https://phpunit.de/). It does so by executing the binary in the
+`./vendor/bin/` folder.
 
 **Simplest possible example:**
 
@@ -189,7 +189,7 @@ jobs:
 
 | Name                    | Default                                 | Description                                                    |
 |-------------------------|-----------------------------------------|----------------------------------------------------------------|
-| `PHP_VERSION`           | `"8.0"`                                 | PHP version with which the scripts are executed                |
+| `PHP_VERSION`           | `'8.0'`                                 | PHP version with which the scripts are executed                |
 | `COMPOSER_ARGS`         | `'--prefer-dist'`                       | Set of arguments passed to Composer                            |
 | `LINT_ARGS`             | `'-e php --colors --show-deprecated .'` | Set of arguments passed to PHP Parallel Lint                   |
 | `COMPOSER_DEPS_INSTALL` | `false`                                 | Whether or not to install Composer dependencies before linting |
