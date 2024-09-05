@@ -22,7 +22,7 @@ jobs:
 
 | Name                  | Default                                            | Description                                                                       |
 |-----------------------|----------------------------------------------------|-----------------------------------------------------------------------------------|
-| `NPM_REGISTRY_DOMAIN` | `https://npm.pkg.github.com/`                      | Domain of the private npm registry                                                |
+| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'`                    | Domain of the private npm registry                                                |
 | `NODE_VERSION`        | `18`                                               | Node version with which the unit tests are to be executed                         |
 | `JEST_ARGS`           | `'--reporters=default --reporters=github-actions'` | Set of arguments passed to Jest                                                   |
 | `PACKAGE_MANAGER`     | `'yarn'`                                           | Package manager with which the dependencies should be installed (`npm` or `yarn`) |
