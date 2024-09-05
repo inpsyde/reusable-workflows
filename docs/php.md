@@ -1,3 +1,5 @@
+<!-- markdownlint-disable MD024 -->
+
 # Reusable workflows – PHP
 
 ## Coding standards analysis

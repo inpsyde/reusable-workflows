@@ -1,2 +1,5 @@
 ## PhpStorm
 .idea/
+
+## npm
+/node_modules/

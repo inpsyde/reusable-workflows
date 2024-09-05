@@ -22,7 +22,7 @@ Use the DDEV env variables (`DDEV_ENV_VARS`) for debug flags of your project nee
 
 Also, it is possible to change some DDEV config values, such as the PHP version (`PHP_VERSION`).
 
-## Usage example:
+## Usage example
 
 ```yml
 name: Run Playwright tests via DDEV

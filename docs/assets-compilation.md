@@ -2,7 +2,7 @@
 
 This workflow utilizes
 the [Composer Asset Compiler](https://github.com/inpsyde/composer-asset-compiler) to compile assets.
-For details, refer to https://github.com/inpsyde/composer-asset-compiler#pre-compilation.
+For details, refer to [Pre-compilation](https://github.com/inpsyde/composer-asset-compiler#pre-compilation).
 
 **Simplest possible example:**
 
@@ -16,9 +16,9 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/build-assets-compilation.yml@main
 ```
 
-### Configuration parameters
+## Configuration parameters
 
-#### Inputs
+### Inputs
 
 | Name                  | Default                       | Description                                                                       |
 |-----------------------|-------------------------------|-----------------------------------------------------------------------------------|
@@ -30,7 +30,7 @@ jobs:
 | `COMPOSER_ARGS`       | `'--prefer-dist'`             | Set of arguments passed to Composer                                               |
 | `COMPILE_ASSETS_ARGS` | `'-v --env=root'`             | Set of arguments passed to Composer Asset Compiler                                |
 
-#### Secrets
+### Secrets
 
 | Name                  | Description                                                                              |
 |-----------------------|------------------------------------------------------------------------------------------|
