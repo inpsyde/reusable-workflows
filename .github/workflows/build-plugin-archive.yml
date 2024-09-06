@@ -161,6 +161,8 @@ jobs:
       - name: Check optional Composer build tools
         id: composer-tools
         run: |
+          pwd
+          ls -la
           hasAssetConfig(){
             test -f assets-compiler.json
             local EXIT=$?
@@ -187,6 +189,7 @@ jobs:
             local EXIT=$?
             echo "$EXIT"
           }
+          echo "Assets Compiler Status: $(hasAssetConfig)"
           echo "assets-compiler=$( hasAssetConfig )" >> $GITHUB_OUTPUT
           echo "translation-downloader=$( hasTranslateConfig )" >> $GITHUB_OUTPUT
           echo "php-scoper=$( hasScoperConfig )" >> $GITHUB_OUTPUT
@@ -229,7 +232,7 @@ jobs:
         if: steps.composer-tools.outputs.rector == '0'
         run: |
           rector
-          
+
       - name: Run PHP-Scoper
         if: steps.composer-tools.outputs.php-scoper == '0'
         run: |
