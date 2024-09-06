@@ -166,13 +166,11 @@ jobs:
           hasAssetConfig(){
             test -f assets-compiler.json
             local EXIT=$?
-            echo "Has the file: $EXIT"
             if [ ! $EXIT ]; then
               echo "$EXIT"
               exit 0
             fi
-            jq '.extra | has("composer-asset-compiler")' --exit-status < composer.json >/dev/null 2>&1
-            local EXIT=$?
+            
             echo "$EXIT"
           }
           hasTranslateConfig(){
