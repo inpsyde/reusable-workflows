@@ -161,16 +161,16 @@ jobs:
       - name: Check optional Composer build tools
         id: composer-tools
         run: |
-          pwd
-          ls -la
           hasAssetConfig(){
             test -f assets-compiler.json
             local EXIT=$?
-            if [ ! $EXIT ]; then
-              echo "$EXIT"
+            if [ $EXIT -eq 0 ]; then
+              echo "0"
               exit 0
             fi
-            
+            # If 'assets-compiler.json' does not exist, check 'composer.json'
+            jq '.extra | has("composer-asset-compiler")' --exit-status < composer.json >/dev/null 2>&1
+            local EXIT=$?
             echo "$EXIT"
           }
           hasTranslateConfig(){
@@ -188,7 +188,6 @@ jobs:
             local EXIT=$?
             echo "$EXIT"
           }
-          echo "Assets Compiler Status: $(hasAssetConfig)"
           echo "assets-compiler=$( hasAssetConfig )" >> $GITHUB_OUTPUT
           echo "translation-downloader=$( hasTranslateConfig )" >> $GITHUB_OUTPUT
           echo "php-scoper=$( hasScoperConfig )" >> $GITHUB_OUTPUT
