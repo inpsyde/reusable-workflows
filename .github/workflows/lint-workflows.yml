@@ -3,8 +3,10 @@ name: Lint GitHub Actions workflows
 on:
   push:
     paths:
-      - '**.yml'
+      - '.github/workflows/*.yml'
   pull_request:
+    paths:
+      - '.github/workflows/*.yml'
   workflow_dispatch:
 
 jobs:
@@ -17,8 +19,9 @@ jobs:
       - name: Set up problem matchers for actionlint
         run: |
           curl -s -o actionlint-matcher.json https://raw.githubusercontent.com/rhysd/actionlint/main/.github/actionlint-matcher.json
-          echo "::add-matcher::$(pwd)/actionlint-matcher.json"
-      
+          echo "::add-matcher::${GITHUB_WORKSPACE}/actionlint-matcher.json"
+
+
       - name: Run actionlint
         uses: docker://rhysd/actionlint:latest
         with:

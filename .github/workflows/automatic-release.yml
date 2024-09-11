@@ -89,7 +89,7 @@ jobs:
         run: |
           HAS_CONFIG=$(test -f "release.config.js" && echo true || echo false)
           echo "Configuration file release.config.js found: $HAS_CONFIG"
-          echo "HAS_CONFIG=$HAS_CONFIG" >> $GITHUB_ENV
+          echo "HAS_CONFIG=$HAS_CONFIG" >> "$GITHUB_ENV"
 
       - name: Checkout the workflow repository if release.config.js file is not provided
         if: ${{ env.HAS_CONFIG == 'false' }}
@@ -101,9 +101,9 @@ jobs:
       - name: Add and customize release.config.js file if not provided
         if: ${{ env.HAS_CONFIG == 'false' }}
         run: |
-          cp ${GITHUB_WORKSPACE}/workflow-repo/templates/automatic-release/release.config.js .
-          FILE=$(find . -maxdepth 1 -type f -name '*.php' -exec grep -l 'Plugin Name:' {} + | xargs -I{} basename {}) || true
-          [ -n "$FILE" ] && sed "s/index\.php/$FILE/g" -i release.config.js || true
+          cp "${GITHUB_WORKSPACE}"/workflow-repo/templates/automatic-release/release.config.js .
+          FILE=$(find . -maxdepth 1 -type f -name '*.php' -exec grep -l 'Plugin Name:' {} + -print0 | xargs -0 -I{} basename {}) || true
+          ([ -n "$FILE" ] && sed "s/index\.php/$FILE/g" -i release.config.js) || true
 
       - name: Remove the workflow repository
         if: ${{ env.HAS_CONFIG == 'false' }}
@@ -115,10 +115,10 @@ jobs:
           GITHUB_USER_EMAIL: ${{ secrets.GITHUB_USER_EMAIL }}
           GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
         run: |
-          ${{ env.GITHUB_USER_EMAIL != '' }} && echo "GIT_AUTHOR_EMAIL=${{ env.GITHUB_USER_EMAIL }}" >> $GITHUB_ENV || true
-          ${{ env.GITHUB_USER_NAME != '' }} && echo "GIT_AUTHOR_NAME=${{ env.GITHUB_USER_NAME }}" >> $GITHUB_ENV || true
-          ${{ env.GITHUB_USER_EMAIL != '' }} && echo "GIT_COMMITTER_EMAIL=${{ env.GITHUB_USER_EMAIL }}" >> $GITHUB_ENV || true
-          ${{ env.GITHUB_USER_NAME != '' }} && echo "GIT_COMMITTER_NAME=${{ env.GITHUB_USER_NAME }}" >> $GITHUB_ENV || true
+          (${{ env.GITHUB_USER_EMAIL != '' }} && echo "GIT_AUTHOR_EMAIL=${{ env.GITHUB_USER_EMAIL }}") >> "$GITHUB_ENV" || true
+          (${{ env.GITHUB_USER_NAME != '' }} && echo "GIT_AUTHOR_NAME=${{ env.GITHUB_USER_NAME }}") >> "$GITHUB_ENV" || true
+          (${{ env.GITHUB_USER_EMAIL != '' }} && echo "GIT_COMMITTER_EMAIL=${{ env.GITHUB_USER_EMAIL }}") >> "$GITHUB_ENV" || true
+          (${{ env.GITHUB_USER_NAME != '' }} && echo "GIT_COMMITTER_NAME=${{ env.GITHUB_USER_NAME }}") >> "$GITHUB_ENV" || true
 
       - name: Release
         env:
