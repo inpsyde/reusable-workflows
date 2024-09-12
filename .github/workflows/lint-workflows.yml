@@ -22,4 +22,4 @@ jobs:
       - name: Run actionlint
         uses: docker://rhysd/actionlint:latest
         with:
-          args: -color -pyflakes=
+          args: -color -pyflakes= -shellcheck=
