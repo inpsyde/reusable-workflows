@@ -74,7 +74,7 @@ jobs:
 
       - name: Set up node cache mode
         run: |
-          if [ { [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ]; }; then
+          if [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ]; then
             echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV
           else
             echo "No lock files found"
