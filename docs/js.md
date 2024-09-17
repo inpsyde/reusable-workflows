@@ -1,3 +1,5 @@
+<!-- markdownlint-disable MD024 -->
+
 # Reusable workflows – JavaScript
 
 ## Unit tests JavaScript
