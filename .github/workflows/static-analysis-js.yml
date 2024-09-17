@@ -92,7 +92,7 @@ jobs:
           ARGS: ${{ env.NODE_CACHE_MODE == 'npm' && 'ci' || 'install' }}
         run: ${{ format('npm {0}', env.ARGS) }}
 
-      - name: Run Jest
+      - name: Run tsc
         run: |
           ./node_modules/.bin/tsc --noEmit --skipLibCheck --pretty false |
             while read -r line
