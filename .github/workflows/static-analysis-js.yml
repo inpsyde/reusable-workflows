@@ -93,12 +93,4 @@ jobs:
         run: ${{ format('npm {0}', env.ARGS) }}
 
       - name: Run tsc
-        run: |
-          ./node_modules/.bin/tsc --noEmit --skipLibCheck --pretty false |
-            while read -r line
-              do
-                if [[ $line =~ ([0-9a-z\/\.]+)[\(]([0-9]+)[\,]([0-9]+)[\)].*(TS.*) ]]; then
-                echo "::error file=${BASH_REMATCH[1]},line=${BASH_REMATCH[2]},col=${BASH_REMATCH[3]}::${BASH_REMATCH[4]}"
-              fi
-            done
-          exit "${PIPESTATUS[0]}"
+        run: ./node_modules/.bin/tsc --noEmit --skipLibCheck --pretty false
