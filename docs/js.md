@@ -59,7 +59,7 @@ jobs:
       JEST_ARGS: 'my-test --reporters=jest-junit --coverage'
 ```
 
-## Static analysis Javascript
+## Static analysis JavaScript
 
 This workflow runs
 the [TypeScript compiler](https://www.typescriptlang.org/docs/handbook/compiler-options.html) with
