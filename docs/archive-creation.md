@@ -1,6 +1,7 @@
 # Create plugin archive
 
-This action can be used to create plugin archives in a controlled and isolated environment via GitHub Actions.
+This action can be used to create plugin archives in a controlled and isolated environment via
+GitHub Actions.
 
 To achieve that, the reusable workflow:
 
@@ -11,7 +12,8 @@ To achieve that, the reusable workflow:
 5. Executes Rector if configured by the package
 6. Re-installs dependencies without dev-dependencies
 7. Sets current commit hash and plugin version in the plugin's main file
-8. Runs `wp dist-archive` to create the final archive (with builtin support for a `.distignore` file)
+8. Runs `wp dist-archive` to create the final archive (with builtin support for a `.distignore`
+   file)
 9. Uploads it as an artifact for download or further processing
 
 ## Simple usage example
@@ -60,9 +62,9 @@ jobs:
 #### A note on `PLUGIN_VERSION`
 
 The workflow will accept any arbitrary string and will use it without validation or sanitization.
-Adding this would mean reduced flexibility at increased complexity. Adding standardization/validation
-is encouraged but should take place in the controlling workflow, where the conventions and requirements
-of the project/team/client are known.
+Adding this would mean reduced flexibility at increased complexity. Adding
+standardization/validation is encouraged but should take place in the controlling workflow, where
+the conventions and requirements of the project/team/client are known.
 
 ## Secrets
 

@@ -61,8 +61,8 @@ versions.
 
 ## Static code analysis
 
-This workflow runs [Psalm](https://psalm.dev/). It does so by executing the binary in
-the `./vendor/bin/` folder.
+This workflow runs [Psalm](https://psalm.dev/). It does so by executing the binary in the
+`./vendor/bin/` folder.
 
 **Simplest possible example:**
 
@@ -117,8 +117,8 @@ with multiple PHP versions, use the [Lint PHP](#lint-php) workflow.
 
 ## Unit tests PHP
 
-This workflow runs [PHPUnit](https://phpunit.de/). It does so by executing the binary in
-the `./vendor/bin/` folder.
+This workflow runs [PHPUnit](https://phpunit.de/). It does so by executing the binary in the
+`./vendor/bin/` folder.
 
 **Simplest possible example:**
 
