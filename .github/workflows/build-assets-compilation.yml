@@ -20,7 +20,7 @@ on:
         type: string
       PACKAGE_MANAGER:
         description: Package manager with which the dependencies should be installed (`npm` or `yarn`).
-        default: 'yarn'
+        default: 'npm'
         required: false
         type: string
       PHP_VERSION:
@@ -71,6 +71,15 @@ jobs:
       GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
       GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
     steps:
+      - name: PACKAGE_MANAGER deprecation warning
+        if: ${{ inputs.PACKAGE_MANAGER != '' }}
+        run: |
+          if [ "${{ inputs.PACKAGE_MANAGER }}" == 'npm' ]; then
+            echo "::warning::The PACKAGE_MANAGER input is deprecated and will be removed soon. Please remove it. The workflow already uses npm by default."
+          else
+            echo "::warning::The PACKAGE_MANAGER input is deprecated and will be removed soon. Please update your workflow to use npm."          
+          fi
+
       - name: Checkout
         uses: actions/checkout@v4
 
