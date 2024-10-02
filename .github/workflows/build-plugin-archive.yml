@@ -30,12 +30,12 @@ on:
         type: string
       PHP_VERSION:
         description: PHP version to use when gathering production dependencies.
-        default: "8.0"
+        default: '8.2'
         required: false
         type: string
       PHP_VERSION_BUILD:
         description: PHP version to use when executing build tools.
-        default: "8.2"
+        default: '8.2'
         required: false
         type: string
       ARCHIVE_NAME:

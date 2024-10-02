@@ -65,7 +65,7 @@ on:
         required: false
       PHP_VERSION:
         description: PHP version with which the PHP tools are to be executed.
-        default: '8.0'
+        default: '8.2'
         required: false
         type: string
       PHP_TOOLS:
