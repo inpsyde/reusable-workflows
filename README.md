@@ -39,6 +39,7 @@ groups here:
 
 * Assets linting and formatting with [`@wordpress/scripts`](./docs/wp-scripts.md)
 * Linting, formatting, and testing tools for [PHP](./docs/php.md)
+* [Linting GitHub Actions workflow files](./docs/lint-workflows.md)
 * Unit tests for [JavaScript](./docs/js.md)
 * Assets compilation with [Composer Asset Compiler](./docs/assets-compilation.md) or
   the [Build and push](./docs/build-and-push-assets.md) approach

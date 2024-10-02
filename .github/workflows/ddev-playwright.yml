@@ -16,11 +16,11 @@ on:
         required: false
         type: string
       PLAYWRIGHT_INSTALL_CMD:
-        description: The command for installing Playwright and its dependencies, such as `yarn install && yarn playwright install --with-deps` or `ddev pw-install-host` from inpsyde/ddev-wordpress-plugin-template.
+        description: The command for installing Playwright and its dependencies, such as `npm install && npx playwright install --with-deps` or `ddev pw-install-host` from inpsyde/ddev-wordpress-plugin-template.
         required: true
         type: string
       PLAYWRIGHT_RUN_CMD:
-        description: The command for running Playwright tests, such as `yarn playwright test` or `ddev pw-host test` from inpsyde/ddev-wordpress-plugin-template.
+        description: The command for running Playwright tests, such as `npx playwright test` or `ddev pw-host test` from inpsyde/ddev-wordpress-plugin-template.
         required: true
         type: string
       PLAYWRIGHT_DIR:
