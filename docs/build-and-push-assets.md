@@ -63,7 +63,10 @@ on:
   workflow_dispatch:
   push:
     tags: [ '*' ]
-    branches: [ '*' ]
+    branches:
+      - '*'
+      - '!*-built'
+    
     # Don't include paths if BUILT_BRANCH_NAME or RELEASE_BRANCH_NAME are defined
     paths:
       - '**workflows/build-and-push-assets.yml' # the workflow file itself
