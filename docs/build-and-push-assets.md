@@ -65,7 +65,7 @@ on:
     tags: [ '*' ]
     branches:
       - '*'
-      - '!*-built'
+      - '!*-built' # exclude jobs.build-assets.with.BUILT_BRANCH_NAME
     
     # Don't include paths if BUILT_BRANCH_NAME or RELEASE_BRANCH_NAME are defined
     paths:
@@ -85,7 +85,6 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/build-and-push-assets.yml@main
     with:
       BUILT_BRANCH_NAME: ${{ github.ref_name }}-built # Optionally, to push compiled assets to built branch
-      RELEASE_BRANCH_NAME: release # Optionally, to move tags to release branch
     secrets:
       GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
       GITHUB_USER_NAME: ${{ secrets.DEPLOYBOT_USER }}
@@ -137,7 +136,10 @@ on:
   workflow_dispatch:
   push:
     tags: [ '*' ]
-    branches: [ '*' ]
+    branches:
+      - '*'
+      - '!*-built' # exclude jobs.build-assets.with.BUILT_BRANCH_NAME
+      - '!release' # exclude jobs.build-assets.with.RELEASE_BRANCH_NAME
     # Don't include paths if BUILT_BRANCH_NAME or RELEASE_BRANCH_NAME are defined
     paths:
       - '**workflows/build-and-push-assets.yml' # the workflow file itself
