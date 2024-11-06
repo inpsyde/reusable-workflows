@@ -187,10 +187,12 @@ jobs:
         run: echo "artifact=playwright-report" >> $GITHUB_OUTPUT
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
             name: ${{ steps.set-artifact-name.outputs.artifact }}
             path: |
                 ${{ inputs.PLAYWRIGHT_DIR }}/playwright-report/*
                 ${{ inputs.PLAYWRIGHT_DIR }}/test-results/*
                 ${{ inputs.PLAYWRIGHT_DIR }}/artifacts/test-results/*
+            overwrite: true
+            include-hidden-files: true
