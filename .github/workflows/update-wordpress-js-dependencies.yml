@@ -7,6 +7,11 @@ on:
         default: wp-6.6
         required: true
         type: string
+      NPM_REGISTRY_DOMAIN:
+        description: Domain of the private npm registry.
+        default: https://npm.pkg.github.com/
+        required: false
+        type: string
     secrets:
       GITHUB_USER_EMAIL:
         description: Email address for the GitHub user configuration.
@@ -20,6 +25,9 @@ on:
       GITHUB_USER_SSH_PUBLIC_KEY:
         description: Public SSH key associated with the GitHub user for the token passed as `GITHUB_USER_TOKEN`.
         required: false
+      NPM_REGISTRY_TOKEN:
+        description: Authentication for the private npm registry.
+        required: false
       
 jobs:
   update-dependencies:
@@ -32,6 +40,8 @@ jobs:
       GITHUB_USER_SSH_KEY: ${{ secrets.DEPLOYBOT_SSH_PRIVATE_KEY }}
       GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.DEPLOYBOT_SSH_PUBLIC_KEY }}
       WP_SCRIPT_DIST_TAG: ${{ github.event.client_payload.wp_version || inputs.WP_SCRIPT_DIST_TAG }}
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      NPM_REGISTRY_DOMAIN: "https://npm.pkg.github.com/"
 
     steps:
     - name: Checkout
@@ -86,6 +96,7 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
+        registry-url: ${{ env.NPM_REGISTRY_DOMAIN }}
         cache: ${{ env.NODE_CACHE_MODE }}
 
 
