@@ -35,13 +35,13 @@ jobs:
     timeout-minutes: 10
     env:
       PACKAGE_MANAGER: npm
-      GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
-      GITHUB_USER_NAME: ${{ secrets.DEPLOYBOT_USER }}
-      GITHUB_USER_SSH_KEY: ${{ secrets.DEPLOYBOT_SSH_PRIVATE_KEY }}
-      GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.DEPLOYBOT_SSH_PUBLIC_KEY }}
+      GITHUB_USER_EMAIL: ${{ secrets.GITHUB_USER_EMAIL }}
+      GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
+      GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
+      GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.GITHUB_USER_SSH_PUBLIC_KEY }}
       WP_SCRIPT_DIST_TAG: ${{ github.event.client_payload.wp_version || inputs.WP_SCRIPT_DIST_TAG }}
       NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
-      NPM_REGISTRY_DOMAIN: "https://npm.pkg.github.com/"
+      NPM_REGISTRY_DOMAIN: ${{ inputs.NPM_REGISTRY_DOMAIN }}
 
     steps:
     - name: Checkout
