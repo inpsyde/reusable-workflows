@@ -73,4 +73,4 @@ jobs:
 
       - name: Run PHPStan
         if:  ${{ hashFiles('phpstan.neon.dist, phpstan.neon, phpstan.dist.neon') }}
-        run: ./vendor/bin/phpstan ${{ inputs.PSALM_ARGS }}
+        run: ./vendor/bin/phpstan ${{ inputs.PHPSTAN_ARGS }}
