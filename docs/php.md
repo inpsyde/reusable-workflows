@@ -93,7 +93,7 @@ jobs:
 | `PHP_VERSION`   | `'8.2'`                               | PHP version with which the scripts are executed |
 | `COMPOSER_ARGS` | `'--prefer-dist'`                     | Set of arguments passed to Composer             |
 | `PSALM_ARGS`    | `'--output-format=github --no-cache'` | Set of arguments passed to Psalm                |
-| `PSALM_ARGS`    | `'--output-format=github --no-cache'` | Set of arguments passed to PHPStan              |
+| `PHPSTAN_ARGS`    | `' --no-progress --memory-limit=1G'` | Set of arguments passed to PHPStan              |
 
 #### Secrets
 
