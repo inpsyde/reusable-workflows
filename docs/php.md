@@ -61,16 +61,16 @@ versions.
 
 ## Static code analysis
 
-This workflow runs [Psalm](https://psalm.dev/) or [PHPStan](https://phpstan.org/) by looking for the configuration files in your repository root folder. 
+This workflow runs either [Psalm](https://psalm.dev/) or [PHPStan](https://phpstan.org/), or both, based on the existence of a supported configuration file in your repository root folder. 
 
 It does so by executing the binary in the `./vendor/bin/` folder.
 
 **Supported configuration files:**
 
-| tool      | file(s)                                                  |
-|-----------|----------------------------------------------------------|
-| `psalm`   | `psalm.xml`                                              |
-| `phpstan` | `phpstan.neon.dist`, `phpstan.neon`, `phpstan.dist.neon` |
+| Tool    | Files                                                    |
+|---------|----------------------------------------------------------|
+| Psalm   | `psalm.xml`                                              |
+| PHPStan | `phpstan.neon.dist`, `phpstan.neon`, `phpstan.dist.neon` |
 
 **Simplest possible example:**
 
@@ -93,7 +93,7 @@ jobs:
 | `PHP_VERSION`   | `'8.2'`                               | PHP version with which the scripts are executed |
 | `COMPOSER_ARGS` | `'--prefer-dist'`                     | Set of arguments passed to Composer             |
 | `PSALM_ARGS`    | `'--output-format=github --no-cache'` | Set of arguments passed to Psalm                |
-| `PHPSTAN_ARGS`    | `' --no-progress --memory-limit=1G'` | Set of arguments passed to PHPStan              |
+| `PHPSTAN_ARGS`  | `'--no-progress --memory-limit=1G'`   | Set of arguments passed to PHPStan              |
 
 #### Secrets
 
