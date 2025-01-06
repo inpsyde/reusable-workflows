@@ -68,7 +68,7 @@ jobs:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
 
       - name: Run Psalm
-        if: ${{ hashFiles('psalm.xml') != '' }}
+        if: ${{ hashFiles('psalm.xml.dist', 'psalm.xml') != '' }}
         run: ./vendor/bin/psalm --php-version="${{ inputs.PHP_VERSION }}" ${{ inputs.PSALM_ARGS }}
 
       - name: Run PHPStan
