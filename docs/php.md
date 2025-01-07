@@ -69,8 +69,8 @@ It does so by executing the binary in the `./vendor/bin/` folder.
 
 | Tool    | Files                                                    |
 |---------|----------------------------------------------------------|
-| Psalm   | `psalm.xml`                                              |
-| PHPStan | `phpstan.neon.dist`, `phpstan.neon`, `phpstan.dist.neon` |
+| Psalm   | `psalm.xml`, `psalm.xml.dist`                            |
+| PHPStan | `phpstan.dist.neon`, `phpstan.neon`, `phpstan.neon.dist` |
 
 **Simplest possible example:**
 

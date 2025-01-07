@@ -68,9 +68,9 @@ jobs:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
 
       - name: Run Psalm
-        if: ${{ hashFiles('psalm.xml.dist', 'psalm.xml') != '' }}
+        if: ${{ hashFiles('psalm.xml', 'psalm.xml.dist') != '' }}
         run: ./vendor/bin/psalm --php-version="${{ inputs.PHP_VERSION }}" ${{ inputs.PSALM_ARGS }}
 
       - name: Run PHPStan
-        if: ${{ hashFiles('phpstan.neon.dist', 'phpstan.neon', 'phpstan.dist.neon') != '' }}
+        if: ${{ hashFiles('phpstan.dist.neon', 'phpstan.neon', 'phpstan.neon.dist') != '' }}
         run: ./vendor/bin/phpstan ${{ inputs.PHPSTAN_ARGS }}
