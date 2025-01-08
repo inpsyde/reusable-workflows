@@ -1,0 +1,136 @@
+name: Run generic node script and upload its artifacts
+
+on:
+  workflow_call:
+    inputs:
+      ARTIFACT_NAME:
+        description: Name for the artifact.
+        type: string
+        default: 'artifact'
+        required: false
+      ARTIFACT_PATH:
+        description: A file, directory or wildcard pattern that describes what to upload.
+        type: string
+        required: true
+      ARTIFACT_OVERWRITE:
+        description: Determine if an artifact with a matching name will be deleted before a new one is uploaded or not.
+        type: boolean
+        default: false
+        required: false
+      ARTIFACT_INCLUDE_HIDDEN_FILES:
+        description: Whether to include hidden files in the provided path in the artifact.
+        type: boolean
+        default: false
+        required: false
+      ARTIFACT_RETENTION_DAYS:
+        description: Duration after which artifact will expire in day.
+        type: number
+        default: 0
+        required: false
+      NODE_VERSION:
+        description: Node version with which the node script is to be executed.
+        default: 18
+        required: false
+        type: string
+      NPM_REGISTRY_DOMAIN:
+        description: Domain of the private npm registry.
+        default: https://npm.pkg.github.com/
+        required: false
+        type: string
+      SCRIPT_REPO:
+        description: Repository name, owner included, for the script repository.
+        type: string
+        required: true
+      SCRIPT_REPO_REF:
+        description: Ref for the script's repository.
+        type: string
+        default: 'main'
+        required: false
+      SCRIPT_RUN_CMD:
+        description: The command to run the script.
+        required: true
+        type: string
+    secrets:
+      ENV_VARS:
+        description: Additional environment variables as a JSON formatted object.
+        required: false
+      GITHUB_USER_EMAIL:
+        description: Email address for the GitHub user configuration.
+        required: false
+      GITHUB_USER_NAME:
+        description: Username for the GitHub user configuration.
+        required: false
+      GITHUB_USER_SSH_KEY:
+        description: Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`.
+        required: false
+      NPM_REGISTRY_TOKEN:
+        description: Authentication for the private npm registry.
+        required: false
+jobs:
+  run-generic-script:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    env:
+      NODE_CACHE_MODE: ''
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      GITHUB_USER_EMAIL: ${{ secrets.GITHUB_USER_EMAIL }}
+      GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
+      GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
+    steps:
+      - name: Set up node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.NODE_VERSION }}
+          registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
+          cache: ${{ env.NODE_CACHE_MODE }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ input.SCRIPT_REPO }}
+          ref: ${{ input.SCRIPT_REPO_REF }}
+
+      - name: Set up custom environment variables
+        env:
+          ENV_VARS: ${{ secrets.ENV_VARS }}
+        if: ${{ env.ENV_VARS }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            JSON
+              .parse(process.env.ENV_VARS)
+              .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
+
+      - name: Set up SSH
+        if: ${{ env.GITHUB_USER_SSH_KEY != '' }}
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ env.GITHUB_USER_SSH_KEY }}
+
+      - name: Set up Git
+        if: ${{ env.GITHUB_USER_EMAIL != '' && env.GITHUB_USER_NAME != '' }}
+        run: |
+          git config --global user.email "${{ env.GITHUB_USER_EMAIL }}"
+          git config --global user.name "${{ env.GITHUB_USER_NAME }}"
+
+      - name: Set up node cache mode
+        run: |
+            echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run script
+        run: |
+          ${{ inputs.SCRIPT_RUN_CMD }}
+
+      - name: Upload artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.ARTIFACT_NAME }}
+          path: | 
+            ${{ inputs.ARTIFACT_PATH }}
+          overwrite: ${{ inputs.ARTIFACT_OVERWRITE }}
+          include-hidden-files: ${{ inputs.ARTIFACT_INCLUDE_HIDDEN_FILES }}
+          retention-days: ${{ inputs.ARTIFACT_RETENTION_DAYS }}
