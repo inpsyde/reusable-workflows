@@ -6,10 +6,12 @@ GitHub Actions.
 To achieve that, the reusable workflow:
 
 1. Installs dependencies (including dev-dependencies) defined in `composer.json`
-2. Executes `inpsyde/composer-assets-compiler` if required & configured by the package
-3. Executes `inpsyde/wp-translation-downloader` if required & configured by the package
-4. Executes PHP-Scoper if configured by the package
-5. Executes Rector if configured by the package
+2. Executes [Composer Asset Compiler](https://github.com/inpsyde/composer-asset-compiler) if
+   configured by the package
+3. Executes [WordPress Translation Downloader](https://github.com/inpsyde/wp-translation-downloader)
+   if configured by the package
+4. Executes [PHP-Scoper](https://github.com/humbug/php-scoper) if configured by the package
+5. Executes [Rector](https://github.com/rectorphp/rector) if configured by the package
 6. Re-installs dependencies without dev-dependencies
 7. Sets current commit hash and plugin version in the plugin's main file
 8. Runs `wp dist-archive` to create the final archive (with builtin support for a `.distignore`
@@ -48,10 +50,9 @@ jobs:
 | `NODE_OPTIONS`        | `''`                                                          | Space-separated list of command-line Node options                                              |
 | `NODE_VERSION`        | `18`                                                          | Node version with which the assets will be compiled                                            |
 | `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'`                               | Domain of the private npm registry                                                             |
-| `PACKAGE_MANAGER`     | `'yarn'`                                                      | Package manager with which the dependencies should be installed (`npm` or `yarn`)              |
 | `COMPOSER_ARGS`       | `'--no-dev --no-scripts --prefer-dist --optimize-autoloader'` | Set of arguments passed to Composer when gathering production dependencies                     |
-| `PHP_VERSION`         | `'8.0'`                                                       | PHP version to use when gathering production dependencies                                      |
-| `PHP_VERSION_BUILD`   | `'8.0'`                                                       | PHP version to use when executing build tools                                                  |
+| `PHP_VERSION`         | `'8.2'`                                                       | PHP version to use when gathering production dependencies                                      |
+| `PHP_VERSION_BUILD`   | `'8.2'`                                                       | PHP version to use when executing build tools                                                  |
 | `ARCHIVE_NAME`        | `''`                                                          | The name of the zip archive (falls back to the repository name)                                |
 | `PLUGIN_MAIN_FILE`    | `'index.php'`                                                 | The name of the main plugin file                                                               |
 | `PLUGIN_FOLDER_NAME`  | `''`                                                          | The name of the plugin folder (falls back to the archive name, if set, or the repository name) |

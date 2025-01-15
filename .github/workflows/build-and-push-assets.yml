@@ -20,7 +20,7 @@ on:
         type: string
       PACKAGE_MANAGER:
         description: Package manager with which the dependencies should be installed (`npm` or `yarn`).
-        default: 'yarn'
+        default: 'npm'
         required: false
         type: string
       WORKING_DIRECTORY:
@@ -65,7 +65,7 @@ on:
         required: false
       PHP_VERSION:
         description: PHP version with which the PHP tools are to be executed.
-        default: '8.0'
+        default: '8.2'
         required: false
         type: string
       PHP_TOOLS:
@@ -146,6 +146,15 @@ jobs:
       TAG_BRANCH_NAME: ''                              # we'll override if the push is for tag
       NO_CHANGES: ''                                   # we'll override if no changes to commit
     steps:
+      - name: PACKAGE_MANAGER deprecation warning
+        if: ${{ inputs.PACKAGE_MANAGER != '' }}
+        run: |
+          if [ "${{ inputs.PACKAGE_MANAGER }}" == 'npm' ]; then
+            echo "::warning::The PACKAGE_MANAGER input is deprecated and will be removed soon. Please remove it. The workflow already uses npm by default."
+          else
+            echo "::warning::The PACKAGE_MANAGER input is deprecated and will be removed soon. Please update your workflow to use npm."          
+          fi
+
       - name: Checkout
         uses: actions/checkout@v4
         with:

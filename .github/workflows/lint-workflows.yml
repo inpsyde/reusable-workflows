@@ -1,0 +1,27 @@
+name: Lint GitHub Actions workflows
+
+on:
+  push:
+    paths:
+      - '**.yml'
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  actionlint:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up problem matchers for actionlint
+        run: |
+          curl -s -o actionlint-matcher.json https://raw.githubusercontent.com/rhysd/actionlint/main/.github/actionlint-matcher.json
+          echo "::add-matcher::${GITHUB_WORKSPACE}/actionlint-matcher.json"
+      
+      - name: Run actionlint
+        uses: docker://rhysd/actionlint:latest
+        with:
+          args: -color -pyflakes= -shellcheck=

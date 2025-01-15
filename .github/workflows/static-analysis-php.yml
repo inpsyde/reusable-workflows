@@ -5,7 +5,7 @@ on:
     inputs:
       PHP_VERSION:
         description: PHP version with which the scripts are executed.
-        default: "8.0"
+        default: '8.2'
         required: false
         type: string
       COMPOSER_ARGS:
@@ -16,6 +16,11 @@ on:
       PSALM_ARGS:
         description: Set of arguments passed to Psalm.
         default: '--output-format=github --no-cache'
+        required: false
+        type: string
+      PHPSTAN_ARGS:
+        description: Set of arguments passed to PHPStan.
+        default: '--no-progress --memory-limit=1G'
         required: false
         type: string
     secrets:
@@ -63,4 +68,9 @@ jobs:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
 
       - name: Run Psalm
+        if: ${{ hashFiles('psalm.xml', 'psalm.xml.dist') != '' }}
         run: ./vendor/bin/psalm --php-version="${{ inputs.PHP_VERSION }}" ${{ inputs.PSALM_ARGS }}
+
+      - name: Run PHPStan
+        if: ${{ hashFiles('phpstan.dist.neon', 'phpstan.neon', 'phpstan.neon.dist') != '' }}
+        run: ./vendor/bin/phpstan ${{ inputs.PHPSTAN_ARGS }}

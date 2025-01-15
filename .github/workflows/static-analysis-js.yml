@@ -1,4 +1,4 @@
-name: Unit tests JavaScript
+name: Static code analysis JavaScript
 
 on:
   workflow_call:
@@ -9,18 +9,8 @@ on:
         required: false
         type: string
       NODE_VERSION:
-        description: Node version with which the unit tests are to be executed.
+        description: Node version with which the static analysis is to be executed.
         default: 18
-        required: false
-        type: string
-      JEST_ARGS:
-        description: Set of arguments passed to Jest.
-        default: '--reporters=default --reporters=github-actions'
-        required: false
-        type: string
-      PACKAGE_MANAGER:
-        description: Package manager with which the dependencies should be installed (`npm` or `yarn`).
-        default: 'npm'
         required: false
         type: string
       NODE_OPTIONS:
@@ -46,7 +36,7 @@ on:
         required: false
 
 jobs:
-  tests-unit-js:
+  static-analysis-js:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     env:
@@ -57,15 +47,6 @@ jobs:
       GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
       GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
     steps:
-      - name: PACKAGE_MANAGER deprecation warning
-        if: ${{ inputs.PACKAGE_MANAGER != '' }}
-        run: |
-          if [ "${{ inputs.PACKAGE_MANAGER }}" == 'npm' ]; then
-            echo "::warning::The PACKAGE_MANAGER input is deprecated and will be removed soon. Please remove it. The workflow already uses npm by default."
-          else
-            echo "::warning::The PACKAGE_MANAGER input is deprecated and will be removed soon. Please update your workflow to use npm."          
-          fi
-
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -93,12 +74,10 @@ jobs:
 
       - name: Set up node cache mode
         run: |
-          if [ "${{ inputs.PACKAGE_MANAGER }}" == 'npm' ] && { [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ]; }; then
+          if [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ]; then
             echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV
-          elif [ "${{ inputs.PACKAGE_MANAGER }}" == 'yarn' ] && [ -f "${GITHUB_WORKSPACE}/yarn.lock" ]; then
-            echo "NODE_CACHE_MODE=yarn" >> $GITHUB_ENV
           else
-            echo "No lock files found or unknown package manager"
+            echo "No lock files found"
           fi
 
       - name: Set up node
@@ -110,8 +89,8 @@ jobs:
 
       - name: Install dependencies
         env:
-          ARGS: ${{ env.NODE_CACHE_MODE == 'yarn' && '--frozen-lockfile' || env.NODE_CACHE_MODE == 'npm' && 'ci' || 'install' }}
-        run: ${{ format('{0} {1}', inputs.PACKAGE_MANAGER, env.ARGS) }}
+          ARGS: ${{ env.NODE_CACHE_MODE == 'npm' && 'ci' || 'install' }}
+        run: ${{ format('npm {0}', env.ARGS) }}
 
-      - name: Run Jest
-        run: ./node_modules/.bin/jest ${{ inputs.JEST_ARGS }}
+      - name: Run tsc
+        run: ./node_modules/.bin/tsc --noEmit --skipLibCheck --pretty false

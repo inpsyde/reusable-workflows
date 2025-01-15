@@ -20,7 +20,7 @@ on:
         type: string
       PACKAGE_MANAGER:
         description: Package manager with which the dependencies should be installed (`npm` or `yarn`).
-        default: 'yarn'
+        default: 'npm'
         required: false
         type: string
       COMPOSER_ARGS:
@@ -30,12 +30,12 @@ on:
         type: string
       PHP_VERSION:
         description: PHP version to use when gathering production dependencies.
-        default: "8.0"
+        default: '8.2'
         required: false
         type: string
       PHP_VERSION_BUILD:
         description: PHP version to use when executing build tools.
-        default: "8.2"
+        default: '8.2'
         required: false
         type: string
       ARCHIVE_NAME:
@@ -147,6 +147,15 @@ jobs:
     outputs:
       artifact: ${{ steps.set-artifact-name.outputs.artifact }}
     steps:
+      - name: PACKAGE_MANAGER deprecation warning
+        if: ${{ inputs.PACKAGE_MANAGER != '' }}
+        run: |
+          if [ "${{ inputs.PACKAGE_MANAGER }}" == 'npm' ]; then
+            echo "::warning::The PACKAGE_MANAGER input is deprecated and will be removed soon. Please remove it. The workflow already uses npm by default."
+          else
+            echo "::warning::The PACKAGE_MANAGER input is deprecated and will be removed soon. Please update your workflow to use npm."          
+          fi
+
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
@@ -156,7 +165,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.PHP_VERSION_BUILD }}
-          tools: humbug/php-scoper, rector
+          tools: humbug/php-scoper, sniccowp/php-scoper-wordpress-excludes, rector
 
       - name: Check optional Composer build tools
         id: composer-tools
