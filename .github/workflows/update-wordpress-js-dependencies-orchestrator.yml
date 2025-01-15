@@ -54,7 +54,7 @@ jobs:
         unique_packages=$(echo "${packages[@]}" | tr ' ' '\n' | sort -u)
 
 
-        for package in "unique_packages"; do
+        for package in ${unique_packages[@]}; do
           echo "Processing package: $package"
           
           curl -L \
