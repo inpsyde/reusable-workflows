@@ -1,0 +1,68 @@
+name: Update WordPress JS Dependencies
+on:
+  workflow_call:
+    inputs:
+      WP_SCRIPT_DIST_TAG:
+        description: The tag to use for updating the dependencies. e.g. wp-6.7
+        default: wp-6.7
+        required: true
+        type: string
+      PACKAGES:
+        description: Comma separated list of packages to call the update js wordpress dependencies.
+        required: false
+        type: string
+    secrets:
+      GH_API_TOKEN:
+        description: An GH API Token capable of triggering repository_dispatch.
+        required: true
+      
+jobs:
+  update-dependencies:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_API_TOKEN: ${{ secrets.DEPLOYBOT_REPO_READ_WRITE_TOKEN }}
+      WP_SCRIPT_DIST_TAG: ${{ inputs.WP_SCRIPT_DIST_TAG }}
+      PACKAGES: ${{ inputs.PACKAGES }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Read composer.json and specified packages and call the workflows
+      run: |
+        # Initialize an array for packages
+        packages=()
+
+        # Add packages from composer.json if it exists
+        if [ -f composer.json ]; then
+          composer_packages=$(cat composer.json | jq -r '.require | keys[]')
+          for pkg in $composer_packages; do
+            packages+=("$pkg")
+          done
+        fi
+
+        # Add packages from the PACKAGES environment variable
+        IFS=',' read -r -a env_packages <<< "$PACKAGES"
+        for pkg in "${env_packages[@]}"; do
+          packages+=("$pkg")
+        done
+
+        # Process all unique packages
+        unique_packages=$(echo "${packages[@]}" | tr ' ' '\n' | sort -u)
+
+
+        for package in "unique_packages"; do
+          echo "Processing package: $package"
+          
+          curl -L \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ env.GH_API_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/$package/dispatches \
+            -d '{"event_type":"update_wp_dependencies","client_payload":{"wp_version":"${{ env.WP_SCRIPT_DIST_TAG }}"}}'
+        done
+        
