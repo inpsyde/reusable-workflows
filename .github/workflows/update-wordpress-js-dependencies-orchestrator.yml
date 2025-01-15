@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      GH_API_TOKEN: ${{ secrets.DEPLOYBOT_REPO_READ_WRITE_TOKEN }}
+      GH_API_TOKEN: ${{ secrets.GH_API_TOKEN }}
       WP_SCRIPT_DIST_TAG: ${{ inputs.WP_SCRIPT_DIST_TAG }}
       PACKAGES: ${{ inputs.PACKAGES }}
 
