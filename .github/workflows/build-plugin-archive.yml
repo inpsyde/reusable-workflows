@@ -172,15 +172,15 @@ jobs:
         run: |
           hasAssetConfig(){
             test -f assets-compiler.json
-            local EXIT=$?
-            if [ $EXIT -eq 0 ]; then
-              echo "0"
+            local ASSET_CONFIG_EXISTS=$?
+            if [ $ASSET_CONFIG_EXISTS -eq 0 ]; then
+              echo "0" # File exists
               exit 0
             fi
             # If 'assets-compiler.json' does not exist, check 'composer.json'
             jq '.extra | has("composer-asset-compiler")' --exit-status < composer.json >/dev/null 2>&1
-            local EXIT=$?
-            echo "$EXIT"
+            local COMPOSER_CONFIG_EXISTS=$?
+            echo "$COMPOSER_CONFIG_EXISTS"
           }
           hasTranslateConfig(){
             jq '.extra | has("wp-translation-downloader")' --exit-status < composer.json >/dev/null 2>&1
