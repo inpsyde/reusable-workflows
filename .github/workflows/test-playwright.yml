@@ -141,8 +141,6 @@ jobs:
 
       - name: Run script for test
         continue-on-error: false
-        env:
-          PLAYWRIGHT_BROWSERS_PATH: './.playwright-cache'
         run: |
           npm run ci-test:${{ inputs.SCRIPT_NAME }}
 
