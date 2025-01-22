@@ -131,13 +131,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright dependencies
-        run: |
-          npx playwright install ${{ inputs.PLAYWRIGHT_BROWSER_ARGS }}
-
       - name: Run script for test preparation
         run: |
           npm run preci-test:${{ inputs.SCRIPT_NAME }}  || echo "No preparation script executed"
+
+      - name: Install Playwright dependencies
+        run: |
+          npx playwright install ${{ inputs.PLAYWRIGHT_BROWSER_ARGS }}
 
       - name: Run script for test
         continue-on-error: false
