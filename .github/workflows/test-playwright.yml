@@ -108,7 +108,7 @@ jobs:
           git config --global user.name "${{ env.GITHUB_USER_NAME }}"
 
       - name: Set up PHP
-        if: ${{ inputs.PHP_VERSION && inputs.PHP_VERSION != '' }}
+        if: ${{ hashFiles('composer.json') != '' && inputs.PHP_VERSION && inputs.PHP_VERSION != '' }}
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.PHP_VERSION }}
@@ -116,7 +116,7 @@ jobs:
           coverage: none
 
       - name: Install Composer dependencies
-        if: ${{ inputs.PHP_VERSION && inputs.PHP_VERSION != '' }}
+        if: ${{ hashFiles('composer.json') != '' && inputs.PHP_VERSION && inputs.PHP_VERSION != '' }}
         uses: ramsey/composer-install@v3
         with:
           composer-options: '--prefer-dist'
