@@ -3,8 +3,7 @@ on:
   workflow_call:
     inputs:
       WP_SCRIPT_DIST_TAG:
-        description: The tag to use for updating the dependencies. e.g. wp-6.6
-        default: wp-6.6
+        description: The tag to use for updating the dependencies. e.g. wp-6.7
         required: true
         type: string
       NPM_REGISTRY_DOMAIN:

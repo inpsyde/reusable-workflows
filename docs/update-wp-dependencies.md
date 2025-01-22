@@ -1,6 +1,6 @@
 # Update WP Dependencies
 
-This workflow is meant to ease the task of updating the **@wordpress/<name>** dependencies.
+This workflow is meant to ease the task of updating the **@wordpress/name** dependencies.
 
 We are providing two reusable workflows. 
 
@@ -13,17 +13,17 @@ We are providing two reusable workflows.
 The workflow will create a PR with the updated dependencies.
 
 
-### Configuration parameters
+### Configuration parameters for WP Dependencies Update Workflow
 
-#### Inputs
+#### Inputs for WP Dependencies Update Workflow
 
-| Name                  | Default                         | Description                                                                                                                                                                                                                                                                                                           |
-|-----------------------|---------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `WP_SCRIPT_DIST_TAG`  | `'wp-6.7'`                      | The dist tag used by [wp-scripts packages-update](https://github.com/WordPress/gutenberg/tree/trunk/packages/scripts#packages-update)<br/> you can see which tags are available by going to any [WordPress Package in NPM](https://www.npmjs.com/package/@wordpress/blocks?activeTab=versions) and see the Tag column |
-| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                                                                                                                                                                                                                                                    |
+| Name                  | Default                         | Description                                                                                                                                                                                                                                                                                                       |
+|-----------------------|---------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `WP_SCRIPT_DIST_TAG`  | `'wp-6.7'`                      | The dist tag used by [wp-scripts packages-update](https://github.com/WordPress/gutenberg/tree/trunk/packages/scripts#packages-update). You can see which tags are available by going to any [WordPress Package in NPM](https://www.npmjs.com/package/@wordpress/blocks?activeTab=versions) and see the Tag column |
+| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                                                                                                                                                                                                                                                |
 
 
-#### Secrets
+#### Secrets for WP Dependencies Update Workflow
 
 | Name                         | Description                                                                  |
 |------------------------------|------------------------------------------------------------------------------|
@@ -67,17 +67,17 @@ jobs:
 The workflow will trigger the WP Dependencies Update Workflow in other repositories.
 
 
-### Configuration parameters
+### Configuration parameters for WP Dependencies Update Orchestrator Workflow
 
-#### Inputs
+#### Inputs for WP Dependencies Update Orchestrator Workflow
 
-| Name                  | Default    | Description                                                                                                                                                                                                                                                                                                           |
-|-----------------------|------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `WP_SCRIPT_DIST_TAG`  | `'wp-6.7'` | The dist tag used by [wp-scripts packages-update](https://github.com/WordPress/gutenberg/tree/trunk/packages/scripts#packages-update)<br/> you can see which tags are available by going to any [WordPress Package in NPM](https://www.npmjs.com/package/@wordpress/blocks?activeTab=versions) and see the Tag column |
-| `PACKAGES`            | `''`       | A comma-separated list of repository in the form of <organization-name>/<repository-name>                                                                                                                                                                                                                             |
+| Name                  | Default    | Description                                                                                                                                                                                                                                                                                                       |
+|-----------------------|------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `WP_SCRIPT_DIST_TAG`  | `'wp-6.7'` | The dist tag used by [wp-scripts packages-update](https://github.com/WordPress/gutenberg/tree/trunk/packages/scripts#packages-update). You can see which tags are available by going to any [WordPress Package in NPM](https://www.npmjs.com/package/@wordpress/blocks?activeTab=versions) and see the Tag column |
+| `PACKAGES`            | `''`       | A comma-separated list of repository in the form of organization-name/repository-name                                                                                                                                                                                                                             |
 
 
-#### Secrets
+#### Secrets for WP Dependencies Update Orchestrator Workflow
 
 | Name           | Description                                       |
 |----------------|---------------------------------------------------|
