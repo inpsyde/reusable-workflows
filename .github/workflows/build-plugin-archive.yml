@@ -165,42 +165,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.PHP_VERSION_BUILD }}
-          tools: humbug/php-scoper, sniccowp/php-scoper-wordpress-excludes, rector
-
-      - name: Check optional Composer build tools
-        id: composer-tools
-        run: |
-          hasAssetConfig(){
-            test -f assets-compiler.json
-            local ASSET_CONFIG_EXISTS=$?
-            if [ $ASSET_CONFIG_EXISTS -eq 0 ]; then
-              echo "0" # File exists
-              exit 0
-            fi
-            # If 'assets-compiler.json' does not exist, check 'composer.json'
-            jq '.extra | has("composer-asset-compiler")' --exit-status < composer.json >/dev/null 2>&1
-            local COMPOSER_CONFIG_EXISTS=$?
-            echo "$COMPOSER_CONFIG_EXISTS"
-          }
-          hasTranslateConfig(){
-            jq '.extra | has("wp-translation-downloader")' --exit-status < composer.json >/dev/null 2>&1
-            local EXIT=$?
-            echo "$EXIT"
-          }
-          hasScoperConfig(){
-            test -f scoper.inc.php
-            local EXIT=$?
-            echo "$EXIT"
-          }
-          hasRectorConfig(){
-            test -f rector.php
-            local EXIT=$?
-            echo "$EXIT"
-          }
-          echo "assets-compiler=$( hasAssetConfig )" >> $GITHUB_OUTPUT
-          echo "translation-downloader=$( hasTranslateConfig )" >> $GITHUB_OUTPUT
-          echo "php-scoper=$( hasScoperConfig )" >> $GITHUB_OUTPUT
-          echo "rector=$( hasRectorConfig )" >> $GITHUB_OUTPUT
+          tools: humbug/php-scoper, sniccowp/php-scoper-wordpress-excludes, rector/rector, inpsyde/composer-assets-compiler, inpsyde/wp-translation-downloader
 
       - name: Set up node cache mode
         run: |
@@ -220,35 +185,33 @@ jobs:
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
           cache: ${{ env.NODE_CACHE_MODE }}
 
-      - name: Install and run Composer Asset Compiler
-        if: steps.composer-tools.outputs.assets-compiler == '0'
+      - name: Run Composer Asset Compiler
+        continue-on-error: true
         run: |
           composer global config --no-plugins --no-interaction allow-plugins.inpsyde/composer-assets-compiler true
-          composer global require inpsyde/composer-assets-compiler
-          composer compile-assets ${{ inputs.COMPILE_ASSETS_ARGS }}
+          composer compile-assets ${{ inputs.COMPILE_ASSETS_ARGS }} || echo "Error: $?"
 
-      - name: Install and run WordPress Translation Downloader
-        if: steps.composer-tools.outputs.translation-downloader == '0'
+      - name: Run WordPress Translation Downloader
+        continue-on-error: true
         run: |
           composer global config --no-plugins --no-interaction allow-plugins.composer/installers true
           composer global config --no-plugins --no-interaction allow-plugins.inpsyde/wp-translation-downloader true
-          composer global require inpsyde/wp-translation-downloader
-          composer wp-translation-downloader:download
+          composer wp-translation-downloader:download || echo "Error: $?"
 
       - name: Run Rector
-        if: steps.composer-tools.outputs.rector == '0'
+        continue-on-error: true
         run: |
-          rector
+          rector || echo "Error: $?"
 
       - name: Run PHP-Scoper
-        if: steps.composer-tools.outputs.php-scoper == '0'
+        continue-on-error: true
         run: |
           php-scoper add-prefix --force --output-dir=build
           composer --working-dir=build dump-autoload -o
           sed -i "s/'__composer_autoload_files'/\'__composer_autoload_files_${{ github.sha }}'/g" "build/vendor/composer/autoload_real.php"
 
       - name: Move code to the `build/` directory
-        if: steps.composer-tools.outputs.php-scoper != '0'
+        if: steps.php-scoper.outcome == 'failure'
         run: |
           shopt -s extglob dotglob
           mkdir build
