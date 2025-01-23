@@ -202,7 +202,8 @@ jobs:
         run: |
           rector || echo "Error: $?"
 
-      - name: run-php-scoper
+      - name: Run PHP-Scoper
+        id: run-php-scoper
         continue-on-error: true
         run: |
           php-scoper add-prefix --force --output-dir=build
