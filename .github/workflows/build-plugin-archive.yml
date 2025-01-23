@@ -203,6 +203,7 @@ jobs:
           rector
 
       - name: Run PHP-Scoper
+        continue-on-error: true
         id: php-scoper
         run: |
           # If no config file, bail 
