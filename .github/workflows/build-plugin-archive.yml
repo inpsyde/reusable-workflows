@@ -161,46 +161,17 @@ jobs:
         with:
           name: ${{ needs.checkout-dependencies.outputs.artifact }}
 
+      - name: Configure Composer plugins
+        run: |
+          composer global config --no-plugins --no-interaction allow-plugins.composer/installers true
+          composer global config --no-plugins --no-interaction allow-plugins.inpsyde/wp-translation-downloader true
+          composer global config --no-plugins --no-interaction allow-plugins.inpsyde/composer-assets-compiler true
+
       - name: Set up PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@verbose
         with:
           php-version: ${{ inputs.PHP_VERSION_BUILD }}
-          tools: humbug/php-scoper, sniccowp/php-scoper-wordpress-excludes, rector
-
-      - name: Check optional Composer build tools
-        id: composer-tools
-        run: |
-          hasAssetConfig(){
-            test -f assets-compiler.json
-            local ASSET_CONFIG_EXISTS=$?
-            if [ $ASSET_CONFIG_EXISTS -eq 0 ]; then
-              echo "0" # File exists
-              exit 0
-            fi
-            # If 'assets-compiler.json' does not exist, check 'composer.json'
-            jq '.extra | has("composer-asset-compiler")' --exit-status < composer.json >/dev/null 2>&1
-            local COMPOSER_CONFIG_EXISTS=$?
-            echo "$COMPOSER_CONFIG_EXISTS"
-          }
-          hasTranslateConfig(){
-            jq '.extra | has("wp-translation-downloader")' --exit-status < composer.json >/dev/null 2>&1
-            local EXIT=$?
-            echo "$EXIT"
-          }
-          hasScoperConfig(){
-            test -f scoper.inc.php
-            local EXIT=$?
-            echo "$EXIT"
-          }
-          hasRectorConfig(){
-            test -f rector.php
-            local EXIT=$?
-            echo "$EXIT"
-          }
-          echo "assets-compiler=$( hasAssetConfig )" >> $GITHUB_OUTPUT
-          echo "translation-downloader=$( hasTranslateConfig )" >> $GITHUB_OUTPUT
-          echo "php-scoper=$( hasScoperConfig )" >> $GITHUB_OUTPUT
-          echo "rector=$( hasRectorConfig )" >> $GITHUB_OUTPUT
+          tools: humbug/php-scoper, sniccowp/php-scoper-wordpress-excludes, rector/rector, inpsyde/composer-assets-compiler, inpsyde/wp-translation-downloader
 
       - name: Set up node cache mode
         run: |
@@ -213,7 +184,6 @@ jobs:
           fi
 
       - name: Set up node
-        if: steps.composer-tools.outputs.assets-compiler == '0'
         uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.NODE_VERSION }}
@@ -221,34 +191,26 @@ jobs:
           cache: ${{ env.NODE_CACHE_MODE }}
 
       - name: Install and run Composer Asset Compiler
-        if: steps.composer-tools.outputs.assets-compiler == '0'
         run: |
-          composer global config --no-plugins --no-interaction allow-plugins.inpsyde/composer-assets-compiler true
-          composer global require inpsyde/composer-assets-compiler
           composer compile-assets ${{ inputs.COMPILE_ASSETS_ARGS }}
 
       - name: Install and run WordPress Translation Downloader
-        if: steps.composer-tools.outputs.translation-downloader == '0'
         run: |
-          composer global config --no-plugins --no-interaction allow-plugins.composer/installers true
-          composer global config --no-plugins --no-interaction allow-plugins.inpsyde/wp-translation-downloader true
-          composer global require inpsyde/wp-translation-downloader
           composer wp-translation-downloader:download
 
       - name: Run Rector
-        if: steps.composer-tools.outputs.rector == '0'
         run: |
           rector
 
       - name: Run PHP-Scoper
-        if: steps.composer-tools.outputs.php-scoper == '0'
+        id: php-scoper
         run: |
-          php-scoper add-prefix --force --output-dir=build
+          php-scoper add-prefix --force --output-dir=build --no-interaction
           composer --working-dir=build dump-autoload -o
           sed -i "s/'__composer_autoload_files'/\'__composer_autoload_files_${{ github.sha }}'/g" "build/vendor/composer/autoload_real.php"
 
       - name: Move code to the `build/` directory
-        if: steps.composer-tools.outputs.php-scoper != '0'
+        if: steps.php-scoper.outputs == 'failed'
         run: |
           shopt -s extglob dotglob
           mkdir build
