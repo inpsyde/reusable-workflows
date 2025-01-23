@@ -208,7 +208,7 @@ jobs:
         run: |
           # If no config file, bail 
           if [ ! -f "scoper.inc.php" ]; then
-          echo "No Php-Scoper config file found (scoper.inc.php). Aborting..."
+          echo "scoper_failed=1" >> $GITHUB_OUTPUT
           exit 1
           fi
           php-scoper add-prefix --force --output-dir=build --no-interaction
@@ -216,7 +216,7 @@ jobs:
           sed -i "s/'__composer_autoload_files'/\'__composer_autoload_files_${{ github.sha }}'/g" "build/vendor/composer/autoload_real.php"
 
       - name: Move code to the `build/` directory
-        if: ${{ failure() && steps.php-scoper.conclusion == 'failure' }}
+        if: steps.php-scoper.outputs.scoper_failed == '1'
         run: |
           shopt -s extglob dotglob
           mkdir build
