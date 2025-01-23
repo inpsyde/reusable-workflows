@@ -205,6 +205,11 @@ jobs:
       - name: Run PHP-Scoper
         id: php-scoper
         run: |
+          # If no config file, bail 
+          if [ ! -f "scoper.inc.php" ]; then
+          echo "No Php-Scoper config file found (scoper.inc.php). Aborting..."
+          exit 1
+          fi
           php-scoper add-prefix --force --output-dir=build --no-interaction
           composer --working-dir=build dump-autoload -o
           sed -i "s/'__composer_autoload_files'/\'__composer_autoload_files_${{ github.sha }}'/g" "build/vendor/composer/autoload_real.php"
