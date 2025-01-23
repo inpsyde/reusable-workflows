@@ -168,7 +168,7 @@ jobs:
           composer global config --no-plugins --no-interaction allow-plugins.inpsyde/composer-assets-compiler true
 
       - name: Set up PHP
-        uses: shivammathur/setup-php@verbose
+        uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.PHP_VERSION_BUILD }}
           tools: humbug/php-scoper, sniccowp/php-scoper-wordpress-excludes, rector/rector, inpsyde/composer-assets-compiler, inpsyde/wp-translation-downloader
@@ -216,7 +216,7 @@ jobs:
           sed -i "s/'__composer_autoload_files'/\'__composer_autoload_files_${{ github.sha }}'/g" "build/vendor/composer/autoload_real.php"
 
       - name: Move code to the `build/` directory
-        if: steps.php-scoper.outputs == 'failed'
+        if: steps.php-scoper.conclusion == 'failure'
         run: |
           shopt -s extglob dotglob
           mkdir build
