@@ -216,7 +216,7 @@ jobs:
           sed -i "s/'__composer_autoload_files'/\'__composer_autoload_files_${{ github.sha }}'/g" "build/vendor/composer/autoload_real.php"
 
       - name: Move code to the `build/` directory
-        if: steps.php-scoper.conclusion == 'failure'
+        if: ${{ failure() && steps.php-scoper.conclusion == 'failure' }}
         run: |
           shopt -s extglob dotglob
           mkdir build
