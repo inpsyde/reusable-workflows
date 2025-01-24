@@ -136,9 +136,11 @@ jobs:
           npx playwright install ${{ inputs.PLAYWRIGHT_BROWSER_ARGS }}
 
       - name: Run script for test
+        id: run-playwright-test
         continue-on-error: true
         run: |
           npm run ci-test:${{ inputs.SCRIPT_NAME }}
+          echo "test_exit_code=$?" >> $GITHUB_OUTPUT
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -149,3 +151,8 @@ jobs:
           overwrite: ${{ inputs.ARTIFACT_OVERWRITE }}
           include-hidden-files: ${{ inputs.ARTIFACT_INCLUDE_HIDDEN_FILES }}
           retention-days: ${{ inputs.ARTIFACT_RETENTION_DAYS }}
+
+      - name: Exit the status of the test
+        if: ${{ steps.run-playwright-test.outputs.test_exit_code != 0 }}
+        run: |
+          exit ${{ steps.run-playwright-test.outputs.test_exit_code }} 
