@@ -1,3 +1,5 @@
+<!-- markdownlint-disable MD024 -->
+
 # Update WordPress JS Dependencies
 
 This documentation describes two closely related reusable workflows for updating JavaScript
