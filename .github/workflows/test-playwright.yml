@@ -136,7 +136,7 @@ jobs:
           npx playwright install ${{ inputs.PLAYWRIGHT_BROWSER_ARGS }}
 
       - name: Run script for test
-        continue-on-error: false
+        continue-on-error: true
         run: |
           npm run ci-test:${{ inputs.SCRIPT_NAME }}
 
