@@ -140,7 +140,7 @@ jobs:
         continue-on-error: true
         run: |
           npm run ci-test:${{ inputs.SCRIPT_NAME }}
-          echo "test_exit_code=$?" >> $GITHUB_OUTPUT
+          echo "TEST_EXIT_CODE=$?" >> $GITHUB_OUTPUT
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -154,4 +154,5 @@ jobs:
 
       - name: Exit the status of the test
         run: |
-          exit ${{ steps.run-playwright-test.outputs.test_exit_code }} 
+          echo "$TEST_EXIT_CODE"
+          exit ${{ steps.run-playwright-test.outputs.TEST_EXIT_CODE }} 
