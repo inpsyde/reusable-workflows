@@ -153,6 +153,5 @@ jobs:
           retention-days: ${{ inputs.ARTIFACT_RETENTION_DAYS }}
 
       - name: Exit the status of the test
-        if: ${{ steps.run-playwright-test.outputs.test_exit_code != 0 }}
         run: |
           exit ${{ steps.run-playwright-test.outputs.test_exit_code }} 
