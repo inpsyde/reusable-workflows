@@ -1,112 +1,118 @@
-# Update WP Dependencies
+# Update WordPress JS Dependencies
 
-This workflow is meant to ease the task of updating the **@wordpress/name** dependencies.
+This documentation describes two closely related reusable workflows for updating JavaScript
+dependencies that use [WordPress packages](https://www.npmjs.com/search?q=%40wordpress%2F). These
+workflows handle automatic updates of the `@wordpress/*` packages to a specified WordPress version (
+dist tag) and can optionally create a pull request with all necessary changes.
 
-We are providing two reusable workflows. 
+1. **Update WordPress JS Dependencies Workflow**:  
+   This workflow lives in an individual repository (the one containing the WordPress JS dependencies
+   to update). It checks out the repository, updates the `@wordpress/*` dependencies to a specific
+   tag, and opens a pull request if changes are found.
 
-1. One workflow lives in the package having the dependencies, we will call this "Update WP Dependencies Workflow".
-2. The other workflow lives in a package that is meant to orchestrate other packages through composer, we will call this "Update WP Dependencies Orchestrator Workflow". 
-    This is simply a workflow that triggers the other one in other packages.
+2. **Update WordPress JS Dependencies Orchestrator Workflow**:  
+   This workflow can be placed in a single "orchestrator" repository (e.g., a website repository).
+   It triggers the "Update WordPress JS Dependencies Workflow" in multiple other repositories. This
+   is accomplished by sending
+   a [repository\_dispatch](https://docs.github.com/en/rest/repos/repos#create-a-repository-dispatch-event)
+   event to each of the target repositories.
 
-## WP Dependencies Update Workflow
+## Update WordPress JS Dependencies Workflow
 
-The workflow will create a PR with the updated dependencies.
+This workflow updates the `@wordpress/*` dependencies in the current repository to a specified
+WordPress version tag (e.g., `wp-6.7`) and creates a pull request containing all modified files.
 
+### Configuration parameters
 
-### Configuration parameters for WP Dependencies Update Workflow
+#### Inputs
 
-#### Inputs for WP Dependencies Update Workflow
+| Name                  | Default                         | Description                                           |
+|-----------------------|---------------------------------|-------------------------------------------------------|
+| `WP_VERSION`          | `'wp-6.7'`                      | The tag to update the dependencies to, e.g., `wp-6.7` |
+| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                    |
 
-| Name                  | Default                         | Description                                                                                                                                                                                                                                                                                                       |
-|-----------------------|---------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `WP_SCRIPT_DIST_TAG`  | `'wp-6.7'`                      | The dist tag used by [wp-scripts packages-update](https://github.com/WordPress/gutenberg/tree/trunk/packages/scripts#packages-update). You can see which tags are available by going to any [WordPress Package in NPM](https://www.npmjs.com/package/@wordpress/blocks?activeTab=versions) and see the Tag column |
-| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                                                                                                                                                                                                                                                |
-
-
-#### Secrets for WP Dependencies Update Workflow
+#### Secrets
 
 | Name                         | Description                                                                  |
 |------------------------------|------------------------------------------------------------------------------|
+| `NPM_REGISTRY_TOKEN`         | Authentication for the private npm registry                                  |
 | `GITHUB_USER_EMAIL`          | Email address for the GitHub user configuration                              |
 | `GITHUB_USER_NAME`           | Username for the GitHub user configuration                                   |
 | `GITHUB_USER_SSH_KEY`        | Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME` |
 | `GITHUB_USER_SSH_PUBLIC_KEY` | Public SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`  |
-| `NPM_REGISTRY_TOKEN`         | Authentication for the private npm registry                                  |
 
-**Example with configuration parameters:**
+### Usage example
 
-```yaml
-name: WordPress JS Dependencies Update
+```yml
+name: Update WordPress JS Dependencies
+
 on:
   workflow_dispatch:
     inputs:
-      WP_SCRIPT_DIST_TAG:
-        description: The tag to use for updating the dependencies. e.g. wp-6.7
-        default: wp-6.7
+      WP_VERSION:
+        description: 'The tag to update the dependencies to, e.g., `wp-6.7`.'
+        default: 'wp-6.7'
         required: true
         type: string
   repository_dispatch:
-    types: ['update_wp_dependencies']
+    types: [ 'update_wp_dependencies' ]
 
 jobs:
-  update_wp_dependencies:
-    uses: inpsyde/reusable-workflows/.github/workflows/update-wordpress-js-dependencies.yml@main
-    secrets:
-        GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
-        GITHUB_USER_NAME: ${{ secrets.DEPLOYBOT_USER }}
-        GITHUB_USER_SSH_KEY: ${{ secrets.DEPLOYBOT_SSH_PRIVATE_KEY }}
-        GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.DEPLOYBOT_SSH_PUBLIC_KEY }}
-        NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_PACKAGES_READ_ACCESS_TOKEN }}
-    with:
-        NPM_REGISTRY_DOMAIN: "https://npm.pkg.github.com/"
-        WP_SCRIPT_DIST_TAG: ${{ inputs.WP_SCRIPT_DIST_TAG }}
+  update-dependencies:
+  uses: inpsyde/reusable-workflows/.github/workflows/update-wordpress-js-dependencies.yml@main
+  secrets:
+    GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
+    GITHUB_USER_NAME: ${{ secrets.DEPLOYBOT_USER }}
+    GITHUB_USER_SSH_KEY: ${{ secrets.DEPLOYBOT_SSH_PRIVATE_KEY }}
+    GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.DEPLOYBOT_SSH_PUBLIC_KEY }}
+    NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_PACKAGES_READ_ACCESS_TOKEN }}
+  with:
+    WP_VERSION: ${{ inputs.WP_VERSION }}
 ```
 
-## WP Dependencies Update Orchestrator Workflow
+## Update WordPress JS Dependencies Orchestrator Workflow
 
-The workflow will trigger the WP Dependencies Update Workflow in other repositories.
+This workflow triggers the “Update WordPress JS Dependencies Workflow” in multiple external
+repositories by sending a `repository_dispatch` event to each target repository. This allows you to
+maintain a centralized list of repositories needing consistent WordPress JS dependency versions.
 
+### Configuration parameters
 
-### Configuration parameters for WP Dependencies Update Orchestrator Workflow
+#### Inputs
 
-#### Inputs for WP Dependencies Update Orchestrator Workflow
+| Name         | Default    | Description                                                    |
+|--------------|------------|----------------------------------------------------------------|
+| `WP_VERSION` | `'wp-6.7'` | The tag to update the dependencies to, e.g., `wp-6.7`          |
+| `PACKAGES`   | `''`       | Comma-separated list of additional `owner/repo`s to be updated |
 
-| Name                  | Default    | Description                                                                                                                                                                                                                                                                                                       |
-|-----------------------|------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `WP_SCRIPT_DIST_TAG`  | `'wp-6.7'` | The dist tag used by [wp-scripts packages-update](https://github.com/WordPress/gutenberg/tree/trunk/packages/scripts#packages-update). You can see which tags are available by going to any [WordPress Package in NPM](https://www.npmjs.com/package/@wordpress/blocks?activeTab=versions) and see the Tag column |
-| `PACKAGES`            | `''`       | A comma-separated list of repository in the form of organization-name/repository-name                                                                                                                                                                                                                             |
+#### Secrets
 
+| Name           | Description                                                                                                             |
+|----------------|-------------------------------------------------------------------------------------------------------------------------|
+| `GH_API_TOKEN` | A personal access token (classic) with `repo` and `workflow` permissions, used to authenticate when calling GitHub APIs |
 
-#### Secrets for WP Dependencies Update Orchestrator Workflow
+### Usage example
 
-| Name           | Description                                       |
-|----------------|---------------------------------------------------|
-| `GH_API_TOKEN` | A classic API token with repo and workflow access |
-
-**Example with configuration parameters:**
-
-```yaml
-name: Call Update WordPress Deps using loop from composer and defined packages
+```yml
+name: Update WordPress JS Dependencies Orchestrator
 
 on:
   workflow_dispatch:
     inputs:
-      WP_SCRIPT_DIST_TAG:
-        description: 'The WP dist tag. e.g.: wp-6.7'
+      WP_VERSION:
+        description: 'The tag to update the dependencies to, e.g., `wp-6.7`'
         required: true
       PACKAGES:
-        description: Comma separated list of packages to call the update js wordpress dependencies.
+        description: 'Comma-separated list of additional `owner/repo`s to be updated.'
         required: false
         type: string
 
-
 jobs:
-  update-dependencies:
+  update-dependency-orchestrator:
     uses: inpsyde/reusable-workflows/.github/workflows/update-wordpress-js-dependencies-orchestrator.yml@main
     with:
-      WP_SCRIPT_DIST_TAG: ${{ inputs.WP_SCRIPT_DIST_TAG }}
+      WP_VERSION: ${{ inputs.WP_VERSION }}
       PACKAGES: ${{ inputs.PACKAGES }}
     secrets:
       GH_API_TOKEN: ${{ secrets.DEPLOYBOT_REPO_READ_WRITE_TOKEN }}
 ```
-
