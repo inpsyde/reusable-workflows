@@ -56,7 +56,7 @@ on:
         required: false
         type: string
     secrets:
-      TEST_SECRETS:
+      ENV_FILE_DATA:
         description: Additional environment variables  as a JSON formatted object available only for the test step.
         required: false
       GITHUB_USER_EMAIL:
@@ -146,7 +146,7 @@ jobs:
       - name: Run script for test
         continue-on-error: true
         run: |
-          echo '${{ secrets.TEST_SECRETS }}' | jq -r '.[] | "export \(.name)=\(.value)"' > env-ci.sh
+          echo '${{ secrets.ENV_FILE_DATA }}' | jq -r '.[] | "export \(.name)=\(.value)"' > env-ci.sh
           source env-ci.sh
           rm env-ci.sh
           npm run ci-test:${{ inputs.SCRIPT_NAME }}
