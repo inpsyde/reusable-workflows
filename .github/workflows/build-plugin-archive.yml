@@ -161,14 +161,8 @@ jobs:
         with:
           name: ${{ needs.checkout-dependencies.outputs.artifact }}
 
-      - name: Configure Composer plugins
-        run: |
-          composer global config --no-plugins --no-interaction allow-plugins.composer/installers true
-          composer global config --no-plugins --no-interaction allow-plugins.inpsyde/wp-translation-downloader true
-          composer global config --no-plugins --no-interaction allow-plugins.inpsyde/composer-assets-compiler true
-
       - name: Set up PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@verbose
         with:
           php-version: ${{ inputs.PHP_VERSION_BUILD }}
           tools: rector, php-scoper, sniccowp/php-scoper-wordpress-excludes, inpsyde/composer-assets-compiler, inpsyde/wp-translation-downloader
