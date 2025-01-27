@@ -84,25 +84,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up custom environment variables
-        env:
-          ENV_VARS: ${{ secrets.ENV_VARS }}
-        if: ${{ env.ENV_VARS }}
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const envVars = JSON.parse(process.env.ENV_VARS);
-      
-            const envContent = envVars
-            .map(envVar => `${envVar.name}=${envVar.value}`)
-            .join('\n');
-            
-            fs.writeFileSync('.env.ci', envContent);
-            
-            console.log('.env.ci file created with the following content:');
-            console.log(envContent);
-
       - name: Set up SSH
         if: ${{ env.GITHUB_USER_SSH_KEY != '' }}
         uses: webfactory/ssh-agent@v0.9.0
@@ -146,9 +127,16 @@ jobs:
       - name: Run script for test
         continue-on-error: true
         run: |
-          source .env.ci
+          echo '${{ secrets.ENV_VARS }}' | jq -r '.[] | "export \(.name)=\(.value)"' > env-ci.sh
+          
+          echo "Generated environment variables:"
+          cat env-ci.sh
+          
+          # Source the environment variables for this step only
+          source env-ci.sh
           echo "$GITHUB_ENV"
           npm run ci-test:${{ inputs.SCRIPT_NAME }}
+          rm env-ci.sh
 
       - name: Test
         run: |
