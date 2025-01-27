@@ -104,10 +104,10 @@ jobs:
             console.log(envContent);
 
       - name: Set up SSH
-        if: ${{ secrets.GITHUB_USER_SSH_KEY != '' }}
+        if: ${{ env.GITHUB_USER_SSH_KEY != '' }}
         uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
+          ssh-private-key: ${{ env.GITHUB_USER_SSH_KEY }}
 
       - name: Set up Git
         if: ${{ env.GITHUB_USER_EMAIL != '' && env.GITHUB_USER_NAME != '' }}
