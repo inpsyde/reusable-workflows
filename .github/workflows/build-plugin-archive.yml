@@ -168,7 +168,7 @@ jobs:
           composer global config --no-plugins --no-interaction allow-plugins.inpsyde/composer-assets-compiler true
 
       - name: Set up PHP
-        uses: shivammathur/setup-php@verbose
+        uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.PHP_VERSION_BUILD }}
           tools: rector, php-scoper, sniccowp/php-scoper-wordpress-excludes, inpsyde/composer-assets-compiler, inpsyde/wp-translation-downloader
