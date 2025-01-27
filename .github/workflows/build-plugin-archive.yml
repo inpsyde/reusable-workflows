@@ -171,7 +171,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.PHP_VERSION_BUILD }}
-          tools: humbug/php-scoper, sniccowp/php-scoper-wordpress-excludes, rector/rector, inpsyde/composer-assets-compiler, inpsyde/wp-translation-downloader
+          tools: rector, php-scoper, sniccowp/php-scoper-wordpress-excludes, inpsyde/composer-assets-compiler, inpsyde/wp-translation-downloader
 
       - name: Set up node cache mode
         run: |
@@ -199,24 +199,19 @@ jobs:
           composer wp-translation-downloader:download
 
       - name: Run Rector
+        if: ${{ hashFiles('rector.php') != '' }}
         run: |
           rector
 
       - name: Run PHP-Scoper
-        continue-on-error: true
-        id: php-scoper
+        if: ${{ hashFiles('scoper.inc.php') != '' }}
         run: |
-          # If no config file, bail 
-          if [ ! -f "scoper.inc.php" ]; then
-          echo "scoper_failed=1" >> $GITHUB_OUTPUT
-          exit 1
-          fi
           php-scoper add-prefix --force --output-dir=build --no-interaction
           composer --working-dir=build dump-autoload -o
           sed -i "s/'__composer_autoload_files'/\'__composer_autoload_files_${{ github.sha }}'/g" "build/vendor/composer/autoload_real.php"
 
       - name: Move code to the `build/` directory
-        if: steps.php-scoper.outputs.scoper_failed == '1'
+        if: ${{ hashFiles('scoper.inc.php') == '' }}
         run: |
           shopt -s extglob dotglob
           mkdir build
