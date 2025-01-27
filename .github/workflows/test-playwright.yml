@@ -147,11 +147,12 @@ jobs:
         continue-on-error: true
         run: |
           source .env.ci
+          echo "$GITHUB_ENV"
           npm run ci-test:${{ inputs.SCRIPT_NAME }}
 
       - name: Test
         run: |
-          echo $GITHUB_ENV
+          echo "$GITHUB_ENV"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
