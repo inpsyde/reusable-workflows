@@ -51,9 +51,13 @@ on:
         description: The name of a custom script in the ci-test namespace.
         required: true
         type: string
-    secrets:
       ENV_VARS:
         description: Additional environment variables as a JSON formatted object.
+        required: false
+        type: string
+    secrets:
+      TEST_SECRETS:
+        description: Additional environment variables  as a JSON formatted object available only for the test step.
         required: false
       GITHUB_USER_EMAIL:
         description: Email address for the GitHub user configuration.
@@ -83,6 +87,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set up custom environment variables
+        env:
+          ENV_VARS: ${{ inputs.ENV_VARS }}
+        if: ${{ env.ENV_VARS }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            JSON
+              .parse(process.env.ENV_VARS)
+              .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
       - name: Set up SSH
         if: ${{ env.GITHUB_USER_SSH_KEY != '' }}
@@ -127,20 +142,17 @@ jobs:
       - name: Run script for test
         continue-on-error: true
         run: |
-          echo '${{ secrets.ENV_VARS }}' | jq -r '.[] | "export \(.name)=\(.value)"' > env-ci.sh
+          echo '${{ secrets.TEST_SECRETS }}' | jq -r '.[] | "export \(.name)=\(.value)"' > env-ci.sh
           
-          echo "Generated environment variables:"
-          cat env-ci.sh
+          echo "$TEST_EXEC_KEY"
           
-          # Source the environment variables for this step only
           source env-ci.sh
-          echo "$GITHUB_ENV"
           npm run ci-test:${{ inputs.SCRIPT_NAME }}
           rm env-ci.sh
 
-      - name: Test
+      - name: Debug point
         run: |
-          echo "$GITHUB_ENV"
+          echo "$TEST_EXEC_KEY"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
