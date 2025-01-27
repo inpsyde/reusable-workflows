@@ -91,15 +91,23 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            JSON
-              .parse(process.env.ENV_VARS)
-              .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
+            const fs = require('fs');
+            const envVars = JSON.parse(process.env.ENV_VARS);
+      
+            const envContent = envVars
+            .map(envVar => `${envVar.name}=${envVar.value}`)
+            .join('\n');
+            
+            fs.writeFileSync('.env.ci', envContent);
+            
+            console.log('.env.ci file created with the following content:');
+            console.log(envContent);
 
       - name: Set up SSH
-        if: ${{ env.GITHUB_USER_SSH_KEY != '' }}
+        if: ${{ secrets.GITHUB_USER_SSH_KEY != '' }}
         uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ env.GITHUB_USER_SSH_KEY }}
+          ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
       - name: Set up Git
         if: ${{ env.GITHUB_USER_EMAIL != '' && env.GITHUB_USER_NAME != '' }}
@@ -108,7 +116,7 @@ jobs:
           git config --global user.name "${{ env.GITHUB_USER_NAME }}"
 
       - name: Set up PHP
-        if: ${{ hashFiles('composer.json') != '' && inputs.PHP_VERSION && inputs.PHP_VERSION != '' }}
+        if: ${{ hashFiles('composer.json') != '' && inputs.PHP_VERSION && inputs.PHP_VERSION != '' }} # move to env var
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.PHP_VERSION }}
@@ -138,7 +146,12 @@ jobs:
       - name: Run script for test
         continue-on-error: true
         run: |
+          source .env.ci
           npm run ci-test:${{ inputs.SCRIPT_NAME }}
+
+      - name: Test
+        run: |
+          echo $GITHUB_ENV
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
