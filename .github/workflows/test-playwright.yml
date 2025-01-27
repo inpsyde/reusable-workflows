@@ -143,16 +143,14 @@ jobs:
         continue-on-error: true
         run: |
           echo '${{ secrets.TEST_SECRETS }}' | jq -r '.[] | "export \(.name)=\(.value)"' > env-ci.sh
-          
-          echo "$TEST_EXEC_KEY"
-          
+          cat env-ci.sh
           source env-ci.sh
           npm run ci-test:${{ inputs.SCRIPT_NAME }}
           rm env-ci.sh
 
       - name: Debug point
         run: |
-          echo "$TEST_EXEC_KEY"
+          echo "TEST_EXEC_KEY is: $TEST_EXEC_KEY"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
