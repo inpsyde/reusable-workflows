@@ -147,6 +147,7 @@ jobs:
           source env-ci.sh
           npm run ci-test:${{ inputs.SCRIPT_NAME }}
           rm env-ci.sh
+          echo "TEST_EXEC_KEY is: $TEST_EXEC_KEY"
 
       - name: Debug point
         run: |
