@@ -116,8 +116,8 @@ jobs:
 
       - name: Check if PHP installation is needed
         run: |
-          if [ "${{ hashFiles('composer.json') }}" != '' && "${{ inputs.PHP_VERSION }}" != '' ]; then
-           echo "PHP_CHECK=true" >> $GITHUB_ENV
+          if [ "${{ hashFiles('composer.json') }}" != "" ] && [ "${{ inputs.PHP_VERSION }}" != "" ]; then
+            echo "PHP_CHECK=true" >> $GITHUB_ENV
           fi
 
       - name: Set up PHP
