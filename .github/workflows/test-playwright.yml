@@ -79,8 +79,6 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     env:
-      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
-      NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       PHP_CHECK: false
     steps:
       - name: Checkout
@@ -123,6 +121,8 @@ jobs:
       - name: Set up PHP
         if: ${{ env.PHP_CHECK == 'true' }}
         uses: shivammathur/setup-php@v2
+        env:
+          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
         with:
           php-version: ${{ inputs.PHP_VERSION }}
           tools: composer
@@ -136,6 +136,8 @@ jobs:
 
       - name: Set up node
         uses: actions/setup-node@v4
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
