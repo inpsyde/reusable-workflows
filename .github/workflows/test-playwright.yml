@@ -154,7 +154,7 @@ jobs:
         continue-on-error: true
         run: |
           touch .env.ci
-          echo ${{ secrets.ENV_FILE_DATA }} >> .env.ci
+          echo "${{ secrets.ENV_FILE_DATA }}" >> .env.ci
           npm run ci-test:${{ inputs.SCRIPT_NAME }}
 
       - name: Upload artifact
