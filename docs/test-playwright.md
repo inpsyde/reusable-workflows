@@ -76,10 +76,35 @@ jobs:
       NODE_VERSION: 20
       PLAYWRIGHT_BROWSER_ARGS: 'chromium --with-deps'
     secrets:
-      ENV_FILE_DATA: ${{ secrets.ENV_VARS }}
+      ENV_FILE_DATA: ${{ secrets.ENV_FILE_DATA }}
+      ENV_VARS: ${{ secrets.ENV_VARS }}
       COMPOSER_AUTH_JSON: '${{ secrets.PACKAGIST_AUTH_JSON }}'
       GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
       GITHUB_USER_NAME: ${{ secrets.DEPLOYBOT_USER }}
       GITHUB_USER_SSH_KEY: ${{ secrets.DEPLOYBOT_SSH_PRIVATE_KEY }}
       NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_PACKAGES_READ_ACCESS_TOKEN}}
+```
+
+**Example of secrets:**
+
+For `ENV_FILE_DATA`:
+
+```SHELL
+TEST_EXEC_KEY=YOUR-KEY
+WP_BASE_URL=https://example.com
+```
+
+For `ENV_VARS`: 
+
+```JSON
+[
+    {
+        "name": "EXAMPLE_VAR",
+        "value": "HELLO"
+    },
+    {
+        "name": "ANOTHER_EXAMPLE_VAR",
+        "value": "HALLO"
+    }
+]
 ```
