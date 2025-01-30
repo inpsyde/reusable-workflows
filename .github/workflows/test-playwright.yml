@@ -44,11 +44,11 @@ on:
         type: string
       PLAYWRIGHT_BROWSER_ARGS:
         description: Set of arguments passed to `npx playwright install`.
-        default: ''
+        default: '--with-deps'
         required: false
         type: string
       SCRIPT_NAME:
-        description: The name of a custom script in the ci-test namespace.
+        description: The name of a custom script to run the tests.
         required: true
         type: string
       ENV_VARS:
@@ -57,7 +57,7 @@ on:
         type: string
     secrets:
       ENV_FILE_DATA:
-        description: Additional environment variables  as a JSON formatted object available only for the test step.
+        description: Additional environment variables for the tests.
         required: false
       GITHUB_USER_EMAIL:
         description: Email address for the GitHub user configuration.
@@ -155,7 +155,7 @@ jobs:
         run: |
           touch .env.ci
           echo "${{ secrets.ENV_FILE_DATA }}" >> .env.ci
-          npm run ci-test:${{ inputs.SCRIPT_NAME }}
+          npm run ${{ inputs.SCRIPT_NAME }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
