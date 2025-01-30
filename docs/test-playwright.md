@@ -33,7 +33,7 @@ jobs:
 | `ARTIFACT_INCLUDE_HIDDEN_FILES` | `false`                         | Whether to include hidden files in the provided path in the artifact                              |
 | `ARTIFACT_NAME`                 | `'artifact'`                    | Name for the artifact                                                                             |
 | `ARTIFACT_OVERWRITE`            | `false`                         | Determine if an artifact with a matching name will be deleted before a new one is uploaded or not |
-| `ARTIFACT_PATH`                 |                                 | A file, directory or wildcard pattern that describes what to upload.                              |
+| `ARTIFACT_PATH`                 |                                 | A file, directory or wildcard pattern that describes what to upload                               |
 | `ARTIFACT_RETENTION_DAYS`       | `30`                            | Duration after which artifact will expire in day                                                  |
 | `NODE_VERSION`                  | `18`                            | Node version with which the node script will be executed                                          |
 | `NPM_REGISTRY_DOMAIN`           | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                                |
