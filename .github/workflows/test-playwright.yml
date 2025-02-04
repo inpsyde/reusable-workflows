@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       ARTIFACT_INCLUDE_HIDDEN_FILES:
-        description: Whether to include hidden files in the provided path in the artifact.
+        description: Whether to include hidden files in the artifact.
         type: boolean
         default: false
         required: false
@@ -55,9 +55,6 @@ on:
       ENV_FILE_DATA:
         description: Additional environment variables for the tests.
         required: false
-      ENV_VARS:
-        description: Additional environment variables as a JSON formatted object.
-        required: false
       GITHUB_USER_EMAIL:
         description: Email address for the GitHub user configuration.
         required: false
@@ -73,6 +70,7 @@ on:
       COMPOSER_AUTH_JSON:
         description: Authentication for privately hosted packages and repositories as a JSON formatted object.
         required: false
+
 jobs:
   run-playwright-test:
     timeout-minutes: 60
@@ -82,17 +80,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Set up custom environment variables
-        env:
-          ENV_VARS: ${{ secrets.ENV_VARS }}
-        if: ${{ env.ENV_VARS }}
-        uses: actions/github-script@v7
-        with:
-          script: |
-            JSON
-              .parse(process.env.ENV_VARS)
-              .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
       - name: Set up SSH
         env:
@@ -155,6 +142,10 @@ jobs:
           touch .env.ci
           echo "${{ secrets.ENV_FILE_DATA }}" >> .env.ci
           npm run ${{ inputs.SCRIPT_NAME }}
+
+      - name: Remove .env.ci file
+        run: |
+          rm .env.ci
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

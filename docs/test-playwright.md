@@ -1,11 +1,15 @@
 # Playwright test
 
-This workflow can be used to run tests using Playwright in a controlled and isolated environment via GitHub Actions.
+This workflow executes Playwright-based tests in a controlled and isolated environment via GitHub
+Actions.
 
 The workflow can:
 
-- execute a building step, both for node and PHP environments (if the PHP version is provided and a `composer.json` file is present)
-- create an environment variables file named `.env.ci` dedicated to the test step; you can load this file using dotenv-ci directly in your test script, e.g. `./node_modules/.bin/dotenv -e .env.ci -- npm run e2e`
+- execute a building step, both for node and PHP environments (if the PHP version is provided and
+  a `composer.json` file is present)
+- create an environment variables file named `.env.ci` dedicated to the test step; load this file
+  using `dotenv-ci` directly in your test script,
+  e.g., `./node_modules/.bin/dotenv -e .env.ci -- npm run e2e`
 - execute the tests using Playwright
 - upload the artifacts
 
@@ -77,7 +81,6 @@ jobs:
       PLAYWRIGHT_BROWSER_ARGS: 'chromium --with-deps'
     secrets:
       ENV_FILE_DATA: ${{ secrets.ENV_FILE_DATA }}
-      ENV_VARS: ${{ secrets.ENV_VARS }}
       COMPOSER_AUTH_JSON: '${{ secrets.PACKAGIST_AUTH_JSON }}'
       GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
       GITHUB_USER_NAME: ${{ secrets.DEPLOYBOT_USER }}
@@ -92,19 +95,4 @@ For `ENV_FILE_DATA`:
 ```SHELL
 TEST_EXEC_KEY=YOUR-KEY
 WP_BASE_URL=https://example.com
-```
-
-For `ENV_VARS`: 
-
-```JSON
-[
-    {
-        "name": "EXAMPLE_VAR",
-        "value": "HELLO"
-    },
-    {
-        "name": "ANOTHER_EXAMPLE_VAR",
-        "value": "HALLO"
-    }
-]
 ```
