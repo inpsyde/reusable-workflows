@@ -161,17 +161,11 @@ jobs:
         with:
           name: ${{ needs.checkout-dependencies.outputs.artifact }}
 
-      - name: Configure Composer plugins
-        run: |
-          composer global config --no-plugins --no-interaction allow-plugins.composer/installers true
-          composer global config --no-plugins --no-interaction allow-plugins.inpsyde/wp-translation-downloader true
-          composer global config --no-plugins --no-interaction allow-plugins.inpsyde/composer-assets-compiler true
-
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.PHP_VERSION_BUILD }}
-          tools: rector, php-scoper, sniccowp/php-scoper-wordpress-excludes, inpsyde/composer-assets-compiler, inpsyde/wp-translation-downloader
+          tools: rector, php-scoper, sniccowp/php-scoper-wordpress-excludes, composer/installers, inpsyde/composer-assets-compiler, inpsyde/wp-translation-downloader
 
       - name: Set up node cache mode
         run: |
@@ -206,7 +200,7 @@ jobs:
       - name: Run PHP-Scoper
         if: ${{ hashFiles('scoper.inc.php') != '' }}
         run: |
-          php-scoper add-prefix --force --output-dir=build --no-interaction
+          php-scoper add-prefix --force --output-dir=build
           composer --working-dir=build dump-autoload -o
           sed -i "s/'__composer_autoload_files'/\'__composer_autoload_files_${{ github.sha }}'/g" "build/vendor/composer/autoload_real.php"
 
