@@ -1,4 +1,4 @@
-name: Update WordPress JS Dependencies
+name: Update WordPress JS Dependencies Orchestrator
 on:
   workflow_call:
     inputs:
