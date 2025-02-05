@@ -3,7 +3,7 @@ on:
   workflow_call:
     inputs:
       WP_SCRIPT_DIST_TAG:
-        description: The tag to use for updating the dependencies. e.g. wp-6.7
+        description: The dist-tag to update the dependencies to, e.g., `wp-6.7`
         required: true
         type: string
       NPM_REGISTRY_DOMAIN:
@@ -85,8 +85,6 @@ jobs:
       run: |
         if [ "${{ env.PACKAGE_MANAGER }}" == 'npm' ] && { [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ]; }; then
           echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV
-        elif [ "${{ env.PACKAGE_MANAGER }}" == 'yarn' ] && [ -f "${GITHUB_WORKSPACE}/yarn.lock" ]; then
-          echo "NODE_CACHE_MODE=yarn" >> $GITHUB_ENV
         else
           echo "No lock files found or unknown package manager"
         fi
@@ -101,26 +99,25 @@ jobs:
 
     - name: Install dependencies
       env:
-        ARGS: ${{ env.NODE_CACHE_MODE == 'yarn' && '--frozen-lockfile' || env.NODE_CACHE_MODE == 'npm' && 'ci' || 'install' }}
+        ARGS: ${{ env.NODE_CACHE_MODE == 'npm' && 'ci' || 'install' }}
       run: ${{ format('{0} {1} --ignore-scripts', env.PACKAGE_MANAGER, env.ARGS) }}
     
     - name: Running the update
       env:
-        SCRIPT_START: ${{ env.PACKAGE_MANAGER == 'yarn' && 'yarn' || env.PACKAGE_MANAGER == 'npm' && 'npm run' }}
+        SCRIPT_START: ${{ env.PACKAGE_MANAGER == 'npm' && 'npm run' }}
       run: |
         ./node_modules/.bin/wp-scripts packages-update --dist-tag=${{ env.WP_SCRIPT_DIST_TAG }}
 
-    - name: Git add and commit
+    - name: Git add, commit
       run: |
         git add -A
-        git commit -m "[BOT] Add dependencies changes for #${{ github.ref }}" --no-verify || ((echo "HAS_GIT_CHANGES=no" >> $GITHUB_ENV) && (echo "No changes to commit"))
+        git commit -m "[BOT] Add dependencies changes for #${{ github.ref }}" --no-verify || ((echo "NO_CHANGES=yes" >> $GITHUB_ENV) && (echo "No changes to commit"))
 
     - name: Git push
-      if: ${{ env.HAS_GIT_CHANGES != 'no' }}
+      if: ${{ env.NO_CHANGES != 'yes' }}
       run: git push
       
-
-    - name: Create Pull Request
+    - name: Create pull request
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |

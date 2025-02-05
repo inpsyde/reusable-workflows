@@ -30,7 +30,7 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Read composer.json and specified packages and call the workflows
+    - name: Gather packages and call the individual workflows.
       run: |
         # Initialize an array for packages
         packages=()
@@ -52,10 +52,8 @@ jobs:
         # Process all unique packages
         unique_packages=$(echo "${packages[@]}" | tr ' ' '\n' | sort -u)
 
-
         for package in ${unique_packages[@]}; do
           echo "Processing package: $package"
-          
           curl -L \
             -X POST \
             -H "Accept: application/vnd.github+json" \
@@ -64,4 +62,3 @@ jobs:
             https://api.github.com/repos/$package/dispatches \
             -d '{"event_type":"update_wp_dependencies","client_payload":{"wp_version":"${{ env.WP_SCRIPT_DIST_TAG }}"}}'
         done
-        
