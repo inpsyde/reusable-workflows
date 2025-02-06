@@ -1,15 +1,11 @@
 # Playwright test
 
-This workflow executes Playwright-based tests in a controlled and isolated environment via GitHub
-Actions.
+This workflow executes Playwright-based tests in a controlled and isolated environment via GitHub Actions.
 
 The workflow can:
 
-- execute a building step, both for node and PHP environments (if the PHP version is provided and
-  a `composer.json` file is present)
-- create an environment variables file named `.env.ci` dedicated to the test step; load this file
-  using `dotenv-ci` directly in your test script,
-  e.g., `./node_modules/.bin/dotenv -e .env.ci -- npm run e2e`
+- execute a building step, both for node and PHP environments (if the PHP version is provided and a `composer.json` file is present)
+- create an environment variables file named `.env.ci` dedicated to the test step; load this file using `dotenv-ci` directly in your test script, e.g., `./node_modules/.bin/dotenv -e .env.ci -- npm run e2e`
 - execute the tests using Playwright
 - upload the artifacts
 
@@ -34,11 +30,12 @@ jobs:
 
 | Name                            | Default                         | Description                                                                                       |
 |---------------------------------|---------------------------------|---------------------------------------------------------------------------------------------------|
-| `ARTIFACT_INCLUDE_HIDDEN_FILES` | `false`                         | Whether to include hidden files in the provided path in the artifact                              |
+| `ARTIFACT_INCLUDE_HIDDEN_FILES` | `false`                         | Whether to include hidden files in the artifact                                                   |
 | `ARTIFACT_NAME`                 | `'artifact'`                    | Name for the artifact                                                                             |
 | `ARTIFACT_OVERWRITE`            | `false`                         | Determine if an artifact with a matching name will be deleted before a new one is uploaded or not |
 | `ARTIFACT_PATH`                 |                                 | A file, directory or wildcard pattern that describes what to upload                               |
 | `ARTIFACT_RETENTION_DAYS`       | `30`                            | Duration after which artifact will expire in day                                                  |
+| `COMPOSER_DEPS_INSTALL`         | `false`                         | Whether to install Composer dependencies.                                                         |
 | `NODE_VERSION`                  | `18`                            | Node version with which the node script will be executed                                          |
 | `NPM_REGISTRY_DOMAIN`           | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                                |
 | `PHP_VERSION`                   |                                 | PHP version with which the dependencies are installed                                             |
@@ -55,7 +52,6 @@ jobs:
 | `GITHUB_USER_EMAIL`   | Email address for the GitHub user configuration                                          |
 | `GITHUB_USER_NAME`    | Username for the GitHub user configuration                                               |
 | `GITHUB_USER_SSH_KEY` | Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`             |
-| `ENV_VARS`            | Additional environment variables as a JSON formatted object                              |
 
 **Example with configuration parameters:**
 
@@ -76,6 +72,7 @@ jobs:
         playwright-report/
       ARTIFACT_INCLUDE_HIDDEN_FILES: true
       SCRIPT_NAME: 'ci-test-e2e'
+      COMPOSER_DEPS_INSTALL: true
       PHP_VERSION: ${{ matrix.php }}
       NODE_VERSION: 20
       PLAYWRIGHT_BROWSER_ARGS: 'chromium --with-deps'

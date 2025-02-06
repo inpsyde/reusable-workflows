@@ -27,6 +27,11 @@ on:
         type: number
         default: 30
         required: false
+      COMPOSER_DEPS_INSTALL:
+        description: Whether to install Composer dependencies.
+        type: boolean
+        default: false
+        required: false
       NODE_VERSION:
         description: Node version with which the node script will be executed.
         default: 18
@@ -39,7 +44,7 @@ on:
         type: string
       PHP_VERSION:
         description: PHP version with which the dependencies are installed.
-        default: ''
+        default: '8.2'
         required: false
         type: string
       PLAYWRIGHT_BROWSER_ARGS:
@@ -98,14 +103,8 @@ jobs:
           git config --global user.email "${{ env.GITHUB_USER_EMAIL }}"
           git config --global user.name "${{ env.GITHUB_USER_NAME }}"
 
-      - name: Check if PHP installation is needed
-        run: |
-          if [ "${{ hashFiles('composer.json') }}" != "" ] && [ "${{ inputs.PHP_VERSION }}" != "" ]; then
-            echo "PHP_CHECK=true" >> $GITHUB_ENV
-          fi
-
       - name: Set up PHP
-        if: ${{ env.PHP_CHECK == 'true' }}
+        if: ${{ input.COMPOSER_DEPS_INSTALL == 'true' }}
         uses: shivammathur/setup-php@v2
         env:
           COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
@@ -115,7 +114,7 @@ jobs:
           coverage: none
 
       - name: Install Composer dependencies
-        if: ${{ env.PHP_CHECK == 'true' }}
+        if: ${{ input.COMPOSER_DEPS_INSTALL == 'true' }}
         uses: ramsey/composer-install@v3
         with:
           composer-options: '--prefer-dist'
@@ -141,11 +140,10 @@ jobs:
         run: |
           touch .env.ci
           echo "${{ secrets.ENV_FILE_DATA }}" >> .env.ci
+          # Ensure .env.ci is deleted on exit
+          trap 'rm -f .env.ci' EXIT
+          
           npm run ${{ inputs.SCRIPT_NAME }}
-
-      - name: Remove .env.ci file
-        run: |
-          rm .env.ci
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
