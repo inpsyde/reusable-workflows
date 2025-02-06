@@ -30,7 +30,7 @@ WordPress version tag (e.g., `wp-6.7`) and creates a pull request containing all
 
 | Name                  | Default                         | Description                                           |
 |-----------------------|---------------------------------|-------------------------------------------------------|
-| `WP_VERSION`          | `'wp-6.7'`                      | The tag to update the dependencies to, e.g., `wp-6.7` |
+| `WP_DIST_TAG`          | `'wp-6.7'`                      | The tag to update the dependencies to, e.g., `wp-6.7` |
 | `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                    |
 
 #### Secrets
@@ -51,7 +51,7 @@ name: Update WordPress JS Dependencies
 on:
   workflow_dispatch:
     inputs:
-      WP_VERSION:
+      WP_DIST_TAG:
         description: 'The tag to update the dependencies to, e.g., `wp-6.7`.'
         default: 'wp-6.7'
         required: true
@@ -69,7 +69,7 @@ jobs:
     GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.DEPLOYBOT_SSH_PUBLIC_KEY }}
     NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_PACKAGES_READ_ACCESS_TOKEN }}
   with:
-    WP_VERSION: ${{ inputs.WP_VERSION }}
+    WP_DIST_TAG: ${{ inputs.WP_DIST_TAG }}
 ```
 
 ## Update WordPress JS Dependencies Orchestrator Workflow
@@ -84,14 +84,14 @@ maintain a centralized list of repositories needing consistent WordPress JS depe
 
 | Name         | Default    | Description                                                    |
 |--------------|------------|----------------------------------------------------------------|
-| `WP_VERSION` | `'wp-6.7'` | The tag to update the dependencies to, e.g., `wp-6.7`          |
+| `WP_DIST_TAG` | `'wp-6.7'` | The tag to update the dependencies to, e.g., `wp-6.7`          |
 | `PACKAGES`   | `''`       | Comma-separated list of additional `owner/repo`s to be updated |
 
 #### Secrets
 
 | Name           | Description                                                                                                             |
 |----------------|-------------------------------------------------------------------------------------------------------------------------|
-| `GH_API_TOKEN` | A personal access token (classic) with `repo` and `workflow` permissions, used to authenticate when calling GitHub APIs |
+| `GH_TOKEN` | A personal access token (classic) with `repo` and `workflow` permissions, used to authenticate when calling GitHub APIs |
 
 ### Usage example
 
@@ -101,7 +101,7 @@ name: Update WordPress JS Dependencies Orchestrator
 on:
   workflow_dispatch:
     inputs:
-      WP_VERSION:
+      WP_DIST_TAG:
         description: 'The tag to update the dependencies to, e.g., `wp-6.7`'
         required: true
       PACKAGES:
@@ -113,8 +113,8 @@ jobs:
   update-dependency-orchestrator:
     uses: inpsyde/reusable-workflows/.github/workflows/update-wordpress-js-dependencies-orchestrator.yml@main
     with:
-      WP_VERSION: ${{ inputs.WP_VERSION }}
+      WP_DIST_TAG: ${{ inputs.WP_DIST_TAG }}
       PACKAGES: ${{ inputs.PACKAGES }}
     secrets:
-      GH_API_TOKEN: ${{ secrets.DEPLOYBOT_REPO_READ_WRITE_TOKEN }}
+      GH_TOKEN: ${{ secrets.DEPLOYBOT_REPO_READ_WRITE_TOKEN }}
 ```

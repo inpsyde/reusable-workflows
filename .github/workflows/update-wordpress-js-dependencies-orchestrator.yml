@@ -2,7 +2,7 @@ name: Update WordPress JS Dependencies Orchestrator
 on:
   workflow_call:
     inputs:
-      WP_SCRIPT_DIST_TAG:
+      WP_DIST_TAG:
         description: The dist-tag to update the dependencies to, e.g., `wp-6.7`
         required: true
         type: string
@@ -11,8 +11,8 @@ on:
         required: false
         type: string
     secrets:
-      GH_API_TOKEN:
-        description: An GH API Token capable of triggering repository_dispatch.
+      GH_TOKEN:
+        description: A personal access token (classic) with `repo` and `workflow` permissions, used to authenticate when calling GitHub APIs in target repositories.
         required: true
       
 jobs:
@@ -20,8 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      GH_API_TOKEN: ${{ secrets.GH_API_TOKEN }}
-      WP_SCRIPT_DIST_TAG: ${{ inputs.WP_SCRIPT_DIST_TAG }}
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      WP_DIST_TAG: ${{ inputs.WP_DIST_TAG }}
       PACKAGES: ${{ inputs.PACKAGES }}
 
     steps:
@@ -57,8 +57,8 @@ jobs:
           curl -L \
             -X POST \
             -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ env.GH_API_TOKEN }}" \
+            -H "Authorization: Bearer ${{ env.GH_TOKEN }}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/$package/dispatches \
-            -d '{"event_type":"update_wp_dependencies","client_payload":{"wp_version":"${{ env.WP_SCRIPT_DIST_TAG }}"}}'
+            -d '{"event_type":"update_wp_dependencies","client_payload":{"wp_version":"${{ env.WP_DIST_TAG }}"}}'
         done
