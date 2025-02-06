@@ -104,7 +104,7 @@ jobs:
           git config --global user.name "${{ env.GITHUB_USER_NAME }}"
 
       - name: Set up PHP
-        if: ${{ inputs.COMPOSER_DEPS_INSTALL == 'true' }}
+        if: ${{ inputs.COMPOSER_DEPS_INSTALL }}
         uses: shivammathur/setup-php@v2
         env:
           COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
@@ -114,7 +114,7 @@ jobs:
           coverage: none
 
       - name: Install Composer dependencies
-        if: ${{ inputs.COMPOSER_DEPS_INSTALL == 'true' }}
+        if: ${{ inputs.COMPOSER_DEPS_INSTALL }}
         uses: ramsey/composer-install@v3
         with:
           composer-options: '--prefer-dist'
