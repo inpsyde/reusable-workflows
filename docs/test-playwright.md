@@ -35,10 +35,10 @@ jobs:
 | `ARTIFACT_OVERWRITE`            | `false`                         | Determine if an artifact with a matching name will be deleted before a new one is uploaded or not |
 | `ARTIFACT_PATH`                 |                                 | A file, directory or wildcard pattern that describes what to upload                               |
 | `ARTIFACT_RETENTION_DAYS`       | `30`                            | Duration after which artifact will expire in day                                                  |
-| `COMPOSER_DEPS_INSTALL`         | `false`                         | Whether to install Composer dependencies.                                                         |
+| `COMPOSER_DEPS_INSTALL`         | `false`                         | Whether to install Composer dependencies                                                          |
 | `NODE_VERSION`                  | `18`                            | Node version with which the node script will be executed                                          |
 | `NPM_REGISTRY_DOMAIN`           | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                                |
-| `PHP_VERSION`                   |                                 | PHP version with which the dependencies are installed                                             |
+| `PHP_VERSION`                   | `'8.2'`                         | PHP version with which the dependencies are installed                                             |
 | `PLAYWRIGHT_BROWSER_ARGS`       | `'--with-deps'`                 | Set of arguments passed to `npx playwright install`                                               |
 | `SCRIPT_NAME`                   |                                 | The name of a custom script to run the tests                                                      | 
 
