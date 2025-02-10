@@ -56,8 +56,6 @@ on:
         default: 'wp-6.7'
         required: true
         type: string
-  repository_dispatch:
-    types: [ 'update_wp_dependencies' ]
 
 jobs:
   update-dependencies:
