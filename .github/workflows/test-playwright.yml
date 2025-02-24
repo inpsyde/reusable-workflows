@@ -1,0 +1,156 @@
+name: Playwright test
+
+on:
+  workflow_call:
+    inputs:
+      ARTIFACT_INCLUDE_HIDDEN_FILES:
+        description: Whether to include hidden files in the artifact.
+        type: boolean
+        default: false
+        required: false
+      ARTIFACT_NAME:
+        description: Name for the artifact.
+        type: string
+        default: 'artifact'
+        required: false
+      ARTIFACT_OVERWRITE:
+        description: Determine if an artifact with a matching name will be deleted before a new one is uploaded or not.
+        type: boolean
+        default: false
+        required: false
+      ARTIFACT_PATH:
+        description: A file, directory or wildcard pattern that describes what to upload.
+        type: string
+        required: true
+      ARTIFACT_RETENTION_DAYS:
+        description: Duration after which artifact will expire in day.
+        type: number
+        default: 30
+        required: false
+      COMPOSER_DEPS_INSTALL:
+        description: Whether to install Composer dependencies.
+        type: boolean
+        default: false
+        required: false
+      NODE_VERSION:
+        description: Node version with which the node script will be executed.
+        default: 18
+        required: false
+        type: string
+      NPM_REGISTRY_DOMAIN:
+        description: Domain of the private npm registry.
+        default: https://npm.pkg.github.com/
+        required: false
+        type: string
+      PHP_VERSION:
+        description: PHP version with which the dependencies are installed.
+        default: '8.2'
+        required: false
+        type: string
+      PLAYWRIGHT_BROWSER_ARGS:
+        description: Set of arguments passed to `npx playwright install`.
+        default: '--with-deps'
+        required: false
+        type: string
+      SCRIPT_NAME:
+        description: The name of a custom script to run the tests.
+        required: true
+        type: string
+    secrets:
+      ENV_FILE_DATA:
+        description: Additional environment variables for the tests.
+        required: false
+      GITHUB_USER_EMAIL:
+        description: Email address for the GitHub user configuration.
+        required: false
+      GITHUB_USER_NAME:
+        description: Username for the GitHub user configuration.
+        required: false
+      GITHUB_USER_SSH_KEY:
+        description: Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`.
+        required: false
+      NPM_REGISTRY_TOKEN:
+        description: Authentication for the private npm registry.
+        required: false
+      COMPOSER_AUTH_JSON:
+        description: Authentication for privately hosted packages and repositories as a JSON formatted object.
+        required: false
+
+jobs:
+  run-playwright-test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    env:
+      PHP_CHECK: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up SSH
+        env:
+          GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
+        if: ${{ env.GITHUB_USER_SSH_KEY != '' }}
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ env.GITHUB_USER_SSH_KEY }}
+
+      - name: Set up Git
+        env:
+          GITHUB_USER_EMAIL: ${{ secrets.GITHUB_USER_EMAIL }}
+          GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
+        if: ${{ env.GITHUB_USER_EMAIL != '' && env.GITHUB_USER_NAME != '' }}
+        run: |
+          git config --global user.email "${{ env.GITHUB_USER_EMAIL }}"
+          git config --global user.name "${{ env.GITHUB_USER_NAME }}"
+
+      - name: Set up PHP
+        if: ${{ inputs.COMPOSER_DEPS_INSTALL }}
+        uses: shivammathur/setup-php@v2
+        env:
+          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
+        with:
+          php-version: ${{ inputs.PHP_VERSION }}
+          tools: composer
+          coverage: none
+
+      - name: Install Composer dependencies
+        if: ${{ inputs.COMPOSER_DEPS_INSTALL }}
+        uses: ramsey/composer-install@v3
+        with:
+          composer-options: '--prefer-dist'
+
+      - name: Set up node
+        uses: actions/setup-node@v4
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+        with:
+          node-version: ${{ inputs.NODE_VERSION }}
+          registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright dependencies
+        run: |
+          npx playwright install ${{ inputs.PLAYWRIGHT_BROWSER_ARGS }}
+
+      - name: Run script for test
+        continue-on-error: true
+        run: |
+          touch .env.ci
+          echo "${{ secrets.ENV_FILE_DATA }}" >> .env.ci
+          # Ensure .env.ci is deleted on exit
+          trap 'rm -f .env.ci' EXIT
+          
+          npm run ${{ inputs.SCRIPT_NAME }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.ARTIFACT_NAME }}
+          path: | 
+            ${{ inputs.ARTIFACT_PATH }}
+          overwrite: ${{ inputs.ARTIFACT_OVERWRITE }}
+          include-hidden-files: ${{ inputs.ARTIFACT_INCLUDE_HIDDEN_FILES }}
+          retention-days: ${{ inputs.ARTIFACT_RETENTION_DAYS }}
