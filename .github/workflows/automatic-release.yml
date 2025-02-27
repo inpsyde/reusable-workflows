@@ -34,9 +34,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       HAS_CONFIG: false
-      NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
-      GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
-      GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.GITHUB_USER_SSH_PUBLIC_KEY }}
     steps:
       - name: Fetch semantic-release Node version
         uses: actions/checkout@v4
@@ -49,6 +46,8 @@ jobs:
 
       - name: Set up node
         uses: actions/setup-node@v4
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
         with:
           node-version-file: semantic-release-repo/package.json
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
@@ -67,15 +66,19 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-          ssh-key: ${{ env.GITHUB_USER_SSH_KEY }}
+          ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
       - name: Set up SSH
+        env:
+          GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
         if: ${{ env.GITHUB_USER_SSH_KEY != '' }}
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ env.GITHUB_USER_SSH_KEY }}
 
       - name: Set up signing commits
+        env:
+          GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.GITHUB_USER_SSH_PUBLIC_KEY }}
         if: ${{ env.GITHUB_USER_SSH_PUBLIC_KEY != '' }}
         run: |
           : # Create empty SSH private key file so Git does not complain.
@@ -126,6 +129,8 @@ jobs:
         run: npx semantic-release
 
       - name: Delete signing key files
+        env:
+          GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.GITHUB_USER_SSH_PUBLIC_KEY }}
         if: ${{ always() && env.GITHUB_USER_SSH_PUBLIC_KEY != '' }}
         run: |
           rm -f "${{ runner.temp }}/signingkey"

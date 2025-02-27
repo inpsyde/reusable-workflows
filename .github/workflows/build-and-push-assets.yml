@@ -135,12 +135,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
-      NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       NODE_CACHE_MODE: ''
-      GITHUB_USER_EMAIL: ${{ secrets.GITHUB_USER_EMAIL }}
-      GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
-      GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
-      GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.GITHUB_USER_SSH_PUBLIC_KEY }}
       COMPILE_SCRIPT: ''
       TAG_NAME: ''                                     # we'll override if the push is for tag
       TAG_BRANCH_NAME: ''                              # we'll override if the push is for tag
@@ -162,6 +157,8 @@ jobs:
           ssh-key: ${{ env.GITHUB_USER_SSH_KEY }}
 
       - name: Set up SSH
+        env:
+          GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
         if: ${{ env.GITHUB_USER_SSH_KEY != '' }}
         uses: webfactory/ssh-agent@v0.9.0
         with:
@@ -175,6 +172,8 @@ jobs:
           git config --global push.autoSetupRemote true
 
       - name: Set up signing commits
+        env:
+          GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.GITHUB_USER_SSH_PUBLIC_KEY }}
         if: ${{ env.GITHUB_USER_SSH_PUBLIC_KEY != '' }}
         run: |
           : # Create empty SSH private key file so Git does not complain.
@@ -257,6 +256,8 @@ jobs:
 
       - name: Set up node
         uses: actions/setup-node@v4
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
@@ -311,6 +312,8 @@ jobs:
           git push origin --delete ${{ env.TAG_BRANCH_NAME }}
 
       - name: Delete signing key files
+        env:
+          GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.GITHUB_USER_SSH_PUBLIC_KEY }}
         if: ${{ always() && env.GITHUB_USER_SSH_PUBLIC_KEY != '' }}
         run: |
           rm -f "${{ runner.temp }}/signingkey"
