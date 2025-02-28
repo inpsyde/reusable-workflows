@@ -141,8 +141,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: checkout-dependencies
     env:
-      NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
-      NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       NODE_CACHE_MODE: ''
     outputs:
       artifact: ${{ steps.set-artifact-name.outputs.artifact }}
@@ -214,6 +212,9 @@ jobs:
       - name: Set up node
         if: steps.composer-tools.outputs.assets-compiler == '0'
         uses: actions/setup-node@v4
+        env:
+          NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}

@@ -50,12 +50,7 @@ jobs:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     env:
-      NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
-      NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       NODE_CACHE_MODE: ''
-      GITHUB_USER_EMAIL: ${{ secrets.GITHUB_USER_EMAIL }}
-      GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
-      GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
     steps:
       - name: PACKAGE_MANAGER deprecation warning
         if: ${{ inputs.PACKAGE_MANAGER != '' }}
@@ -81,12 +76,18 @@ jobs:
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
       - name: Set up SSH
+        env:
+          GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
         if: ${{ env.GITHUB_USER_SSH_KEY != '' }}
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ env.GITHUB_USER_SSH_KEY }}
 
       - name: Set up Git
+        env:
+          GITHUB_USER_EMAIL: ${{ secrets.GITHUB_USER_EMAIL }}
+          GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
+        if: ${{ env.GITHUB_USER_EMAIL != '' && env.GITHUB_USER_NAME != '' }}
         run: |
           git config --global user.email "${{ env.GITHUB_USER_EMAIL }}"
           git config --global user.name "${{ env.GITHUB_USER_NAME }}"
@@ -103,6 +104,9 @@ jobs:
 
       - name: Set up node
         uses: actions/setup-node@v4
+        env:
+          NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
