@@ -50,7 +50,6 @@ jobs:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     env:
-      NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
       NODE_CACHE_MODE: ''
     steps:
       - name: PACKAGE_MANAGER deprecation warning
@@ -106,6 +105,7 @@ jobs:
       - name: Set up node
         uses: actions/setup-node@v4
         env:
+          NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
         with:
           node-version: ${{ inputs.NODE_VERSION }}
