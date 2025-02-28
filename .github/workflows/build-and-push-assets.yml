@@ -154,7 +154,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ssh-key: ${{ env.GITHUB_USER_SSH_KEY }}
+          ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
       - name: Set up SSH
         env:
