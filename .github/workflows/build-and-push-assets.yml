@@ -134,7 +134,6 @@ jobs:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     env:
-      NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
       NODE_CACHE_MODE: ''
       COMPILE_SCRIPT: ''
       TAG_NAME: ''                                     # we'll override if the push is for tag
@@ -257,6 +256,7 @@ jobs:
       - name: Set up node
         uses: actions/setup-node@v4
         env:
+          NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
         with:
           node-version: ${{ inputs.NODE_VERSION }}
