@@ -166,8 +166,8 @@ jobs:
 
       - name: Set up Git
         run: |
-          git config --global user.email "${{ env.GITHUB_USER_EMAIL }}"
-          git config --global user.name "${{ env.GITHUB_USER_NAME }}"
+          git config --global user.email "${{ secrets.GITHUB_USER_EMAIL }}"
+          git config --global user.name "${{ secrets.GITHUB_USER_NAME }}"
           git config --global advice.addIgnoredFile false
           git config --global push.autoSetupRemote true
 
