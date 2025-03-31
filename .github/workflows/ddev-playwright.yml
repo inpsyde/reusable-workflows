@@ -66,7 +66,6 @@ jobs:
     timeout-minutes: 30
     runs-on: ubuntu-latest
     env:
-      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
       NGROK: ${{ secrets.NGROK_AUTH_TOKEN != '' }}
     outputs:
       artifact: ${{ steps.set-artifact-name.outputs.artifact }}

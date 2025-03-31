@@ -63,7 +63,6 @@ jobs:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     env:
-      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
       NODE_CACHE_MODE: ''
     steps:
       - name: PACKAGE_MANAGER deprecation warning
@@ -135,6 +134,8 @@ jobs:
 
       - name: Install Composer dependencies
         uses: ramsey/composer-install@v3
+        env:
+          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
         with:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
 
@@ -156,6 +157,8 @@ jobs:
           echo "ENCORE_ENV=production" >> $GITHUB_ENV
 
       - name: Compile assets
+        env:
+          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
         run: composer compile-assets ${{ inputs.COMPILE_ASSETS_ARGS }}
 
       - name: Upload assets artifact [DEV]
