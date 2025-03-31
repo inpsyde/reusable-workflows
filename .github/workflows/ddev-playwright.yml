@@ -129,9 +129,9 @@ jobs:
 
       - name: Add COMPOSER_AUTH into DDEV
         env:
-          COMPOSER_AUTH_JSON: '${{ secrets.COMPOSER_AUTH_JSON }}'
-        if: env.COMPOSER_AUTH_JSON
-        run: echo '${{ env.COMPOSER_AUTH_JSON }}' > $GITHUB_WORKSPACE/auth.json
+          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
+        if: env.COMPOSER_AUTH
+        run: echo '${{ env.COMPOSER_AUTH }}' > $GITHUB_WORKSPACE/auth.json
 
       - name: Add NODE_AUTH_TOKEN into DDEV
         env:
