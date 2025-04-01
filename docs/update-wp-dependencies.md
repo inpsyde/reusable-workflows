@@ -2,10 +2,7 @@
 
 # Update WordPress JS Dependencies
 
-This documentation describes two closely related reusable workflows for updating JavaScript
-dependencies that use [WordPress packages](https://www.npmjs.com/search?q=%40wordpress%2F). These
-workflows handle automatic updates of the `@wordpress/*` packages to a specified WordPress version (
-dist tag) and can optionally create a pull request with all necessary changes.
+This documentation describes two closely related reusable workflows for updating JavaScript dependencies that use [WordPress packages](https://www.npmjs.com/search?q=%40wordpress%2F). These workflows handle automatic updates of the `@wordpress/*` packages to a specified WordPress version (dist tag) and can optionally create a pull request with all necessary changes.
 
 1. **Update WordPress JS Dependencies Workflow**:  
    This workflow lives in an individual repository (the one containing the WordPress JS dependencies to update). It checks out the repository, updates the `@wordpress/*` dependencies to a specific tag, and opens a pull request if changes are found.
@@ -15,8 +12,7 @@ dist tag) and can optionally create a pull request with all necessary changes.
 
 ## Update WordPress JS Dependencies Workflow
 
-This workflow updates the `@wordpress/*` dependencies in the current repository to a specified
-WordPress version tag (e.g., `wp-6.7`) and creates a pull request containing all modified files.
+This workflow updates the `@wordpress/*` dependencies in the current repository to a specified WordPress version tag (e.g., `wp-6.7`) and creates a pull request containing all modified files.
 
 ### Configuration parameters
 
@@ -66,9 +62,7 @@ jobs:
 
 ## Update WordPress JS Dependencies Orchestrator Workflow
 
-This workflow triggers the “Update WordPress JS Dependencies Workflow” in multiple external
-repositories by sending a `repository_dispatch` event to each target repository. This allows you to
-maintain a centralized list of repositories needing consistent WordPress JS dependency versions.
+This workflow triggers the “Update WordPress JS Dependencies Workflow” in multiple external repositories by sending a `repository_dispatch` event to each target repository. This allows you to maintain a centralized list of repositories needing consistent WordPress JS dependency versions.
 
 ### Configuration parameters
 
@@ -81,8 +75,8 @@ maintain a centralized list of repositories needing consistent WordPress JS depe
 
 #### Secrets
 
-| Name           | Description                                                                                                             |
-|----------------|-------------------------------------------------------------------------------------------------------------------------|
+| Name       | Description                                                                                                             |
+|------------|-------------------------------------------------------------------------------------------------------------------------|
 | `GH_TOKEN` | A personal access token (classic) with `repo` and `workflow` permissions, used to authenticate when calling GitHub APIs |
 
 ### Usage example
