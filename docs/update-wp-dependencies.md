@@ -8,16 +8,10 @@ workflows handle automatic updates of the `@wordpress/*` packages to a specified
 dist tag) and can optionally create a pull request with all necessary changes.
 
 1. **Update WordPress JS Dependencies Workflow**:  
-   This workflow lives in an individual repository (the one containing the WordPress JS dependencies
-   to update). It checks out the repository, updates the `@wordpress/*` dependencies to a specific
-   tag, and opens a pull request if changes are found.
+   This workflow lives in an individual repository (the one containing the WordPress JS dependencies to update). It checks out the repository, updates the `@wordpress/*` dependencies to a specific tag, and opens a pull request if changes are found.
 
 2. **Update WordPress JS Dependencies Orchestrator Workflow**:  
-   This workflow can be placed in a single "orchestrator" repository (e.g., a website repository).
-   It triggers the "Update WordPress JS Dependencies Workflow" in multiple other repositories. This
-   is accomplished by sending
-   a [repository\_dispatch](https://docs.github.com/en/rest/repos/repos#create-a-repository-dispatch-event)
-   event to each of the target repositories.
+   This workflow can be placed in a single "orchestrator" repository (e.g., a website repository). It triggers the "Update WordPress JS Dependencies Workflow" in multiple other repositories. This is accomplished by sending a [workflow\_dispatch](https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#workflow_dispatch) event to each of the target repositories.
 
 ## Update WordPress JS Dependencies Workflow
 
@@ -28,10 +22,10 @@ WordPress version tag (e.g., `wp-6.7`) and creates a pull request containing all
 
 #### Inputs
 
-| Name                  | Default                         | Description                                           |
-|-----------------------|---------------------------------|-------------------------------------------------------|
-| `WP_DIST_TAG`          | `'wp-6.7'`                      | The tag to update the dependencies to, e.g., `wp-6.7` |
-| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                    |
+| Name                  | Default                         | Description                                                |
+|-----------------------|---------------------------------|------------------------------------------------------------|
+| `WP_DIST_TAG`         | `'wp-6.7'`                      | The dist tag to update the dependencies to, e.g., `wp-6.7` |
+| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                         |
 
 #### Secrets
 
@@ -52,7 +46,7 @@ on:
   workflow_dispatch:
     inputs:
       WP_DIST_TAG:
-        description: 'The tag to update the dependencies to, e.g., `wp-6.7`.'
+        description: The dist tag to update the dependencies to, e.g., `wp-6.7`.
         default: 'wp-6.7'
         required: true
         type: string
@@ -80,10 +74,10 @@ maintain a centralized list of repositories needing consistent WordPress JS depe
 
 #### Inputs
 
-| Name         | Default    | Description                                                    |
-|--------------|------------|----------------------------------------------------------------|
-| `WP_DIST_TAG` | `'wp-6.7'` | The tag to update the dependencies to, e.g., `wp-6.7`          |
-| `PACKAGES`   | `''`       | Comma-separated list of additional `owner/repo`s to be updated |
+| Name          | Default    | Description                                                    |
+|---------------|------------|----------------------------------------------------------------|
+| `WP_DIST_TAG` | `'wp-6.7'` | The dist tag to update the dependencies to, e.g., `wp-6.7`     |
+| `PACKAGES`    | `''`       | Comma-separated list of additional `owner/repo`s to be updated |
 
 #### Secrets
 
@@ -100,7 +94,7 @@ on:
   workflow_dispatch:
     inputs:
       WP_DIST_TAG:
-        description: 'The tag to update the dependencies to, e.g., `wp-6.7`'
+        description: The dist tag to update the dependencies to, e.g., `wp-6.7`
         required: true
       PACKAGES:
         description: 'Comma-separated list of additional `owner/repo`s to be updated.'
