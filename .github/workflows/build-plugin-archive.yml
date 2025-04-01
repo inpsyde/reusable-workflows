@@ -91,7 +91,6 @@ jobs:
       artifact: ${{ steps.set-artifact-name.outputs.artifact }}
     env:
       ENV_VARS: ${{ secrets.ENV_VARS }}
-      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
       # Disables symlinking of local path repositories.
       # During development, symlinking is preferable.
       # In resulting builds, you will likely want to ship the actual install location and remove the source directory.
@@ -117,6 +116,8 @@ jobs:
 
       - name: Install Composer dependencies without dev dependencies
         uses: ramsey/composer-install@v3
+        env:
+          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
         with:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
 
@@ -141,8 +142,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: checkout-dependencies
     env:
-      NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
-      NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       NODE_CACHE_MODE: ''
     outputs:
       artifact: ${{ steps.set-artifact-name.outputs.artifact }}
@@ -179,16 +178,19 @@ jobs:
 
       - name: Set up node
         uses: actions/setup-node@v4
+        env:
+          NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
           cache: ${{ env.NODE_CACHE_MODE }}
 
-      - name: Install and run Composer Asset Compiler
+      - name: Run Composer Asset Compiler
         run: |
           composer compile-assets ${{ inputs.COMPILE_ASSETS_ARGS }}
 
-      - name: Install and run WordPress Translation Downloader
+      - name: Run WordPress Translation Downloader
         run: |
           composer wp-translation-downloader:download
 
@@ -197,11 +199,14 @@ jobs:
         run: |
           rector
 
-      - name: Run PHP-Scoper
+      - name: Run PHP-Scoper ensuring isolated file autoloading
         if: ${{ hashFiles('scoper.inc.php') != '' }}
         run: |
           php-scoper add-prefix --force --output-dir=build
           composer --working-dir=build dump-autoload -o
+          
+          // Appends the Git commit SHA to the Composer autoload cache key to ensure unique identification for prefixed files.
+          // Prevents Composer from skipping autoloaded files due to hash collisions based on relative paths.
           sed -i "s/'__composer_autoload_files'/\'__composer_autoload_files_${{ github.sha }}'/g" "build/vendor/composer/autoload_real.php"
 
       - name: Move code to the `build/` directory
