@@ -3,7 +3,7 @@ on:
   workflow_call:
     inputs:
       WP_DIST_TAG:
-        description: The dist tag to update the dependencies to, e.g., `wp-6.7`
+        description: The dist tag to update the dependencies to, e.g., `wp-6.7`.
         required: true
         type: string
       NPM_REGISTRY_DOMAIN:
