@@ -92,7 +92,7 @@ jobs:
 
     - name: Set up node
       env:
-        NPM_REGISTRY_DOMAIN: ${{ secrets.NPM_REGISTRY_DOMAIN }}
+        NPM_REGISTRY_DOMAIN: ${{ inputs.NPM_REGISTRY_DOMAIN }}
         NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       uses: actions/setup-node@v4
       with:
@@ -103,14 +103,14 @@ jobs:
     - name: Install dependencies
       env:
         ARGS: ${{ env.NODE_CACHE_MODE == 'npm' && 'ci' || 'install' }}
-        NPM_REGISTRY_DOMAIN: ${{ secrets.NPM_REGISTRY_DOMAIN }}
+        NPM_REGISTRY_DOMAIN: ${{ inputs.NPM_REGISTRY_DOMAIN }}
         NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       run: ${{ format('{0} {1} --ignore-scripts', env.PACKAGE_MANAGER, env.ARGS) }}
     
     - name: Update dependencies
       env:
         SCRIPT_START: ${{ env.PACKAGE_MANAGER == 'npm' && 'npm run' }}
-        NPM_REGISTRY_DOMAIN: ${{ secrets.NPM_REGISTRY_DOMAIN }}
+        NPM_REGISTRY_DOMAIN: ${{ inputs.NPM_REGISTRY_DOMAIN }}
         NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       run: |
         ./node_modules/.bin/wp-scripts packages-update --dist-tag=${{ env.WP_DIST_TAG }}
