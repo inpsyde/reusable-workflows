@@ -205,8 +205,8 @@ jobs:
           php-scoper add-prefix --force --output-dir=build
           composer --working-dir=build dump-autoload -o
           
-          // Appends the Git commit SHA to the Composer autoload cache key to ensure unique identification for prefixed files.
-          // Prevents Composer from skipping autoloaded files due to hash collisions based on relative paths.
+          # Appends the Git commit SHA to the Composer autoload cache key to ensure unique identification for prefixed files.
+          # Prevents Composer from skipping autoloaded files due to hash collisions based on relative paths.
           sed -i "s/'__composer_autoload_files'/\'__composer_autoload_files_${{ github.sha }}'/g" "build/vendor/composer/autoload_real.php"
 
       - name: Move code to the `build/` directory
