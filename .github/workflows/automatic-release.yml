@@ -72,7 +72,7 @@ jobs:
         env:
           GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
         if: ${{ env.GITHUB_USER_SSH_KEY != '' }}
-        uses: webfactory/ssh-agent@v0.9.0
+        uses: webfactory/ssh-agent@v0.9.1
         with:
           ssh-private-key: ${{ env.GITHUB_USER_SSH_KEY }}
 
