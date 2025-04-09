@@ -79,6 +79,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NO_CHANGES: ''                                   # we'll override if no changes to commit
+      # Disables symlinking of local "path" repositories during package installation.
+      # During development, symlinking is preferable.
+      # In production builds, we ship the actual install location and remove the source directory.
+      COMPOSER_MIRROR_PATH_REPOS: 1
+      GIT_SHA: ${{ github.sha }}
+      PLUGIN_VERSION: ${{ inputs.PLUGIN_VERSION }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -145,9 +151,31 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Add commit hash to plugin header
+      - name: Set plugin version header
+        if: ${{ hashFiles('style.css') == '' }}
         run: |
-          sed -Ei "s/SHA: .*/SHA: ${GIT_SHA}/g" $(grep -r --include "*.php" "Plugin Name:" .)
+          sed -Ei "s/Version: .*/Version: ${PLUGIN_VERSION}/g" $(grep -r --include "*.php" "Plugin Name:" . | head -1)
+
+      - name: Add commit hash to plugin header
+        if: ${{ hashFiles('style.css') == '' }}
+        run: |
+          sed -Ei "s/SHA: .*/SHA: ${GIT_SHA}/g" $(grep -r --include "*.php" "Plugin Name:" . | head -1)
+
+      - name: Set theme version header
+        if: ${{ hashFiles('style.css') != '' }}
+        run: |
+          sed -Ei "s/Version: .*/Version: ${PLUGIN_VERSION}/g" style.css
+
+      - name: Add commit hash to theme header
+        if: ${{ hashFiles('style.css') == '' }}
+        run: |
+          sed -Ei "s/SHA: .*/SHA: ${GIT_SHA}/g" style.css
+
+# TODO also update version in package.json
+
+      - name: Execute custom code before archive creation
+        run: |
+          ${{ inputs.PRE_SCRIPT }}
 
       - name: Compile assets
         run: npm run build
@@ -162,16 +190,16 @@ jobs:
         run: |
           php-scoper add-prefix --force --output-dir=build
           composer --working-dir=build dump-autoload -o
-          sed -i "s/'__composer_autoload_files'/\'__composer_autoload_files_${{ github.sha }}'/g" "build/vendor/composer/autoload_real.php"     
+          sed -i "s/'__composer_autoload_files'/\'__composer_autoload_files_${{ github.sha }}'/g" "build/vendor/composer/autoload_real.php"    
+          rsync -av --delete ./build/ . && rm -rf ./build/
 
-      - name: Move build to working directory
-        if: ${{ hashFiles('scoper.inc.php') != '' }}
+      - name: Apply .distignore file
+        # Configure git to (gracefully) use .distignore file during instead of the regular .gitignore file
+        # Then clean up all files possibly mentioned in .distignore (e.g., source files)
         run: |
-        #  rsync -av --delete ./build/ . && rm -rf ./build/
-        # New Attempt:
-        # git config core.excludesFile .distignore #tell git to (gracefully) use distignore file during cleanup
-        # git clean -Xdf # clean up all files possibly mentioned in .distignore (e.g., source files)
-        #
+          git config core.excludesFile .distignore 
+          git clean -Xdf 
+
 
 
       - name: Git add, commit, and push
