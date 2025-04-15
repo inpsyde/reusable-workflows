@@ -13,6 +13,11 @@ on:
         default: '--prefer-dist'
         required: false
         type: string
+      CUSTOM_CACHE_KEY:
+        description: A custom cache key to use instead of an auto-generated cache key.
+        required: false
+        default: ''
+        type: string
       PSALM_ARGS:
         description: Set of arguments passed to Psalm.
         default: '--output-format=github --no-cache'
@@ -66,6 +71,7 @@ jobs:
           COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
         with:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
+          custom-cache-key: ${{ inputs.CUSTOM_CACHE_KEY }}
 
       - name: Run Psalm
         if: ${{ hashFiles('psalm.xml', 'psalm.xml.dist') != '' }}
