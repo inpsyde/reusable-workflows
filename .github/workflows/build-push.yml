@@ -85,6 +85,7 @@ jobs:
       COMPOSER_MIRROR_PATH_REPOS: 1
       GIT_SHA: ${{ github.sha }}
       PLUGIN_VERSION: ${{ inputs.PLUGIN_VERSION }}
+      PACKAGE_FOLDER_NAME: ${{ inputs.PACKAGE_FOLDER_NAME || github.repository_name }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -201,8 +202,6 @@ jobs:
           git config core.excludesFile .distignore 
           git clean -Xdf 
 
-
-
       - name: Git add, commit, and push
         run: |
           declare -a TARGET_DIRECTORY_PATHS_ARRAY=(${{ inputs.ASSETS_TARGET_PATHS }})
@@ -213,7 +212,10 @@ jobs:
           git commit -m "[BOT] Add compiled assets for #${{ github.ref }}" --no-verify || ((echo "NO_CHANGES=yes" >> $GITHUB_ENV) && (echo "No changes to commit"))
           git push
 
-
-
-
-## Add upload artifact
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PACKAGE_FOLDER_NAME }}-${{ env.PLUGIN_VERSION }}
+          path: .
+          include-hidden-files: true
+          compression-level: 9
