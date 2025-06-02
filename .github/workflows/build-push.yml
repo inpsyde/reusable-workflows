@@ -171,7 +171,8 @@ jobs:
         run: |
           sed -Ei "s/SHA: .*/SHA: ${GIT_SHA}/g" style.css
 
-# TODO also update version in package.json
+      - name: Update version in package.json
+        run: npm version ${PLUGIN_VERSION} --no-git-tag-version
 
       - name: Execute custom code before archive creation
         run: |
