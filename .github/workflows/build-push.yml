@@ -165,12 +165,12 @@ jobs:
       - name: Set plugin version header
         if: ${{ hashFiles('style.css') == '' }}
         run: |
-          sed -Ei "s/Version: .*/Version: ${PLUGIN_VERSION}/g" $(grep -r --include "*.php" "Plugin Name:" . | head -1)
+          sed -Ei "s/Version: .*/Version: ${PLUGIN_VERSION}/g" $(grep -rl --include "*.php" "Plugin Name:" . | head -1)
 
       - name: Add commit hash to plugin header
         if: ${{ hashFiles('style.css') == '' }}
         run: |
-          sed -Ei "s/SHA: .*/SHA: ${GIT_SHA}/g" $(grep -r --include "*.php" "Plugin Name:" . | head -1)
+          sed -Ei "s/SHA: .*/SHA: ${GIT_SHA}/g" $(grep -rl --include "*.php" "Plugin Name:" . | head -1)
 
       - name: Set theme version header
         if: ${{ hashFiles('style.css') != '' }}
