@@ -178,7 +178,7 @@ jobs:
           sed -Ei "s/Version: .*/Version: ${PLUGIN_VERSION}/g" style.css
 
       - name: Add commit hash to theme header
-        if: ${{ hashFiles('style.css') == '' }}
+        if: ${{ hashFiles('style.css') != '' }}
         run: |
           sed -Ei "s/SHA: .*/SHA: ${GIT_SHA}/g" style.css
 
