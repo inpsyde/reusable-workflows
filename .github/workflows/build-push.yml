@@ -220,7 +220,7 @@ jobs:
         run: |
           rm .gitignore
           git config core.excludesFile .distignore 
-          git rm -r --cached .
+          git rm -rf --cached .
           git add .
           git clean -Xdf 
 
