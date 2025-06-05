@@ -218,6 +218,8 @@ jobs:
         # Then clean up all files possibly mentioned in .distignore (e.g., source files)
         run: |
           git config core.excludesFile .distignore 
+          git rm -r --cached .
+          git add .
           git clean -Xdf 
 
       - name: Git add, commit, and push
