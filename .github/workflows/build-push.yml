@@ -141,7 +141,7 @@ jobs:
       - name: Checkout the build branch and merge in it
         run: |
           git show-ref -q refs/remotes/origin/${{ env.BUILT_BRANCH_NAME }} && git checkout ${{ env.BUILT_BRANCH_NAME }} || git checkout -b ${{ env.BUILT_BRANCH_NAME }}
-          git merge ${{ github.ref_name }}
+          git checkout ${{ github.ref_name }} -- .
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
