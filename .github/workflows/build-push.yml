@@ -92,7 +92,7 @@ jobs:
       # In production builds, we ship the actual install location and remove the source directory.
       COMPOSER_MIRROR_PATH_REPOS: 1
       GIT_SHA: ${{ github.sha }}
-      PLUGIN_VERSION: ${{ inputs.PLUGIN_VERSION }}
+      PACKAGE_VERSION: ${{ inputs.PACKAGE_VERSION }}
       PACKAGE_FOLDER_NAME: ${{ inputs.PACKAGE_FOLDER_NAME || github.repository_name }}
     steps:
       - name: Checkout
@@ -173,25 +173,25 @@ jobs:
       - name: Set plugin version header
         if: ${{ hashFiles('style.css') == '' }}
         run: |
-          sed -Ei "s/Version: .*/Version: ${PLUGIN_VERSION}/g" $(grep -rl --include "*.php" "Plugin Name:" . | head -1)
+          sed -Ei "s/Version: .*/Version: ${{ env.PACKAGE_VERSION }}/g" $(grep -rl --include "*.php" "Plugin Name:" . | head -1)
 
       - name: Add commit hash to plugin header
         if: ${{ hashFiles('style.css') == '' }}
         run: |
-          sed -Ei "s/SHA: .*/SHA: ${GIT_SHA}/g" $(grep -rl --include "*.php" "Plugin Name:" . | head -1)
+          sed -Ei "s/SHA: .*/SHA: ${{ env.GIT_SHA }}/g" $(grep -rl --include "*.php" "Plugin Name:" . | head -1)
 
       - name: Set theme version header
         if: ${{ hashFiles('style.css') != '' }}
         run: |
-          sed -Ei "s/Version: .*/Version: ${PLUGIN_VERSION}/g" style.css
+          sed -Ei "s/Version: .*/Version: ${{ env.PACKAGE_VERSION }}/g" style.css
 
       - name: Add commit hash to theme header
         if: ${{ hashFiles('style.css') != '' }}
         run: |
-          sed -Ei "s/SHA: .*/SHA: ${GIT_SHA}/g" style.css
+          sed -Ei "s/SHA: .*/SHA: ${{ env.GIT_SHA }}/g" style.css
 
       - name: Update version in package.json
-        run: npm version ${PLUGIN_VERSION} --no-git-tag-version
+        run: npm version ${{ env.PACKAGE_VERSION }} --no-git-tag-version
 
       - name: Execute custom code before archive creation
         run: |
@@ -210,7 +210,7 @@ jobs:
         run: |
           php-scoper add-prefix --force --output-dir=build
           composer --working-dir=build dump-autoload -o
-          sed -i "s/'__composer_autoload_files'/\'__composer_autoload_files_${{ github.sha }}'/g" "build/vendor/composer/autoload_real.php"    
+          sed -i "s/'__composer_autoload_files'/\'__composer_autoload_files_${{ env.GIT_SHA }}'/g" "build/vendor/composer/autoload_real.php"    
           rsync -av --delete ./build/ . && rm -rf ./build/
 
       - name: Apply .distignore file
@@ -237,7 +237,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.PACKAGE_FOLDER_NAME }}-${{ env.PLUGIN_VERSION }}
+          name: ${{ env.PACKAGE_FOLDER_NAME }}-${{ env.PACKAGE_VERSION }}
           path: .
           include-hidden-files: true
           compression-level: 9
