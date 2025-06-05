@@ -110,9 +110,12 @@ jobs:
 
       - name: Set up signing commits
         run: |
+          : # Create empty SSH private key file so Git does not complain.
+          touch "${{ runner.temp }}/signingkey"
+          echo "${{ secrets.GITHUB_USER_SSH_PUBLIC_KEY }}" > "${{ runner.temp }}/signingkey.pub"
           git config --global commit.gpgsign true
           git config --global gpg.format ssh
-          git config --global user.signingkey ${{ secrets.GITHUB_USER_SSH_PUBLIC_KEY }}
+          git config --global user.signingkey "${{ runner.temp }}/signingkey.pub"
 
       - name: Set up custom environment variables
         env:
