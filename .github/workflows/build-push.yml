@@ -214,9 +214,11 @@ jobs:
           rsync -av --delete ./build/ . && rm -rf ./build/
 
       - name: Apply .distignore file
+        if: ${{ hashFiles('.distignore') != '' }}
         # Configure git to (gracefully) use .distignore file during instead of the regular .gitignore file
         # Then clean up all files possibly mentioned in .distignore (e.g., source files)
         run: |
+          rm .gitignore
           git config core.excludesFile .distignore 
           git rm -r --cached .
           git add .
