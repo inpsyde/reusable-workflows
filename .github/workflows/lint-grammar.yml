@@ -1,0 +1,11 @@
+name: Lint GrammarAdd commentMore actions
+
+on:
+  workflow_call:
+
+jobs:
+  lint-grammar:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo "Foobar"
