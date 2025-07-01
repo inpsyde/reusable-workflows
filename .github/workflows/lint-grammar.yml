@@ -17,6 +17,6 @@ jobs:
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-check
           level: info
-          patterns: '**/*.md **/*.txt **/*.yml'
+          patterns: '**.md **.txt **.yml'
 
 # This ist a test with a tyhpo
