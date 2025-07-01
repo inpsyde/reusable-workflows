@@ -1,0 +1,20 @@
+name: Lint Grammar
+
+on:
+  workflow_dispatch:
+
+jobs:
+  lint-grammar:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Run LanguageTool
+        uses: reviewdog/action-languagetool@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          reporter: github-pr-check
+          level: info
+          patterns: '**/*.md **/*.txt'
