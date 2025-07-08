@@ -133,10 +133,20 @@ jobs:
               .parse(process.env.ENV_VARS)
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
-        ### Hardcode to `dev/*` (not `dev-*`)!
-      - name: Set branch environment variables
+      - name: Inspect origin branch and determine build branch
         run: |
-          echo "BUILT_BRANCH_NAME=${{ inputs.BUILT_BRANCH_NAME && inputs.BUILT_BRANCH_NAME || github.ref_name }}" >> $GITHUB_ENV
+          ORIGIN_BRANCH="${{ github.ref_name }}"
+          echo "Origin branch: $ORIGIN_BRANCH"
+          
+          # Determine the build branch name
+          if [ -n "${{ inputs.BUILT_BRANCH_NAME }}" ]; then
+            BUILD_BRANCH="${{ inputs.BUILT_BRANCH_NAME }}"
+          else
+            BUILD_BRANCH="dev/$ORIGIN_BRANCH"
+          fi
+          
+          echo "Build branch: $BUILD_BRANCH"
+          echo "BUILT_BRANCH_NAME=$BUILD_BRANCH" >> $GITHUB_ENV
 
       - name: Checkout the build branch and merge in it
         run: |
@@ -226,13 +236,12 @@ jobs:
 
       - name: Git add, commit, and push
         run: |
-          declare -a TARGET_DIRECTORY_PATHS_ARRAY=(${{ inputs.ASSETS_TARGET_PATHS }})
-          for path in "${TARGET_DIRECTORY_PATHS_ARRAY[@]}"; do git add -f "${path}/*"; done
-          declare -a TARGET_FILES_PATHS_ARRAY=(${{ inputs.ASSETS_TARGET_FILES }})
-          for path in "${TARGET_FILES_PATHS_ARRAY[@]}"; do [[ -f "$path" ]] && git add -f "${path}"; done
           git add -A
-          git commit -m "[BOT] Add compiled assets for #${{ github.ref }}" --no-verify || ((echo "NO_CHANGES=yes" >> $GITHUB_ENV) && (echo "No changes to commit"))
-          git push
+          git commit -m "[BOT] Add build artifact for #${{ github.ref }} -> ${{ env.BUILT_BRANCH_NAME }}" --no-verify || ((echo "NO_CHANGES=yes" >> $GITHUB_ENV) && (echo "No changes to commit"))
+          if [ "${{ env.NO_CHANGES }}" != "yes" ]; then
+            git push
+            echo "Build artifact pushed to branch: ${{ env.BUILT_BRANCH_NAME }}"
+          fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -241,3 +250,9 @@ jobs:
           path: .
           include-hidden-files: true
           compression-level: 9
+
+      - name: Delete signing key files
+        if: ${{ always() }}
+        run: |
+          rm -f "${{ runner.temp }}/signingkey"
+          rm -f "${{ runner.temp }}/signingkey.pub"
