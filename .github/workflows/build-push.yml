@@ -93,7 +93,7 @@ jobs:
       COMPOSER_MIRROR_PATH_REPOS: 1
       GIT_SHA: ${{ github.sha }}
       PACKAGE_VERSION: ${{ inputs.PACKAGE_VERSION }}  # Will be overridden by determine package version step
-      PACKAGE_FOLDER_NAME: ${{ inputs.PACKAGE_FOLDER_NAME && inputs.PACKAGE_FOLDER_NAME || github.repository_name }}
+      PACKAGE_FOLDER_NAME: ${{ inputs.PACKAGE_FOLDER_NAME && inputs.PACKAGE_FOLDER_NAME || github.event.repository.name }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -276,7 +276,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PACKAGE_FOLDER_NAME }}-${{ env.PACKAGE_VERSION }}
-          path: .
+          path: |
+            .
+            !.git
           include-hidden-files: true
           compression-level: 9
 
