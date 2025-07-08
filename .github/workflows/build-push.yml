@@ -44,8 +44,8 @@ on:
         default: ''
         type: string
       PACKAGE_VERSION:
-        description: The new package version.
-        required: true
+        description: The new package version. If not provided, will use latest release version with branch name as pre-release identifier.
+        required: false
         type: string
       PRE_SCRIPT:
         description: Run custom shell code before creating the release archive.
@@ -92,7 +92,7 @@ jobs:
       # In production builds, we ship the actual install location and remove the source directory.
       COMPOSER_MIRROR_PATH_REPOS: 1
       GIT_SHA: ${{ github.sha }}
-      PACKAGE_VERSION: ${{ inputs.PACKAGE_VERSION }}
+      PACKAGE_VERSION: ${{ inputs.PACKAGE_VERSION }}  # Will be overridden by determine package version step
       PACKAGE_FOLDER_NAME: ${{ inputs.PACKAGE_FOLDER_NAME && inputs.PACKAGE_FOLDER_NAME || github.repository_name }}
     steps:
       - name: Checkout
@@ -132,6 +132,35 @@ jobs:
             JSON
               .parse(process.env.ENV_VARS)
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
+
+      - name: Determine package version
+        run: |
+          if [ -n "${{ inputs.PACKAGE_VERSION }}" ]; then
+            PACKAGE_VERSION="${{ inputs.PACKAGE_VERSION }}"
+            echo "Using provided package version: $PACKAGE_VERSION"
+          else
+            # Fetch latest public release
+            LATEST_RELEASE=$(gh release list --limit 1 --exclude-drafts --exclude-pre-releases --json tagName --jq '.[0].tagName' 2>/dev/null || echo "")
+          
+            if [ -z "$LATEST_RELEASE" ]; then
+              echo "No releases found, using default version 0.0.0"
+              LATEST_RELEASE="0.0.0"
+            else
+              echo "Latest release found: $LATEST_RELEASE"
+            fi
+          
+            # Normalize branch name for semver pre-release identifier
+            # Replace invalid characters with hyphens and convert to lowercase
+            NORMALIZED_BRANCH=$(echo "${{ github.ref_name }}" | sed 's/[^a-zA-Z0-9-]/-/g' | sed 's/--*/-/g' | sed 's/^-\|-$//g' | tr '[:upper:]' '[:lower:]')
+          
+            # Construct semver with pre-release identifier
+            PACKAGE_VERSION="${LATEST_RELEASE}-${NORMALIZED_BRANCH}"
+            echo "Generated package version: $PACKAGE_VERSION"
+          fi
+          
+          echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_USER_SSH_KEY && secrets.GITHUB_TOKEN || github.token }}
 
       - name: Inspect origin branch and determine build branch
         run: |
