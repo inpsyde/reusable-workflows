@@ -1,4 +1,4 @@
-# Build and push
+# Build & push
 
 This action can be used to build plugin and theme archives and push them to corresponding build branches in a controlled and isolated environment via GitHub Actions.
 
@@ -46,8 +46,8 @@ on:
         description: 'Package Version'
         required: false
 jobs:
-  build-and-push:
-    uses: inpsyde/reusable-workflows/.github/workflows/build-and-push.yml@main
+  build-push:
+    uses: inpsyde/reusable-workflows/.github/workflows/build-push.yml@main
     secrets:
       COMPOSER_AUTH_JSON: ${{ secrets.PACKAGIST_AUTH_JSON }}
       GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
@@ -117,8 +117,8 @@ on:
         description: 'Custom build branch name'
         required: false
 jobs:
-  build-and-push:
-    uses: inpsyde/reusable-workflows/.github/workflows/build-and-push.yml@main
+  build-push:
+    uses: inpsyde/reusable-workflows/.github/workflows/build-push.yml@main
     secrets:
       COMPOSER_AUTH_JSON: ${{ secrets.PACKAGIST_AUTH_JSON }}
       NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
@@ -210,15 +210,15 @@ on:
       - 'assets/**'
       - 'package.json'
       - 'composer.json'
-      - '.github/workflows/build-and-push.yml'
+      - '.github/workflows/build-push.yml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  build-and-push:
-    uses: inpsyde/reusable-workflows/.github/workflows/build-and-push.yml@main
+  build-push:
+    uses: inpsyde/reusable-workflows/.github/workflows/build-push.yml@main
     secrets:
       COMPOSER_AUTH_JSON: ${{ secrets.PACKAGIST_AUTH_JSON }}
       GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
