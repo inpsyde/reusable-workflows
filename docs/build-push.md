@@ -79,6 +79,7 @@ jobs:
 #### A note on `PACKAGE_VERSION`
 
 When `PACKAGE_VERSION` is not provided, the workflow automatically generates a version by:
+
 1. Fetching the latest public release (e.g., `1.2.3`)
 2. Normalizing the branch name for semver compatibility (e.g., `feature/user-auth` → `feature-user-auth`)
 3. Combining them as a pre-release version (e.g., `1.2.3-feature-user-auth`)
@@ -147,11 +148,13 @@ jobs:
 The workflow handles version information for both plugins and themes:
 
 **For plugins** (when `style.css` doesn't exist):
+
 - Updates `Version:` header in the main plugin file
 - Updates `SHA:` header with the current commit hash
 - Updates version in `package.json`
 
 **For themes** (when `style.css` exists):
+
 - Updates `Version:` header in `style.css`
 - Updates `SHA:` header in `style.css`
 - Updates version in `package.json`
@@ -171,6 +174,7 @@ The workflow expects a `build` script in your `package.json`:
 ### PHP-Scoper Integration
 
 If a `scoper.inc.php` file is present, the workflow will:
+
 1. Run PHP-Scoper to prefix all PHP dependencies
 2. Rebuild the autoloader for the scoped dependencies
 3. Ensure unique autoload cache keys to prevent conflicts
@@ -178,6 +182,7 @@ If a `scoper.inc.php` file is present, the workflow will:
 ### Distignore Support
 
 If a `.distignore` file is present, the workflow will:
+
 1. Replace `.gitignore` with `.distignore` for the build process
 2. Remove all files and directories listed in `.distignore`
 3. Clean up any untracked files that match the ignore patterns
