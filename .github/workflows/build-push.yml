@@ -133,6 +133,8 @@ jobs:
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
       - name: Determine package version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_USER_SSH_KEY && secrets.GITHUB_TOKEN || github.token }}
         run: |
           if [ -n "${{ inputs.PACKAGE_VERSION }}" ]; then
             PACKAGE_VERSION="${{ inputs.PACKAGE_VERSION }}"
@@ -166,8 +168,6 @@ jobs:
           fi
           
           echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_USER_SSH_KEY && secrets.GITHUB_TOKEN || github.token }}
 
       - name: Inspect origin branch and determine build branch
         run: |
