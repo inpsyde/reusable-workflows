@@ -35,6 +35,7 @@ If no `PACKAGE_VERSION` is provided, the workflow automatically:
 4. Falls back to `0.0.0-{branch}` if no releases exist
 
 **Examples:**
+
 - `dev/main` with latest release `1.2.3` → `1.2.3-main`
 - `dev/ABC-123` with latest release `1.2.3` → `1.2.3-abc-123`
 - `dev/feature/user-auth` with latest release `2.0.0` → `2.0.0-feature-user-auth`
