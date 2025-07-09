@@ -1,4 +1,4 @@
-name: Build and push
+name: Build and push assets
 
 on:
   workflow_call:
@@ -53,7 +53,7 @@ on:
         required: false
         type: string
       BUILT_BRANCH_NAME:
-        description: Sets the target branch for pushing assets on the `branch` event.
+        description: Sets the target branch for pushing assets. If not provided, strips 'dev/' prefix from origin branch.
         type: string
         default: ''
         required: false
@@ -149,9 +149,17 @@ jobs:
               echo "Latest release found: $LATEST_RELEASE"
             fi
           
+            # Strip 'dev/' prefix from branch name for version string
+            ORIGIN_BRANCH="${{ github.ref_name }}"
+            if [[ "$ORIGIN_BRANCH" == dev/* ]]; then
+              VERSION_BRANCH="${ORIGIN_BRANCH#dev/}"
+            else
+              VERSION_BRANCH="$ORIGIN_BRANCH"
+            fi
+          
             # Normalize branch name for semver pre-release identifier
             # Replace invalid characters with hyphens and convert to lowercase
-            NORMALIZED_BRANCH=$(echo "${{ github.ref_name }}" | sed 's/[^a-zA-Z0-9-]/-/g' | sed 's/--*/-/g' | sed 's/^-\|-$//g' | tr '[:upper:]' '[:lower:]')
+            NORMALIZED_BRANCH=$(echo "$VERSION_BRANCH" | sed 's/[^a-zA-Z0-9-]/-/g' | sed 's/--*/-/g' | sed 's/^-\|-$//g' | tr '[:upper:]' '[:lower:]')
           
             # Construct semver with pre-release identifier
             PACKAGE_VERSION="${LATEST_RELEASE}-${NORMALIZED_BRANCH}"
@@ -167,11 +175,21 @@ jobs:
           ORIGIN_BRANCH="${{ github.ref_name }}"
           echo "Origin branch: $ORIGIN_BRANCH"
           
+          # Branch scheme:
+          # dev/main -> main (stable production code with assets, where releases are created)
+          # dev/ABC-123 -> ABC-123 (feature branch with compiled assets)
+          # dev/xyz -> xyz (any other branch)
+          
           # Determine the build branch name
           if [ -n "${{ inputs.BUILT_BRANCH_NAME }}" ]; then
             BUILD_BRANCH="${{ inputs.BUILT_BRANCH_NAME }}"
           else
-            BUILD_BRANCH="dev/$ORIGIN_BRANCH"
+            # Strip 'dev/' prefix from origin branch to get build branch
+            if [[ "$ORIGIN_BRANCH" == dev/* ]]; then
+              BUILD_BRANCH="${ORIGIN_BRANCH#dev/}"
+            else
+              BUILD_BRANCH="$ORIGIN_BRANCH"
+            fi
           fi
           
           echo "Build branch: $BUILD_BRANCH"
@@ -266,7 +284,7 @@ jobs:
       - name: Git add, commit, and push
         run: |
           git add -A
-          git commit -m "[BOT] Add build artifact for #${{ github.ref }} -> ${{ env.BUILT_BRANCH_NAME }}" --no-verify || ((echo "NO_CHANGES=yes" >> $GITHUB_ENV) && (echo "No changes to commit"))
+          git commit -m "[BOT] Add build artifact from ${{ github.ref_name }} -> ${{ env.BUILT_BRANCH_NAME }}" --no-verify || ((echo "NO_CHANGES=yes" >> $GITHUB_ENV) && (echo "No changes to commit"))
           if [ "${{ env.NO_CHANGES }}" != "yes" ]; then
             git push
             echo "Build artifact pushed to branch: ${{ env.BUILT_BRANCH_NAME }}"

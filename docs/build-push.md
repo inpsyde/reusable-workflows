@@ -1,10 +1,10 @@
-# Build & push
+# Build & push assets
 
 This action can be used to build plugin and theme archives and push them to corresponding build branches in a controlled and isolated environment via GitHub Actions.
 
 To achieve that, the reusable workflow:
 
-1. Inspects the origin branch and determines the correlating build branch (prefixed with `dev/`)
+1. Inspects the origin branch and determines the correlating build branch (strips `dev/` prefix)
 2. Installs dependencies (including dev-dependencies) defined in `composer.json`
 3. Installs Node.js dependencies and compiles assets via `npm run build`
 4. Updates version information in plugin/theme headers and `package.json`
@@ -16,30 +16,36 @@ To achieve that, the reusable workflow:
 
 ## Branch naming convention
 
-The workflow automatically determines the build branch by prefixing the origin branch with `dev/`:
+The workflow implements an inverted branch scheme where development branches are prefixed with `dev/` and build branches contain the compiled assets:
 
-- `main` → `dev/main`
-- `feature/user-auth` → `dev/feature/user-auth`
-- `hotfix/critical-bug` → `dev/hotfix/critical-bug`
+- **`dev/main`** → **`main`** (stable production code with assets, where releases are created)
+- **`dev/ABC-123`** → **`ABC-123`** (feature branch with compiled assets)
+- **`dev/feature/user-auth`** → **`feature/user-auth`** (feature branch with compiled assets)
+- **`dev/hotfix/critical-bug`** → **`hotfix/critical-bug`** (hotfix branch with compiled assets)
 
-This approach keeps build artifacts separate from development branches while maintaining a clear relationship between source and build branches.
+This approach keeps source code separate from build artifacts while maintaining a clear relationship between development and build branches. The `main` branch (without `dev/` prefix) serves as the stable production branch where releases are created.
 
 ## Version handling
 
 If no `PACKAGE_VERSION` is provided, the workflow automatically:
 
 1. Fetches the latest public (non-draft, non-pre-release) release from the repository
-2. Normalizes the branch name to be semver-compatible
-3. Creates a pre-release version like `1.2.3-main` or `2.0.0-feature-user-auth`
+2. Strips the `dev/` prefix from the branch name and normalizes it to be semver-compatible
+3. Creates a pre-release version like `1.2.3-main` or `2.0.0-abc-123`
 4. Falls back to `0.0.0-{branch}` if no releases exist
+
+**Examples:**
+- `dev/main` with latest release `1.2.3` → `1.2.3-main`
+- `dev/ABC-123` with latest release `1.2.3` → `1.2.3-abc-123`
+- `dev/feature/user-auth` with latest release `2.0.0` → `2.0.0-feature-user-auth`
 
 ## Simple usage example
 
 ```yml
-name: Build and push
+name: Build and push assets
 on:
   push:
-    branches: [ main, 'feature/**' ]
+    branches: [ 'dev/main', 'dev/feature/**' ]
   workflow_dispatch:
     inputs:
       PACKAGE_VERSION:
@@ -74,21 +80,22 @@ jobs:
 | `PACKAGE_FOLDER_NAME` | `''`                                                          | The name of the package folder (falls back to the repository name)                             |
 | `PACKAGE_VERSION`     | `''`                                                          | The new package version. If not provided, will use latest release version with branch name as pre-release identifier |
 | `PRE_SCRIPT`          | `''`                                                          | Run custom shell code before building assets                                                   |
-| `BUILT_BRANCH_NAME`   | `''`                                                          | Override the automatic build branch naming (defaults to `dev/{origin-branch}`)                 |
+| `BUILT_BRANCH_NAME`   | `''`                                                          | Override the automatic build branch naming (defaults to stripping `dev/` prefix from origin branch) |
 
 #### A note on `PACKAGE_VERSION`
 
 When `PACKAGE_VERSION` is not provided, the workflow automatically generates a version by:
 
 1. Fetching the latest public release (e.g., `1.2.3`)
-2. Normalizing the branch name for semver compatibility (e.g., `feature/user-auth` → `feature-user-auth`)
-3. Combining them as a pre-release version (e.g., `1.2.3-feature-user-auth`)
+2. Stripping the `dev/` prefix from the branch name (e.g., `dev/feature/user-auth` → `feature/user-auth`)
+3. Normalizing the branch name for semver compatibility (e.g., `feature/user-auth` → `feature-user-auth`)
+4. Combining them as a pre-release version (e.g., `1.2.3-feature-user-auth`)
 
 This ensures every build has a unique, meaningful version identifier that traces back to both the base release and the source branch.
 
 #### A note on `BUILT_BRANCH_NAME`
 
-By default, the workflow creates build branches with the `dev/` prefix. You can override this behavior by providing a custom `BUILT_BRANCH_NAME`. This is useful for specific branching strategies or when you need to maintain compatibility with existing build processes.
+By default, the workflow strips the `dev/` prefix from the origin branch to determine the build branch. You can override this behavior by providing a custom `BUILT_BRANCH_NAME`. This is useful for specific branching strategies or when you need to maintain compatibility with existing build processes.
 
 ## Secrets
 
@@ -105,10 +112,10 @@ By default, the workflow creates build branches with the `dev/` prefix. You can 
 **Example with configuration parameters:**
 
 ```yml
-name: Build and push
+name: Build and push assets
 on:
   push:
-    branches: [ main, develop, 'feature/**', 'hotfix/**' ]
+    branches: [ 'dev/main', 'dev/develop', 'dev/feature/**', 'dev/hotfix/**' ]
   workflow_dispatch:
     inputs:
       PACKAGE_VERSION:
@@ -193,7 +200,7 @@ This is particularly useful for excluding source files, tests, and development t
 
 The workflow produces two outputs:
 
-1. **Build Branch**: The compiled code pushed to the `dev/{branch}` branch
+1. **Build Branch**: The compiled code pushed to the build branch (e.g., `dev/main` → `main`)
 2. **GitHub Artifact**: A downloadable archive named `{package-name}-{version}` containing the build (without `.git` folder)
 
 ## Recommendations
@@ -202,14 +209,15 @@ The workflow produces two outputs:
 - Consider using [path filters](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#example-including-paths) to avoid unnecessary builds when only documentation changes
 - Ensure your `package.json` includes a `build` script for asset compilation
 - Use `.distignore` to exclude development files from the final build
+- Set up your repository's default branch to be `dev/main` to follow the new branching convention
 
 **Example with concurrency and path filtering:**
 
 ```yml
-name: Build and push
+name: Build and push assets
 on:
   push:
-    branches: [ main, 'feature/**' ]
+    branches: [ 'dev/main', 'dev/feature/**' ]
     paths:
       - 'src/**'
       - 'assets/**'
@@ -233,3 +241,14 @@ jobs:
 ```
 
 **Note**: Do not set `cancel-in-progress: true` as it can interrupt the build process and lead to incomplete builds being pushed to the build branch.
+
+## Migration from previous workflows
+
+If you're migrating from a previous build workflow, consider these changes:
+
+1. **Update branch triggers**: Change from `main` to `dev/main` and `feature/**` to `dev/feature/**`
+2. **Update default branch**: Set your repository's default branch to `dev/main`
+3. **Update Composer constraints**: If you use branch-specific Composer constraints, update them to reference the new build branches (e.g., `dev-main` instead of `dev-dev/main`)
+4. **Update deployment targets**: Update any deployment scripts or configurations that reference the old branch names
+
+The new branching convention provides clearer separation between development and production-ready code, with the `main` branch always containing the latest stable build artifacts ready for release.
