@@ -203,7 +203,7 @@ jobs:
           tools: php-scoper, sniccowp/php-scoper-wordpress-excludes, composer/installers, inpsyde/wp-translation-downloader, ${{ inputs.PHP_TOOLS }}
           coverage: none
 
-      - name: Install Composer dependencies without dev dependencies
+      - name: Install Composer dependencies
         uses: ramsey/composer-install@v3
         env:
           COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
