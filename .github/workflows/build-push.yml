@@ -1,0 +1,341 @@
+name: Build and push assets
+
+on:
+  workflow_call:
+    inputs:
+      NODE_OPTIONS:
+        description: Space-separated list of command-line Node options.
+        type: string
+        default: ''
+        required: false
+      NODE_VERSION:
+        description: Node version with which the static code analysis is to be executed.
+        default: 18
+        required: false
+        type: string
+      NPM_REGISTRY_DOMAIN:
+        description: Domain of the private npm registry.
+        default: https://npm.pkg.github.com/
+        required: false
+        type: string
+      PHP_VERSION:
+        description: PHP version with which the PHP tools are to be executed.
+        default: '8.2'
+        required: false
+        type: string
+      PHP_TOOLS:
+        description: PHP tools supported by shivammathur/setup-php to be installed.
+        default: ''
+        required: false
+        type: string
+      COMPOSER_ARGS:
+        description: Set of arguments passed to Composer when gathering production dependencies.
+        default: '--no-dev --prefer-dist --optimize-autoloader'
+        required: false
+        type: string
+      PHP_VERSION_BUILD:
+        description: PHP version to use when executing build tools.
+        default: '8.2'
+        required: false
+        type: string
+      PACKAGE_FOLDER_NAME:
+        description: The name of the package folder (falls back to the repository name).
+        required: false
+        default: ''
+        type: string
+      PACKAGE_VERSION:
+        description: The new package version. If not provided, will use latest release version with branch name as pre-release identifier.
+        required: false
+        type: string
+      PRE_SCRIPT:
+        description: Run custom shell code before creating the release archive.
+        default: ''
+        required: false
+        type: string
+      BUILT_BRANCH_NAME:
+        description: Sets the target branch for pushing assets. If not provided, strips 'dev/' prefix from origin branch.
+        type: string
+        default: ''
+        required: false
+
+    secrets:
+      COMPOSER_AUTH_JSON:
+        description: Authentication for privately hosted packages and repositories as a JSON formatted object.
+        required: false
+      NPM_REGISTRY_TOKEN:
+        description: Authentication for the private npm registry.
+        required: false
+      GITHUB_USER_EMAIL:
+        description: Email address for the GitHub user configuration.
+        required: true
+      GITHUB_USER_NAME:
+        description: Username for the GitHub user configuration.
+        required: true
+      GITHUB_USER_SSH_KEY:
+        description: Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`.
+        required: true
+      GITHUB_USER_SSH_PUBLIC_KEY:
+        description: Public SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`.
+        required: true
+      ENV_VARS:
+        description: Additional environment variables as a JSON formatted object.
+        required: false
+
+jobs:
+  build-push:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    env:
+      NO_CHANGES: ''                                   # we'll override if no changes to commit
+      # Disables symlinking of local "path" repositories during package installation.
+      # During development, symlinking is preferable.
+      # In production builds, we ship the actual install location and remove the source directory.
+      COMPOSER_MIRROR_PATH_REPOS: 1
+      PACKAGE_VERSION: ${{ inputs.PACKAGE_VERSION }}  # Will be overridden by determine package version step
+      PACKAGE_FOLDER_NAME: ${{ inputs.PACKAGE_FOLDER_NAME && inputs.PACKAGE_FOLDER_NAME || github.event.repository.name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
+
+      - name: Set up Git
+        run: |
+          git config --global user.email "${{ secrets.GITHUB_USER_EMAIL }}"
+          git config --global user.name "${{ secrets.GITHUB_USER_NAME }}"
+          git config --global advice.addIgnoredFile false
+          git config --global push.autoSetupRemote true
+
+      - name: Set up signing commits
+        run: |
+          : # Create empty SSH private key file so Git does not complain.
+          touch "${{ runner.temp }}/signingkey"
+          echo "${{ secrets.GITHUB_USER_SSH_PUBLIC_KEY }}" > "${{ runner.temp }}/signingkey.pub"
+          git config --global commit.gpgsign true
+          git config --global gpg.format ssh
+          git config --global user.signingkey "${{ runner.temp }}/signingkey.pub"
+
+      - name: Set up custom environment variables
+        env:
+          ENV_VARS: ${{ secrets.ENV_VARS }}
+        if: ${{ env.ENV_VARS }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            JSON
+              .parse(process.env.ENV_VARS)
+              .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
+
+
+      - name: Determine package version
+        if: ${{ !inputs.PACKAGE_VERSION }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_USER_SSH_KEY && secrets.GITHUB_TOKEN || github.token }}
+        run: |
+          # Fetch latest public release
+          LATEST_RELEASE=$(gh release list --limit 1 --exclude-drafts --exclude-pre-releases --json tagName --jq '.[0].tagName' 2>/dev/null || echo "")
+          
+          if [ -z "$LATEST_RELEASE" ]; then
+            echo "No releases found, using default version 0.0.0"
+            LATEST_RELEASE="0.0.0"
+          else
+            echo "Latest release found: $LATEST_RELEASE"
+          fi
+          
+          # Strip 'dev/' prefix from branch name for version string
+          ORIGIN_BRANCH="${{ github.ref_name }}"
+          if [[ "$ORIGIN_BRANCH" == dev/* ]]; then
+            VERSION_BRANCH="${ORIGIN_BRANCH#dev/}"
+          else
+            VERSION_BRANCH="$ORIGIN_BRANCH"
+          fi
+          
+          # Normalize branch name for semver pre-release identifier
+          # Replace invalid characters with hyphens and convert to lowercase
+          NORMALIZED_BRANCH=$(echo "$VERSION_BRANCH" | sed 's/[^a-zA-Z0-9-]/-/g' | sed 's/--*/-/g' | sed 's/^-\|-$//g' | tr '[:upper:]' '[:lower:]')
+          
+          # Construct semver with pre-release identifier
+          PACKAGE_VERSION="${LATEST_RELEASE}-${NORMALIZED_BRANCH}"
+          echo "Generated package version: $PACKAGE_VERSION"
+          
+          echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
+
+      - name: Inspect origin branch and determine build branch
+        run: |
+          ORIGIN_BRANCH="${{ github.ref_name }}"
+          echo "Origin branch: $ORIGIN_BRANCH"
+          
+          # Branch scheme:
+          # dev/main -> main (stable production code with assets, where releases are created)
+          # dev/ABC-123 -> ABC-123 (feature branch with compiled assets)
+          # dev/xyz -> xyz (any other branch)
+          
+          # Determine the build branch name
+          if [ -n "${{ inputs.BUILT_BRANCH_NAME }}" ]; then
+            BUILD_BRANCH="${{ inputs.BUILT_BRANCH_NAME }}"
+          else
+            # Strip 'dev/' prefix from origin branch to get build branch
+            if [[ "$ORIGIN_BRANCH" == dev/* ]]; then
+              BUILD_BRANCH="${ORIGIN_BRANCH#dev/}"
+            else
+              BUILD_BRANCH="$ORIGIN_BRANCH"
+            fi
+          fi
+          
+          echo "Build branch: $BUILD_BRANCH"
+          echo "BUILT_BRANCH_NAME=$BUILD_BRANCH" >> $GITHUB_ENV
+
+      - name: Validate branch strategy
+        run: |
+          ORIGIN_BRANCH="${{ github.ref_name }}"
+          
+          # Check if we would commit to the same branch as the origin
+          if [ "$ORIGIN_BRANCH" = "${{ env.BUILT_BRANCH_NAME }}" ]; then
+            echo "❌ ERROR: Build artifacts would be committed to the same branch as the source code!"
+            echo ""
+            echo "This workflow is designed to keep source code and build artifacts separate."
+            echo "You have two options:"
+            echo ""
+            echo "1. Use a 'dev/' prefixed branch (e.g., 'dev/main', 'dev/feature-branch')"
+            echo "   - Source: dev/main → Build artifacts: main"
+            echo "   - Source: dev/ABC-123 → Build artifacts: ABC-123"
+            echo ""
+            echo "2. Provide an explicit BUILT_BRANCH_NAME input to specify where build artifacts should go"
+            echo ""
+            echo "Current branch: $ORIGIN_BRANCH"
+            echo "Target build branch: ${{ env.BUILT_BRANCH_NAME }}"
+            echo ""
+            exit 1
+          fi
+          
+          echo "✅ Branch strategy validated:"
+          echo "  Source branch: $ORIGIN_BRANCH"
+          echo "  Build branch: ${{ env.BUILT_BRANCH_NAME }}"
+
+      - name: Checkout the build branch and merge in it
+        run: |
+          git show-ref -q refs/remotes/origin/${{ env.BUILT_BRANCH_NAME }} && git checkout ${{ env.BUILT_BRANCH_NAME }} || git checkout -b ${{ env.BUILT_BRANCH_NAME }}
+          git checkout ${{ github.ref_name }} -- .
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.PHP_VERSION }}
+          tools: php-scoper, sniccowp/php-scoper-wordpress-excludes, composer/installers, inpsyde/wp-translation-downloader, ${{ inputs.PHP_TOOLS }}
+          coverage: none
+
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v3
+        env:
+          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
+        with:
+          composer-options: ${{ inputs.COMPOSER_ARGS }}
+
+      - name: Set up node
+        uses: actions/setup-node@v4
+        env:
+          NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+        with:
+          node-version: ${{ inputs.NODE_VERSION }}
+          registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Determine package type
+        run: |
+          if [ -f "style.css" ]; then
+            echo "Package type: WordPress Theme"
+            echo "IS_THEME=true" >> $GITHUB_ENV
+          else
+            echo "Package type: WordPress Plugin"
+            echo "IS_THEME=false" >> $GITHUB_ENV
+          fi
+
+      - name: Prepare Plugin
+        if: ${{ env.IS_THEME == 'false' }}
+        run: |
+          # Find and update plugin main file
+          PLUGIN_FILE=$(grep -rl --include "*.php" "Plugin Name:" . | head -1)
+          if [ -n "$PLUGIN_FILE" ]; then
+            echo "Updating plugin file: $PLUGIN_FILE"
+            sed -Ei "s/Version: .*/Version: ${{ env.PACKAGE_VERSION }}/g" "$PLUGIN_FILE"
+            sed -Ei "s/SHA: .*/SHA: ${{ github.sha }}/g" "$PLUGIN_FILE"
+          else
+            echo "Warning: No plugin main file found"
+          fi
+
+      - name: Prepare Theme
+        if: ${{ env.IS_THEME == 'true' }}
+        run: |
+          # Update theme style.css file
+          echo "Updating theme style.css"
+          sed -Ei "s/Version: .*/Version: ${{ env.PACKAGE_VERSION }}/g" style.css
+          sed -Ei "s/SHA: .*/SHA: ${{ github.sha }}/g" style.css
+
+      - name: Update version in package.json
+        run: npm version ${{ env.PACKAGE_VERSION }} --no-git-tag-version
+
+      - name: Execute custom code before archive creation
+        run: |
+          ${{ inputs.PRE_SCRIPT }}
+
+      - name: Compile assets
+        run: npm run build
+
+      - name: Run WordPress Translation Downloader
+        run: composer wp-translation-downloader:download
+
+      - name: Run PHP-Scoper
+        if: ${{ hashFiles('scoper.inc.php') != '' }}
+        # The sed call appends the Git commit SHA to the Composer autoload cache key to ensure unique identification for prefixed files.
+        # This prevents Composer from skipping autoloaded files due to hash collisions based on relative paths.
+        run: |
+          php-scoper add-prefix --force --output-dir=build
+          composer --working-dir=build dump-autoload -o
+          sed -i "s/'__composer_autoload_files'/\'__composer_autoload_files_${{ github.sha }}'/g" "build/vendor/composer/autoload_real.php"    
+          rsync -av --delete ./build/ . && rm -rf ./build/
+
+      - name: Apply .distignore file
+        if: ${{ hashFiles('.distignore') != '' }}
+        # Configure git to (gracefully) use .distignore file during instead of the regular .gitignore file
+        # Then clean up all files possibly mentioned in .distignore (e.g., source files)
+        run: |
+          rm .gitignore
+          git config core.excludesFile .distignore 
+          git rm -rf --cached .
+          git add .
+          git clean -Xdf 
+
+      - name: Git add, commit, and push
+        run: |
+          git add -A
+          git commit -m "[BOT] Add build artifact from ${{ github.ref_name }} -> ${{ env.BUILT_BRANCH_NAME }}" --no-verify || ((echo "NO_CHANGES=yes" >> $GITHUB_ENV) && (echo "No changes to commit"))
+          if [ "${{ env.NO_CHANGES }}" != "yes" ]; then
+            git push
+            echo "Build artifact pushed to branch: ${{ env.BUILT_BRANCH_NAME }}"
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PACKAGE_FOLDER_NAME }}-${{ env.PACKAGE_VERSION }}
+          path: |
+            .
+            !.git
+          include-hidden-files: true
+          compression-level: 9
+
+      - name: Delete signing key files
+        if: ${{ always() }}
+        run: |
+          rm -f "${{ runner.temp }}/signingkey"
+          rm -f "${{ runner.temp }}/signingkey.pub"
