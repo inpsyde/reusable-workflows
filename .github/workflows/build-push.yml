@@ -91,7 +91,6 @@ jobs:
       # During development, symlinking is preferable.
       # In production builds, we ship the actual install location and remove the source directory.
       COMPOSER_MIRROR_PATH_REPOS: 1
-      GIT_SHA: ${{ github.sha }}
       PACKAGE_VERSION: ${{ inputs.PACKAGE_VERSION }}  # Will be overridden by determine package version step
       PACKAGE_FOLDER_NAME: ${{ inputs.PACKAGE_FOLDER_NAME && inputs.PACKAGE_FOLDER_NAME || github.event.repository.name }}
     steps:
@@ -245,7 +244,7 @@ jobs:
           if [ -n "$PLUGIN_FILE" ]; then
             echo "Updating plugin file: $PLUGIN_FILE"
             sed -Ei "s/Version: .*/Version: ${{ env.PACKAGE_VERSION }}/g" "$PLUGIN_FILE"
-            sed -Ei "s/SHA: .*/SHA: ${{ env.GIT_SHA }}/g" "$PLUGIN_FILE"
+            sed -Ei "s/SHA: .*/SHA: ${{ github.sha }}/g" "$PLUGIN_FILE"
           else
             echo "Warning: No plugin main file found"
           fi
@@ -256,7 +255,7 @@ jobs:
           # Update theme style.css file
           echo "Updating theme style.css"
           sed -Ei "s/Version: .*/Version: ${{ env.PACKAGE_VERSION }}/g" style.css
-          sed -Ei "s/SHA: .*/SHA: ${{ env.GIT_SHA }}/g" style.css
+          sed -Ei "s/SHA: .*/SHA: ${{ github.sha }}/g" style.css
 
       - name: Update version in package.json
         run: npm version ${{ env.PACKAGE_VERSION }} --no-git-tag-version
@@ -278,7 +277,7 @@ jobs:
         run: |
           php-scoper add-prefix --force --output-dir=build
           composer --working-dir=build dump-autoload -o
-          sed -i "s/'__composer_autoload_files'/\'__composer_autoload_files_${{ env.GIT_SHA }}'/g" "build/vendor/composer/autoload_real.php"    
+          sed -i "s/'__composer_autoload_files'/\'__composer_autoload_files_${{ github.sha }}'/g" "build/vendor/composer/autoload_real.php"    
           rsync -av --delete ./build/ . && rm -rf ./build/
 
       - name: Apply .distignore file
