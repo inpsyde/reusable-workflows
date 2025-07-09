@@ -191,6 +191,33 @@ jobs:
           echo "Build branch: $BUILD_BRANCH"
           echo "BUILT_BRANCH_NAME=$BUILD_BRANCH" >> $GITHUB_ENV
 
+      - name: Validate branch strategy
+        run: |
+          ORIGIN_BRANCH="${{ github.ref_name }}"
+          
+          # Check if we would commit to the same branch as the origin
+          if [ "$ORIGIN_BRANCH" = "${{ env.BUILT_BRANCH_NAME }}" ]; then
+            echo "❌ ERROR: Build artifacts would be committed to the same branch as the source code!"
+            echo ""
+            echo "This workflow is designed to keep source code and build artifacts separate."
+            echo "You have two options:"
+            echo ""
+            echo "1. Use a 'dev/' prefixed branch (e.g., 'dev/main', 'dev/feature-branch')"
+            echo "   - Source: dev/main → Build artifacts: main"
+            echo "   - Source: dev/ABC-123 → Build artifacts: ABC-123"
+            echo ""
+            echo "2. Provide an explicit BUILT_BRANCH_NAME input to specify where build artifacts should go"
+            echo ""
+            echo "Current branch: $ORIGIN_BRANCH"
+            echo "Target build branch: ${{ env.BUILT_BRANCH_NAME }}"
+            echo ""
+            exit 1
+          fi
+          
+          echo "✅ Branch strategy validated:"
+          echo "  Source branch: $ORIGIN_BRANCH"
+          echo "  Build branch: ${{ env.BUILT_BRANCH_NAME }}"
+
       - name: Checkout the build branch and merge in it
         run: |
           git show-ref -q refs/remotes/origin/${{ env.BUILT_BRANCH_NAME }} && git checkout ${{ env.BUILT_BRANCH_NAME }} || git checkout -b ${{ env.BUILT_BRANCH_NAME }}
