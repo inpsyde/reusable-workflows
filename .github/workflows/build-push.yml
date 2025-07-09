@@ -132,40 +132,37 @@ jobs:
               .parse(process.env.ENV_VARS)
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
+
       - name: Determine package version
+        if: ${{ !inputs.PACKAGE_VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_USER_SSH_KEY && secrets.GITHUB_TOKEN || github.token }}
         run: |
-          if [ -n "${{ inputs.PACKAGE_VERSION }}" ]; then
-            PACKAGE_VERSION="${{ inputs.PACKAGE_VERSION }}"
-            echo "Using provided package version: $PACKAGE_VERSION"
+          # Fetch latest public release
+          LATEST_RELEASE=$(gh release list --limit 1 --exclude-drafts --exclude-pre-releases --json tagName --jq '.[0].tagName' 2>/dev/null || echo "")
+          
+          if [ -z "$LATEST_RELEASE" ]; then
+            echo "No releases found, using default version 0.0.0"
+            LATEST_RELEASE="0.0.0"
           else
-            # Fetch latest public release
-            LATEST_RELEASE=$(gh release list --limit 1 --exclude-drafts --exclude-pre-releases --json tagName --jq '.[0].tagName' 2>/dev/null || echo "")
-          
-            if [ -z "$LATEST_RELEASE" ]; then
-              echo "No releases found, using default version 0.0.0"
-              LATEST_RELEASE="0.0.0"
-            else
-              echo "Latest release found: $LATEST_RELEASE"
-            fi
-          
-            # Strip 'dev/' prefix from branch name for version string
-            ORIGIN_BRANCH="${{ github.ref_name }}"
-            if [[ "$ORIGIN_BRANCH" == dev/* ]]; then
-              VERSION_BRANCH="${ORIGIN_BRANCH#dev/}"
-            else
-              VERSION_BRANCH="$ORIGIN_BRANCH"
-            fi
-          
-            # Normalize branch name for semver pre-release identifier
-            # Replace invalid characters with hyphens and convert to lowercase
-            NORMALIZED_BRANCH=$(echo "$VERSION_BRANCH" | sed 's/[^a-zA-Z0-9-]/-/g' | sed 's/--*/-/g' | sed 's/^-\|-$//g' | tr '[:upper:]' '[:lower:]')
-          
-            # Construct semver with pre-release identifier
-            PACKAGE_VERSION="${LATEST_RELEASE}-${NORMALIZED_BRANCH}"
-            echo "Generated package version: $PACKAGE_VERSION"
+            echo "Latest release found: $LATEST_RELEASE"
           fi
+          
+          # Strip 'dev/' prefix from branch name for version string
+          ORIGIN_BRANCH="${{ github.ref_name }}"
+          if [[ "$ORIGIN_BRANCH" == dev/* ]]; then
+            VERSION_BRANCH="${ORIGIN_BRANCH#dev/}"
+          else
+            VERSION_BRANCH="$ORIGIN_BRANCH"
+          fi
+          
+          # Normalize branch name for semver pre-release identifier
+          # Replace invalid characters with hyphens and convert to lowercase
+          NORMALIZED_BRANCH=$(echo "$VERSION_BRANCH" | sed 's/[^a-zA-Z0-9-]/-/g' | sed 's/--*/-/g' | sed 's/^-\|-$//g' | tr '[:upper:]' '[:lower:]')
+          
+          # Construct semver with pre-release identifier
+          PACKAGE_VERSION="${LATEST_RELEASE}-${NORMALIZED_BRANCH}"
+          echo "Generated package version: $PACKAGE_VERSION"
           
           echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
 
