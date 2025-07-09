@@ -227,24 +227,35 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Set plugin version header
-        if: ${{ hashFiles('style.css') == '' }}
+      - name: Determine package type
         run: |
-          sed -Ei "s/Version: .*/Version: ${{ env.PACKAGE_VERSION }}/g" $(grep -rl --include "*.php" "Plugin Name:" . | head -1)
+          if [ -f "style.css" ]; then
+            echo "Package type: WordPress Theme"
+            echo "IS_THEME=true" >> $GITHUB_ENV
+          else
+            echo "Package type: WordPress Plugin"
+            echo "IS_THEME=false" >> $GITHUB_ENV
+          fi
 
-      - name: Add commit hash to plugin header
-        if: ${{ hashFiles('style.css') == '' }}
+      - name: Prepare Plugin
+        if: ${{ env.IS_THEME == 'false' }}
         run: |
-          sed -Ei "s/SHA: .*/SHA: ${{ env.GIT_SHA }}/g" $(grep -rl --include "*.php" "Plugin Name:" . | head -1)
+          # Find and update plugin main file
+          PLUGIN_FILE=$(grep -rl --include "*.php" "Plugin Name:" . | head -1)
+          if [ -n "$PLUGIN_FILE" ]; then
+            echo "Updating plugin file: $PLUGIN_FILE"
+            sed -Ei "s/Version: .*/Version: ${{ env.PACKAGE_VERSION }}/g" "$PLUGIN_FILE"
+            sed -Ei "s/SHA: .*/SHA: ${{ env.GIT_SHA }}/g" "$PLUGIN_FILE"
+          else
+            echo "Warning: No plugin main file found"
+          fi
 
-      - name: Set theme version header
-        if: ${{ hashFiles('style.css') != '' }}
+      - name: Prepare Theme
+        if: ${{ env.IS_THEME == 'true' }}
         run: |
+          # Update theme style.css file
+          echo "Updating theme style.css"
           sed -Ei "s/Version: .*/Version: ${{ env.PACKAGE_VERSION }}/g" style.css
-
-      - name: Add commit hash to theme header
-        if: ${{ hashFiles('style.css') != '' }}
-        run: |
           sed -Ei "s/SHA: .*/SHA: ${{ env.GIT_SHA }}/g" style.css
 
       - name: Update version in package.json
