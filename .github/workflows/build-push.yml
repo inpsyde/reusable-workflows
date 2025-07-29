@@ -9,7 +9,7 @@ on:
         default: ''
         required: false
       NODE_VERSION:
-        description: Node version with which the static code analysis is to be executed.
+        description: Node version to be used.
         default: 18
         required: false
         type: string
@@ -29,13 +29,8 @@ on:
         required: false
         type: string
       COMPOSER_ARGS:
-        description: Set of arguments passed to Composer when gathering production dependencies.
+        description: Set of arguments passed to Composer.
         default: '--no-dev --prefer-dist --optimize-autoloader'
-        required: false
-        type: string
-      PHP_VERSION_BUILD:
-        description: PHP version to use when executing build tools.
-        default: '8.2'
         required: false
         type: string
       PACKAGE_FOLDER_NAME:
