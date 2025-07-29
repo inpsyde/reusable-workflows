@@ -81,7 +81,7 @@ jobs:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     env:
-      NO_CHANGES: ''                                   # we'll override if no changes to commit
+      HAS_GIT_CHANGES: ''                                   # we'll override if no changes to commit
       # Disables symlinking of local "path" repositories during package installation.
       # During development, symlinking is preferable.
       # In production builds, we ship the actual install location and remove the source directory.
@@ -313,8 +313,8 @@ jobs:
       - name: Git add, commit, and push
         run: |
           git add -A
-          git commit -m "[BOT] Add build artifact from ${{ github.ref_name }} -> ${{ env.BUILT_BRANCH_NAME }}" --no-verify || ((echo "NO_CHANGES=yes" >> $GITHUB_ENV) && (echo "No changes to commit"))
-          if [ "${{ env.NO_CHANGES }}" != "yes" ]; then
+          git commit -m "[BOT] Add build artifact from ${{ github.ref_name }} -> ${{ env.BUILT_BRANCH_NAME }}" --no-verify || ((echo "HAS_GIT_CHANGES=yes" >> $GITHUB_ENV) && (echo "No changes to commit"))
+          if [ "${{ env.HAS_GIT_CHANGES }}" != "yes" ]; then
             git push
             echo "Build artifact pushed to branch: ${{ env.BUILT_BRANCH_NAME }}"
           fi
