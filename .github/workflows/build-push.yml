@@ -80,8 +80,7 @@ jobs:
   build-push:
     timeout-minutes: 10
     runs-on: ubuntu-latest
-    env:
-      # Used to check whether there are changes to commit
+    env: # Used to check whether there are changes to commit
       HAS_GIT_CHANGES: ''
       # Disables symlinking of local "path" repositories during package installation.
       # During development, symlinking is preferable.
@@ -265,7 +264,7 @@ jobs:
             sed -Ei "s/Version: .*/Version: ${{ env.PACKAGE_VERSION }}/g" "$PLUGIN_FILE"
             sed -Ei "s/SHA: .*/SHA: ${{ github.sha }}/g" "$PLUGIN_FILE"
           else
-            echo "Warning: No plugin main file found"
+            echo "Warning: No plugin main file found!"
           fi
 
       - name: Prepare Theme
@@ -301,8 +300,8 @@ jobs:
 
       - name: Apply .distignore file
         if: ${{ hashFiles('.distignore') != '' }}
-        # Configure git to (gracefully) use .distignore file during instead of the regular .gitignore file
-        # Then clean up all files possibly mentioned in .distignore (e.g., source files)
+        # Configure git to (gracefully) use .distignore file during packaging instead of the regular .gitignore file.
+        # Then clean up all files possibly mentioned in .distignore (e.g., source files).
         run: |
           rm .gitignore
           git config core.excludesFile .distignore 
