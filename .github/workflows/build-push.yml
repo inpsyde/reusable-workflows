@@ -81,7 +81,8 @@ jobs:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     env:
-      HAS_GIT_CHANGES: ''                                   # we'll override if no changes to commit
+      # Used to check whether there are changes to commit
+      HAS_GIT_CHANGES: ''
       # Disables symlinking of local "path" repositories during package installation.
       # During development, symlinking is preferable.
       # In production builds, we ship the actual install location and remove the source directory.
