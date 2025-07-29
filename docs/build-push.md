@@ -109,13 +109,28 @@ By default, the workflow strips the `dev/` prefix from the origin branch to dete
 | `GITHUB_USER_SSH_PUBLIC_KEY` | Public SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`              |
 | `ENV_VARS`                   | Additional environment variables as a JSON formatted object                              |
 
-**Example with configuration parameters:**
+### Example with configuration parameters
+
+**Recommendations**
+
+- Set up your repository's default branch to be `dev/main` to follow the new branching convention
+- Ensure your `package.json` includes a `build` script for asset compilation
+- Use `.distignore` to exclude development files from the final build
+- Consider using [path filters](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#example-including-paths) to avoid unnecessary builds when only documentation changes
+- Use [concurrency settings](https://docs.github.com/en/actions/using-jobs/using-concurrency) to prevent conflicts when multiple pushes occur rapidly
+- Do not set `cancel-in-progress: true` as it can interrupt the build process and lead to incomplete builds being pushed to the build branch.
 
 ```yml
 name: Build and push assets
 on:
   push:
     branches: [ 'dev/main', 'dev/develop', 'dev/feature/**', 'dev/hotfix/**' ]
+    paths:
+      - 'src/**'
+      - 'assets/**'
+      - 'package.json'
+      - 'composer.json'
+      - '.github/workflows/build-push.yml'
   workflow_dispatch:
     inputs:
       PACKAGE_VERSION:
@@ -124,6 +139,11 @@ on:
       CUSTOM_BUILD_BRANCH:
         description: 'Custom build branch name'
         required: false
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build-push:
     uses: inpsyde/reusable-workflows/.github/workflows/build-push.yml@main
@@ -202,45 +222,6 @@ The workflow produces two outputs:
 
 1. **Build Branch**: The compiled code pushed to the build branch (e.g., `dev/main` → `main`)
 2. **GitHub Artifact**: A downloadable archive named `{package-name}-{version}` containing the build (without `.git` folder)
-
-## Recommendations
-
-- Use [concurrency settings](https://docs.github.com/en/actions/using-jobs/using-concurrency) to prevent conflicts when multiple pushes occur rapidly
-- Consider using [path filters](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#example-including-paths) to avoid unnecessary builds when only documentation changes
-- Ensure your `package.json` includes a `build` script for asset compilation
-- Use `.distignore` to exclude development files from the final build
-- Set up your repository's default branch to be `dev/main` to follow the new branching convention
-
-**Example with concurrency and path filtering:**
-
-```yml
-name: Build and push assets
-on:
-  push:
-    branches: [ 'dev/main', 'dev/feature/**' ]
-    paths:
-      - 'src/**'
-      - 'assets/**'
-      - 'package.json'
-      - 'composer.json'
-      - '.github/workflows/build-push.yml'
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
-
-jobs:
-  build-push:
-    uses: inpsyde/reusable-workflows/.github/workflows/build-push.yml@main
-    secrets:
-      COMPOSER_AUTH_JSON: ${{ secrets.PACKAGIST_AUTH_JSON }}
-      GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
-      GITHUB_USER_NAME: ${{ secrets.DEPLOYBOT_USER }}
-      GITHUB_USER_SSH_KEY: ${{ secrets.DEPLOYBOT_SSH_PRIVATE_KEY }}
-      GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.DEPLOYBOT_SSH_PUBLIC_KEY }}
-```
-
-**Note**: Do not set `cancel-in-progress: true` as it can interrupt the build process and lead to incomplete builds being pushed to the build branch.
 
 ## Migration from previous workflows
 
