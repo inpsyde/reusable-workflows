@@ -127,7 +127,6 @@ jobs:
               .parse(process.env.ENV_VARS)
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
-
       - name: Determine package version
         if: ${{ !inputs.PACKAGE_VERSION }}
         env:
