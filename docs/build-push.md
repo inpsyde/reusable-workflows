@@ -173,7 +173,7 @@ The workflow expects a `build` script in your `package.json`:
 ```json
 {
   "scripts": {
-    "build": "webpack --mode=production"
+    "build": "wp-scripts build"
   }
 }
 ```
