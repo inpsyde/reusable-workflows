@@ -111,7 +111,7 @@ By default, the workflow strips the `dev/` prefix from the origin branch to dete
 
 ### Example with configuration parameters
 
-**Recommendations**
+#### Recommendations
 
 - Set up your repository's default branch to be `dev/main` to follow the new branching convention
 - Ensure your `package.json` includes a `build` script for asset compilation
