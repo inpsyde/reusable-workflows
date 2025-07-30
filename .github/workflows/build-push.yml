@@ -130,7 +130,7 @@ jobs:
       - name: Determine package version
         if: ${{ !inputs.PACKAGE_VERSION }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_USER_SSH_KEY && secrets.GITHUB_TOKEN || github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_USER_SSH_KEY }}
         run: |
           # Fetch latest public release
           LATEST_RELEASE=$(git for-each-ref --sort=-creatordate --count=1 --format='%(refname:short)' refs/tags || echo "")
