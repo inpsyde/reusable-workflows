@@ -174,16 +174,8 @@ jobs:
 
 The workflow handles version information for both plugins and themes:
 
-**For plugins** (when `style.css` doesn't exist):
-
 - Updates `Version:` header in the main plugin file
 - Updates `SHA:` header with the current commit hash
-- Updates version in `package.json`
-
-**For themes** (when `style.css` exists):
-
-- Updates `Version:` header in `style.css`
-- Updates `SHA:` header in `style.css`
 - Updates version in `package.json`
 
 ### Asset Compilation
