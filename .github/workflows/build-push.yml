@@ -246,16 +246,22 @@ jobs:
 
       - name: Determine package type
         run: |
-          if [ -f "style.css" ]; then
+          # Check for WordPress theme (style.css with Theme Name header)
+          if [ -f "style.css" ] && grep -q "Theme Name:" style.css; then
             echo "Package type: WordPress Theme"
-            echo "IS_THEME=true" >> $GITHUB_ENV
-          else
+            echo "PACKAGE_TYPE=wordpress-theme" >> $GITHUB_ENV
+          # Check for WordPress plugin (PHP file with Plugin Name header)
+          elif grep -rl --include "*.php" "Plugin Name:" . >/dev/null 2>&1; then
             echo "Package type: WordPress Plugin"
-            echo "IS_THEME=false" >> $GITHUB_ENV
+            echo "PACKAGE_TYPE=wordpress-plugin" >> $GITHUB_ENV
+          # Fallback to generic library
+          else
+            echo "Package type: Library"
+            echo "PACKAGE_TYPE=library" >> $GITHUB_ENV
           fi
 
-      - name: Prepare Plugin
-        if: ${{ env.IS_THEME == 'false' }}
+      - name: Prepare WordPress Plugin
+        if: ${{ env.PACKAGE_TYPE == 'wordpress-plugin' }}
         run: |
           # Find and update plugin main file
           PLUGIN_FILE=$(grep -rl --include "*.php" "Plugin Name:" . | head -1)
@@ -267,8 +273,8 @@ jobs:
             echo "Warning: No plugin main file found!"
           fi
 
-      - name: Prepare Theme
-        if: ${{ env.IS_THEME == 'true' }}
+      - name: Prepare WordPress Theme
+        if: ${{ env.PACKAGE_TYPE == 'wordpress-theme' }}
         run: |
           # Update theme style.css file
           echo "Updating theme style.css"
