@@ -278,6 +278,12 @@ jobs:
       - name: Update version in package.json
         run: npm version ${{ env.PACKAGE_VERSION }} --no-git-tag-version
 
+      - name: Update version in composer.json
+        run: |
+          echo "Updating composer.json version to ${{ env.PACKAGE_VERSION }}"
+          jq --arg version "${{ env.PACKAGE_VERSION }}" '.version = $version' composer.json > composer.json.tmp && mv composer.json.tmp composer.json
+          echo "✅ Updated composer.json version field"
+
       - name: Execute custom code before archive creation
         run: |
           ${{ inputs.PRE_SCRIPT }}
