@@ -29,16 +29,16 @@ This approach keeps source code separate from build artifacts while maintaining 
 
 If no `PACKAGE_VERSION` is provided, the workflow automatically:
 
-1. Fetches the latest public (non-draft, non-pre-release) release from the repository
+1. Fetches the latest tag from the repository
 2. Strips the `dev/` prefix from the branch name and normalizes it to be semver-compatible
 3. Creates a pre-release version like `1.2.3-main` or `2.0.0-abc-123`
-4. Falls back to `0.0.0-{branch}` if no releases exist
+4. Falls back to `0.0.0-{branch}` if no tags exist
 
 **Examples:**
 
-- `dev/main` with latest release `1.2.3` → `1.2.3-main`
-- `dev/ABC-123` with latest release `1.2.3` → `1.2.3-abc-123`
-- `dev/feature/user-auth` with latest release `2.0.0` → `2.0.0-feature-user-auth`
+- `dev/main` with latest tag `1.2.3` → `1.2.3-main`
+- `dev/ABC-123` with latest tag `1.2.3` → `1.2.3-abc-123`
+- `dev/feature/user-auth` with latest tag `2.0.0` → `2.0.0-feature-user-auth`
 
 This ensures every build has a unique, meaningful version identifier that traces back to both the base release and the source branch.
 
@@ -79,9 +79,9 @@ jobs:
 | `PHP_VERSION`         | `'8.2'`                                          | PHP version with which the PHP tools are to be executed                                                              |
 | `PHP_TOOLS`           | `''`                                             | PHP tools supported by shivammathur/setup-php to be installed                                                        |
 | `COMPOSER_ARGS`       | `'--no-dev --prefer-dist --optimize-autoloader'` | Set of arguments passed to Composer when gathering production dependencies                                           |
-| `PACKAGE_FOLDER_NAME` | `''`                                             | The name of the package folder (falls back to the repository name)                                                   |
-| `PACKAGE_VERSION`     | `''`                                             | The new package version. If not provided, will use latest release version with branch name as pre-release identifier |
-| `PRE_SCRIPT`          | `''`                                             | Run custom shell code before building assets                                                                         |
+| `PACKAGE_NAME`        | `''`                                             | The name of the package (falls back to the repository name)                                                          |
+| `PACKAGE_VERSION`     | `''`                                             | The new package version. If not provided, will use latest tag version with branch name as pre-release identifier   |
+| `PRE_SCRIPT`          | `''`                                             | Run custom shell code before creating the release archive                                                            |
 | `BUILT_BRANCH_NAME`   | `''`                                             | Override the automatic build branch naming (defaults to stripping `dev/` prefix from origin branch)                  |
 
 
@@ -168,7 +168,7 @@ The workflow handles version information for both plugins and themes:
 
 - Updates `Version:` header in the main plugin file
 - Updates `SHA:` header with the current commit hash
-- Updates version in `package.json`
+- Updates version in `package.json` and `composer.json`
 
 ### Asset Compilation
 
