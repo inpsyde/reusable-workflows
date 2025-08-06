@@ -16,7 +16,7 @@ To achieve that, the reusable workflow:
 
 ## Branch naming convention
 
-The workflow implements an inverted branch scheme where development branches are prefixed with `dev/` and build branches contain the compiled assets:
+The workflow implements a branch scheme where development branches are prefixed with `dev/` and build branches contain the compiled assets:
 
 - **`dev/main`** → **`main`** (stable production code with assets, where releases are created)
 - **`dev/ABC-123`** → **`ABC-123`** (feature branch with compiled assets)
