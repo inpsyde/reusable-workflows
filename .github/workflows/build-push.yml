@@ -151,7 +151,7 @@ jobs:
           NORMALIZED_BRANCH=$(echo "$VERSION_BRANCH" | sed 's/[^a-zA-Z0-9-]/-/g' | sed 's/--*/-/g' | sed 's/^-\|-$//g' | tr '[:upper:]' '[:lower:]')
           
           # Construct semver with pre-release identifier
-          PACKAGE_VERSION="${LATEST_RELEASE}-${NORMALIZED_BRANCH}"
+          PACKAGE_VERSION="${LATEST_RELEASE}+${NORMALIZED_BRANCH}.${{ github.sha }}"
           echo "Generated package version: $PACKAGE_VERSION"
           
           echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
