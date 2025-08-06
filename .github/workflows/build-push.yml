@@ -313,7 +313,7 @@ jobs:
           php-scoper add-prefix --force --output-dir=build
           composer --working-dir=build dump-autoload -o
           sed -i "s/'__composer_autoload_files'/\'__composer_autoload_files_${{ github.sha }}'/g" "build/vendor/composer/autoload_real.php"    
-          rsync -av --delete ./build/ . && rm -rf ./build/
+          rsync -av ./build/ . && rm -rf ./build/
 
       - name: Apply .distignore file
         if: ${{ hashFiles('.distignore') != '' }}
