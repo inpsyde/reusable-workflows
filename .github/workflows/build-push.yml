@@ -255,14 +255,27 @@ jobs:
       - name: Prepare WordPress Plugin
         if: ${{ env.PACKAGE_TYPE == 'wordpress-plugin' }}
         run: |
-          # Find and update plugin main file
-          PLUGIN_FILE=$(grep -rl --include "*.php" "Plugin Name:" . | head -1)
+          # Check for plugin main file in order of preference
+          PLUGIN_FILE=""
+          if [ -f "index.php" ] && grep -q "Plugin Name:" index.php; then
+            PLUGIN_FILE="index.php"
+          elif [ -f "${{ env.PACKAGE_NAME }}.php" ] && grep -q "Plugin Name:" "${{ env.PACKAGE_NAME }}.php"; then
+            PLUGIN_FILE="${{ env.PACKAGE_NAME }}.php"
+          fi
+          
           if [ -n "$PLUGIN_FILE" ]; then
             echo "Updating plugin file: $PLUGIN_FILE"
             sed -Ei "s/Version: .*/Version: ${{ env.PACKAGE_VERSION }}/g" "$PLUGIN_FILE"
             sed -Ei "s/SHA: .*/SHA: ${{ github.sha }}/g" "$PLUGIN_FILE"
           else
-            echo "Warning: No plugin main file found!"
+            echo "❌ ERROR: No plugin main file found! Checked: index.php, ${{ env.PACKAGE_NAME }}.php"
+            echo ""
+            echo "For WordPress plugins, the main plugin file must be one of:"
+            echo "  - index.php"
+            echo "  - ${{ env.PACKAGE_NAME }}.php"
+            echo ""
+            echo "The file must contain a 'Plugin Name:' header comment."
+            exit 1
           fi
 
       - name: Prepare WordPress Theme
