@@ -33,8 +33,8 @@ on:
         default: '--no-dev --prefer-dist --optimize-autoloader'
         required: false
         type: string
-      PACKAGE_FOLDER_NAME:
-        description: The name of the package folder (falls back to the repository name).
+      PACKAGE_NAME:
+        description: The name of the package (falls back to the repository name).
         required: false
         default: ''
         type: string
@@ -87,7 +87,7 @@ jobs:
       # In production builds, we ship the actual install location and remove the source directory.
       COMPOSER_MIRROR_PATH_REPOS: 1
       PACKAGE_VERSION: ${{ inputs.PACKAGE_VERSION }}  # Will be overridden by determine package version step
-      PACKAGE_FOLDER_NAME: ${{ inputs.PACKAGE_FOLDER_NAME && inputs.PACKAGE_FOLDER_NAME || github.event.repository.name }}
+      PACKAGE_NAME: ${{ inputs.PACKAGE_NAME && inputs.PACKAGE_NAME || github.event.repository.name }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -329,14 +329,24 @@ jobs:
             git push
             echo "Build artifact pushed to branch: ${{ env.BUILT_BRANCH_NAME }}"
           fi
+        # Copy the compiled package into a subdirectory to ensure a stable install path in WordPress
+      - name: Prepare artifact with package directory structure
+        run: |
+          # Create package directory for artifact
+          mkdir -p "./artifact-staging/${{ env.PACKAGE_NAME }}"
+          
+          # Copy all files to the package directory (excluding .git)
+          rsync -av --exclude='.git' --exclude='./artifact-staging' ./ "./artifact-staging/${{ env.PACKAGE_NAME }}/"
+          
+          echo "✅ Prepared artifact with package structure:"
+          echo "  Package name: ${{ env.PACKAGE_NAME }}"
+          echo "  Artifact structure: artifact-staging/${{ env.PACKAGE_NAME }}/"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.PACKAGE_FOLDER_NAME }}-${{ env.PACKAGE_VERSION }}
-          path: |
-            .
-            !.git
+          name: ${{ env.PACKAGE_NAME }}-${{ env.PACKAGE_VERSION }}
+          path: ./artifact-staging/
           include-hidden-files: true
           compression-level: 9
 
