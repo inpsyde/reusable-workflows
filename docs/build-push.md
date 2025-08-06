@@ -40,6 +40,8 @@ If no `PACKAGE_VERSION` is provided, the workflow automatically:
 - `dev/ABC-123` with latest release `1.2.3` → `1.2.3-abc-123`
 - `dev/feature/user-auth` with latest release `2.0.0` → `2.0.0-feature-user-auth`
 
+This ensures every build has a unique, meaningful version identifier that traces back to both the base release and the source branch.
+
 ## Simple usage example
 
 ```yml
@@ -82,16 +84,6 @@ jobs:
 | `PRE_SCRIPT`          | `''`                                             | Run custom shell code before building assets                                                                         |
 | `BUILT_BRANCH_NAME`   | `''`                                             | Override the automatic build branch naming (defaults to stripping `dev/` prefix from origin branch)                  |
 
-#### A note on `PACKAGE_VERSION`
-
-When `PACKAGE_VERSION` is not provided, the workflow automatically generates a version by:
-
-1. Fetching the latest public release (e.g., `1.2.3`)
-2. Stripping the `dev/` prefix from the branch name (e.g., `dev/feature/user-auth` → `feature/user-auth`)
-3. Normalizing the branch name for semver compatibility (e.g., `feature/user-auth` → `feature-user-auth`)
-4. Combining them as a pre-release version (e.g., `1.2.3-feature-user-auth`)
-
-This ensures every build has a unique, meaningful version identifier that traces back to both the base release and the source branch.
 
 #### A note on `BUILT_BRANCH_NAME`
 
