@@ -142,13 +142,9 @@ jobs:
             echo "Latest release found: $LATEST_RELEASE"
           fi
           
-          # Strip 'dev/' prefix from branch name for version string
+          # Strip 'dev/' prefix from branch name for version string (if it exists)
           ORIGIN_BRANCH="${{ github.ref_name }}"
-          if [[ "$ORIGIN_BRANCH" == dev/* ]]; then
-            VERSION_BRANCH="${ORIGIN_BRANCH#dev/}"
-          else
-            VERSION_BRANCH="$ORIGIN_BRANCH"
-          fi
+          VERSION_BRANCH="${ORIGIN_BRANCH#dev/}"
           
           # Normalize branch name for semver pre-release identifier
           # Replace invalid characters with hyphens and convert to lowercase
@@ -174,12 +170,8 @@ jobs:
           if [ -n "${{ inputs.BUILT_BRANCH_NAME }}" ]; then
             BUILD_BRANCH="${{ inputs.BUILT_BRANCH_NAME }}"
           else
-            # Strip 'dev/' prefix from origin branch to get build branch
-            if [[ "$ORIGIN_BRANCH" == dev/* ]]; then
-              BUILD_BRANCH="${ORIGIN_BRANCH#dev/}"
-            else
-              BUILD_BRANCH="$ORIGIN_BRANCH"
-            fi
+            # Strip 'dev/' prefix from origin branch to get build branch (if it exists)
+            BUILD_BRANCH="${ORIGIN_BRANCH#dev/}"
           fi
           
           echo "Build branch: $BUILD_BRANCH"
