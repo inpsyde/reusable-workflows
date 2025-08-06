@@ -136,7 +136,7 @@ jobs:
           LATEST_RELEASE=$(git for-each-ref --sort=-creatordate --count=1 --format='%(refname:short)' refs/tags || echo "")
           
           if [ -z "$LATEST_RELEASE" ]; then
-            echo "No releases found, using default version 0.0.0"
+            echo "No releases found, using default version 0.0.0."
             LATEST_RELEASE="0.0.0"
           else
             echo "Latest release found: $LATEST_RELEASE"
@@ -192,7 +192,7 @@ jobs:
             echo "   - Source: dev/main → Build artifacts: main"
             echo "   - Source: dev/ABC-123 → Build artifacts: ABC-123"
             echo ""
-            echo "2. Provide an explicit BUILT_BRANCH_NAME input to specify where build artifacts should go"
+            echo "2. Provide an explicit BUILT_BRANCH_NAME input to specify where build artifacts should go."
             echo ""
             echo "Current branch: $ORIGIN_BRANCH"
             echo "Target build branch: ${{ env.BUILT_BRANCH_NAME }}"
@@ -268,7 +268,7 @@ jobs:
             sed -Ei "s/Version: .*/Version: ${{ env.PACKAGE_VERSION }}/g" "$PLUGIN_FILE"
             sed -Ei "s/SHA: .*/SHA: ${{ github.sha }}/g" "$PLUGIN_FILE"
           else
-            echo "❌ ERROR: No plugin main file found! Checked: index.php, ${{ env.PACKAGE_NAME }}.php"
+            echo "❌ ERROR: No plugin main file found! Checked: index.php, ${{ env.PACKAGE_NAME }}.php."
             echo ""
             echo "For WordPress plugins, the main plugin file must be one of:"
             echo "  - index.php"
@@ -282,7 +282,7 @@ jobs:
         if: ${{ env.PACKAGE_TYPE == 'wordpress-theme' }}
         run: |
           # Update theme style.css file
-          echo "Updating theme style.css"
+          echo "Updating theme style.css."
           sed -Ei "s/Version: .*/Version: ${{ env.PACKAGE_VERSION }}/g" style.css
           sed -Ei "s/SHA: .*/SHA: ${{ github.sha }}/g" style.css
 
@@ -291,9 +291,9 @@ jobs:
 
       - name: Update version in composer.json
         run: |
-          echo "Updating composer.json version to ${{ env.PACKAGE_VERSION }}"
+          echo "Updating composer.json version to ${{ env.PACKAGE_VERSION }}."
           jq --arg version "${{ env.PACKAGE_VERSION }}" '.version = $version' composer.json > composer.json.tmp && mv composer.json.tmp composer.json
-          echo "✅ Updated composer.json version field"
+          echo "✅ Updated composer.json version field."
 
       - name: Execute custom code before archive creation
         run: |
@@ -329,7 +329,7 @@ jobs:
       - name: Git add, commit, and push
         run: |
           git add -A
-          git commit -m "[BOT] Add build artifact from ${{ github.ref_name }} -> ${{ env.BUILT_BRANCH_NAME }}" --no-verify || ((echo "HAS_GIT_CHANGES=yes" >> $GITHUB_ENV) && (echo "No changes to commit"))
+          git commit -m "[BOT] Add build artifact from ${{ github.ref_name }} -> ${{ env.BUILT_BRANCH_NAME }}." --no-verify || ((echo "HAS_GIT_CHANGES=yes" >> $GITHUB_ENV) && (echo "No changes to commit."))
           if [ "${{ env.HAS_GIT_CHANGES }}" != "yes" ]; then
             git push
             echo "Build artifact pushed to branch: ${{ env.BUILT_BRANCH_NAME }}"
