@@ -36,7 +36,7 @@ jobs:
       HAS_CONFIG: false
     steps:
       - name: Fetch semantic-release Node version
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: semantic-release/semantic-release
           sparse-checkout: |
@@ -62,7 +62,7 @@ jobs:
             conventional-changelog-conventionalcommits
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -96,7 +96,7 @@ jobs:
 
       - name: Checkout the workflow repository if release.config.js file is not provided
         if: ${{ env.HAS_CONFIG == 'false' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: inpsyde/reusable-workflows
           path: workflow-repo
