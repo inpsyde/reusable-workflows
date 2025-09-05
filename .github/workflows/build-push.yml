@@ -80,7 +80,8 @@ jobs:
   build-push:
     timeout-minutes: 10
     runs-on: ubuntu-latest
-    env: # Used to check whether there are changes to commit
+    # Used to check whether there are changes to commit
+    env:
       HAS_GIT_CHANGES: ''
       # Disables symlinking of local "path" repositories during package installation.
       # During development, symlinking is preferable.
