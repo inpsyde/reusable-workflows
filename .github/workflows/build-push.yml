@@ -327,7 +327,8 @@ jobs:
             git push
             echo "Build artifact pushed to branch: ${{ env.BUILT_BRANCH_NAME }}"
           fi
-        # Copy the compiled package into a subdirectory to ensure a stable install path in WordPress
+
+      # Copy the compiled package into a subdirectory to ensure a stable install path in WordPress
       - name: Prepare artifact with package directory structure
         run: |
           # Create package directory for artifact
