@@ -248,40 +248,28 @@ jobs:
             echo "Package type: WordPress Theme"
             echo "PACKAGE_TYPE=wordpress-theme" >> $GITHUB_ENV
           # Check for WordPress plugin (PHP file with Plugin Name header)
-          elif grep -rl --include "*.php" "Plugin Name:" . >/dev/null 2>&1; then
-            echo "Package type: WordPress Plugin"
-            echo "PACKAGE_TYPE=wordpress-plugin" >> $GITHUB_ENV
-          # Fallback to generic library
           else
-            echo "Package type: Library"
-            echo "PACKAGE_TYPE=library" >> $GITHUB_ENV
+            # Find the first PHP file with "Plugin Name:" header
+            PLUGIN_FILE=$(grep -rl --include "*.php" "Plugin Name:" . 2>/dev/null | head -n1)
+            if [ -n "$PLUGIN_FILE" ]; then
+              echo "Package type: WordPress Plugin"
+              echo "Plugin file found: $PLUGIN_FILE"
+              echo "PACKAGE_TYPE=wordpress-plugin" >> $GITHUB_ENV
+              echo "PLUGIN_MAIN_FILE=$PLUGIN_FILE" >> $GITHUB_ENV
+            # Fallback to generic library
+            else
+              echo "Package type: Library"
+              echo "PACKAGE_TYPE=library" >> $GITHUB_ENV
+            fi
           fi
 
       - name: Prepare WordPress Plugin
         if: ${{ env.PACKAGE_TYPE == 'wordpress-plugin' }}
         run: |
-          # Check for plugin main file in order of preference
-          PLUGIN_FILE=""
-          if [ -f "index.php" ] && grep -q "Plugin Name:" index.php; then
-            PLUGIN_FILE="index.php"
-          elif [ -f "${{ env.PACKAGE_NAME }}.php" ] && grep -q "Plugin Name:" "${{ env.PACKAGE_NAME }}.php"; then
-            PLUGIN_FILE="${{ env.PACKAGE_NAME }}.php"
-          fi
-          
-          if [ -n "$PLUGIN_FILE" ]; then
-            echo "Updating plugin file: $PLUGIN_FILE"
-            sed -Ei "s/Version: .*/Version: ${{ env.PACKAGE_VERSION }}/g" "$PLUGIN_FILE"
-            sed -Ei "s/SHA: .*/SHA: ${{ github.sha }}/g" "$PLUGIN_FILE"
-          else
-            echo "❌ ERROR: No plugin main file found! Checked: index.php, ${{ env.PACKAGE_NAME }}.php."
-            echo ""
-            echo "For WordPress plugins, the main plugin file must be one of:"
-            echo "  - index.php"
-            echo "  - ${{ env.PACKAGE_NAME }}.php"
-            echo ""
-            echo "The file must contain a 'Plugin Name:' header comment."
-            exit 1
-          fi
+          PLUGIN_FILE="${{ env.PLUGIN_MAIN_FILE }}"
+          echo "Updating plugin file: $PLUGIN_FILE"
+          sed -Ei "s/Version: .*/Version: ${{ env.PACKAGE_VERSION }}/g" "$PLUGIN_FILE"
+          sed -Ei "s/SHA: .*/SHA: ${{ github.sha }}/g" "$PLUGIN_FILE"
 
       - name: Prepare WordPress Theme
         if: ${{ env.PACKAGE_TYPE == 'wordpress-theme' }}
