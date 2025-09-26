@@ -331,8 +331,7 @@ jobs:
         run: |
           rm .gitignore
           git config core.excludesFile .distignore 
-          git rm -rf --cached .
-          git add .
+          git add --all .
           git clean -Xdf 
 
       - name: Git add, commit, and push
