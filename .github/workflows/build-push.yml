@@ -313,7 +313,7 @@ jobs:
         # Configure git to (gracefully) use .distignore file during packaging instead of the regular .gitignore file.
         # Then clean up all files possibly mentioned in .distignore (e.g., source files).
         run: |
-          rm .gitignore
+          find . -name ".gitignore" -delete
           git config core.excludesFile .distignore
           git rm -rf --cached .
           # Add only files that are NOT ignored by .distignore
