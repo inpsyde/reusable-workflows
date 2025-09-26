@@ -209,26 +209,10 @@ jobs:
           echo "  Source branch: $ORIGIN_BRANCH"
           echo "  Build branch: ${{ env.BUILT_BRANCH_NAME }}"
 
-      - name: Checkout the build branch with clean slate
+      - name: Checkout the build branch and merge in it
         run: |
-          # Check if build branch exists remotely
-          if git show-ref -q refs/remotes/origin/${{ env.BUILT_BRANCH_NAME }}; then
-            echo "Build branch exists, checking out and cleaning..."
-            git checkout ${{ env.BUILT_BRANCH_NAME }}
-          
-            # Clean everything except .git directory for a fresh start
-            git rm -rf . || true
-            git clean -fxd
-            echo "✅ Cleaned existing build branch for fresh build"
-          else
-            echo "Build branch doesn't exist, creating new branch..."
-            git checkout -b ${{ env.BUILT_BRANCH_NAME }}
-            echo "✅ Created new build branch"
-          fi
-          
-          # Copy all files from source branch
+          git show-ref -q refs/remotes/origin/${{ env.BUILT_BRANCH_NAME }} && git checkout ${{ env.BUILT_BRANCH_NAME }} || git checkout -b ${{ env.BUILT_BRANCH_NAME }}
           git checkout ${{ github.ref_name }} -- .
-          echo "✅ Copied source files to build branch"
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
