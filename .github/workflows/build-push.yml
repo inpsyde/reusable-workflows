@@ -330,13 +330,10 @@ jobs:
         # Then clean up all files possibly mentioned in .distignore (e.g., source files).
         run: |
           find . -name ".gitignore" -delete
-          git config core.excludesFile .distignore
+          git config core.excludesFile .distignore 
           git rm -rf --cached .
-          # Add only files that are NOT ignored by .distignore
-          find . -type f -not -path './.git/*' -print0 | \
-            git check-ignore --stdin -z --non-matching | \
-            xargs -0 -r git add
-          git clean -Xdf
+          git add .
+          git clean -Xdf 
 
       - name: Git add, commit, and push
         run: |
