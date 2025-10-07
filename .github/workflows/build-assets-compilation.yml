@@ -1,4 +1,4 @@
-name: [DEPRECATED] Assets compilation
+name: "[DEPRECATED] Assets compilation"
 
 on:
   workflow_call:

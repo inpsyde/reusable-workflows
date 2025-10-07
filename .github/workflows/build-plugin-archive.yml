@@ -1,4 +1,4 @@
-name: [DEPRECATED] Create plugin archive
+name: "[DEPRECATED] Create plugin archive"
 
 on:
   workflow_call:
