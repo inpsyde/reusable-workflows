@@ -126,7 +126,7 @@ on:
   workflow_dispatch:
     inputs:
       CUSTOM_PACKAGE_VERSION:
-        description: 'Custom Package Version (skip auto-detection of)'
+        description: 'Custom Package Version (skip auto-detection of pre-release version)'
         required: false
       CUSTOM_BUILD_BRANCH:
         description: 'Custom build branch name'
