@@ -125,8 +125,8 @@ on:
       - '.github/workflows/build-push.yml'
   workflow_dispatch:
     inputs:
-      PACKAGE_VERSION:
-        description: 'Package Version'
+      CUSTOM_PACKAGE_VERSION:
+        description: 'Custom Package Version (skip auto-detection of)'
         required: false
       CUSTOM_BUILD_BRANCH:
         description: 'Custom build branch name'
@@ -134,7 +134,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build-push:
@@ -149,15 +149,12 @@ jobs:
       ENV_VARS: >-
         [{"name":"BUILD_ENV", "value":"production"}]
     with:
-      PACKAGE_VERSION: ${{ inputs.PACKAGE_VERSION }}
+      PACKAGE_VERSION: ${{ inputs.CUSTOM_PACKAGE_VERSION }}
       BUILT_BRANCH_NAME: ${{ inputs.CUSTOM_BUILD_BRANCH }}
       NODE_VERSION: 20
       PHP_VERSION: '8.3'
-      PHP_TOOLS: 'composer, wp-cli'
       PRE_SCRIPT: |
         echo "Starting custom build process..."
-        composer install --no-dev --optimize-autoloader
-        npm run lint
 ```
 
 ## Build process details
