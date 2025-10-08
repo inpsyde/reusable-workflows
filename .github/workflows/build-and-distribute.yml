@@ -77,7 +77,7 @@ on:
         required: false
 
 jobs:
-  build-push:
+  build-and-distribute:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     # Used to check whether there are changes to commit

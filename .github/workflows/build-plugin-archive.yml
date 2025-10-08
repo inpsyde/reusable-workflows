@@ -97,7 +97,7 @@ jobs:
       COMPOSER_MIRROR_PATH_REPOS: 1
     steps:
       - name: Deprecation warning
-        run: echo "::warning::This workflow is deprecated and will be removed soon. Use .github/workflows/build-push.yml instead."
+        run: echo "::warning::This workflow is deprecated and will be removed soon. Use .github/workflows/build-and-distribute.yml instead."
 
       - name: Checkout
         uses: actions/checkout@v4

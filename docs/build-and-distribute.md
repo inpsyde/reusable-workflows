@@ -1,4 +1,4 @@
-# Build & push assets
+# Build & Distribute
 
 This action can be used to build plugin and theme archives and push them to corresponding build branches in a controlled and isolated environment via GitHub Actions.
 
@@ -55,8 +55,8 @@ on:
         description: 'Package Version'
         required: false
 jobs:
-  build-push:
-    uses: inpsyde/reusable-workflows/.github/workflows/build-push.yml@main
+  build-and-distribute:
+    uses: inpsyde/reusable-workflows/.github/workflows/build-and-distribute.yml@main
     secrets:
       COMPOSER_AUTH_JSON: ${{ secrets.PACKAGIST_AUTH_JSON }}
       GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
@@ -122,7 +122,7 @@ on:
       - 'assets/**'
       - 'package.json'
       - 'composer.json'
-      - '.github/workflows/build-push.yml'
+      - '.github/workflows/build-and-distribute.yml'
   workflow_dispatch:
     inputs:
       CUSTOM_PACKAGE_VERSION:
@@ -137,8 +137,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-push:
-    uses: inpsyde/reusable-workflows/.github/workflows/build-push.yml@main
+  build-and-distribute:
+    uses: inpsyde/reusable-workflows/.github/workflows/build-and-distribute.yml@main
     secrets:
       COMPOSER_AUTH_JSON: ${{ secrets.PACKAGIST_AUTH_JSON }}
       NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
