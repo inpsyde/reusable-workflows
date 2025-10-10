@@ -189,7 +189,7 @@ jobs:
         env:
           ENV_VARS: ${{ secrets.ENV_VARS }}
         if: ${{ env.ENV_VARS }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             JSON
