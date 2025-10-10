@@ -100,6 +100,7 @@ jobs:
 ```
 
 **Note**: For frontend-only projects, the workflow automatically skips all PHP-related steps including:
+
 - PHP setup
 - Composer dependency installation
 - `composer.json` version updates
@@ -203,11 +204,13 @@ jobs:
 The workflow automatically detects the project type and adjusts the build process accordingly:
 
 **PHP-based projects** (WordPress plugins/themes or PHP libraries):
+
 - Detected by the presence of `composer.json`
 - Includes PHP setup, Composer dependency installation, and PHP-specific tooling
 - Updates version in `composer.json`
 
 **Frontend-only projects** (JavaScript libraries):
+
 - No `composer.json` present
 - Skips PHP-related steps entirely
 - Only processes Node.js dependencies and asset compilation
