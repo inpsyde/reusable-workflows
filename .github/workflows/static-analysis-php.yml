@@ -13,6 +13,11 @@ on:
         default: '--prefer-dist'
         required: false
         type: string
+      DEPENDENCY_VERSIONS:
+        description: Whether the job should install the locked, highest, or lowest versions of Composer dependencies.
+        default: 'locked'
+        required: false
+        type: string
       PSALM_ARGS:
         description: Set of arguments passed to Psalm.
         default: '--output-format=github --no-cache'
@@ -66,6 +71,7 @@ jobs:
           COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
         with:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
+          dependency-versions: ${{ inputs.DEPENDENCY_VERSIONS }}
 
       - name: Run Psalm
         if: ${{ hashFiles('psalm.xml', 'psalm.xml.dist') != '' }}
