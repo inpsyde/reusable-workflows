@@ -45,7 +45,7 @@ jobs:
           path: semantic-release-repo
 
       - name: Set up node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
         with:
