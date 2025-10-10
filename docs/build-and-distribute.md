@@ -1,0 +1,273 @@
+# Build & Distribute
+
+This action can be used to build plugin and theme archives and push them to corresponding build branches in a controlled and isolated environment via GitHub Actions.
+
+To achieve that, the reusable workflow:
+
+1. Inspects the origin branch and determines the correlating build branch (strips `dev/` prefix)
+2. Installs dependencies (including dev-dependencies) defined in `composer.json`
+3. Installs Node.js dependencies and compiles assets via `npm run build`
+4. Updates version information in plugin/theme headers and `package.json`
+5. Executes [WordPress Translation Downloader](https://github.com/inpsyde/wp-translation-downloader) if configured by the package
+6. Executes [PHP-Scoper](https://github.com/humbug/php-scoper) if configured by the package
+7. Applies `.distignore` file filtering if present
+8. Commits and pushes the build artifact to the determined build branch
+9. Uploads the build as a GitHub Actions artifact for download
+
+## Branch naming convention
+
+The workflow implements a branch scheme where development branches are prefixed with `dev/` and build branches contain the compiled assets:
+
+- **`dev/main`** → **`main`** (stable production code with assets, where releases are created)
+- **`dev/ABC-123`** → **`ABC-123`** (feature branch with compiled assets)
+- **`dev/feature/user-auth`** → **`feature/user-auth`** (feature branch with compiled assets)
+- **`dev/hotfix/critical-bug`** → **`hotfix/critical-bug`** (hotfix branch with compiled assets)
+
+This approach keeps source code separate from build artifacts while maintaining a clear relationship between development and build branches. The `main` branch (without `dev/` prefix) serves as the stable production branch where releases are created.
+
+## Version handling
+
+If no `PACKAGE_VERSION` is provided, the workflow automatically:
+
+1. Fetches the latest tag from the repository
+2. Strips the `dev/` prefix from the branch name and normalizes it to be semver-compatible
+3. Creates a pre-release version like `1.2.3-main` or `2.0.0-abc-123`
+4. Falls back to `0.0.0-{branch}` if no tags exist
+
+**Examples:**
+
+- `dev/main` with latest tag `1.2.3` → `1.2.3-main`
+- `dev/ABC-123` with latest tag `1.2.3` → `1.2.3-abc-123`
+- `dev/feature/user-auth` with latest tag `2.0.0` → `2.0.0-feature-user-auth`
+
+This ensures every build has a unique, meaningful version identifier that traces back to both the base release and the source branch.
+
+## Simple usage example
+
+### WordPress Plugin/Theme or PHP Library
+
+For PHP-based projects with `composer.json`:
+
+```yml
+name: Build and push assets
+on:
+  push:
+    branches: [ 'dev/main', 'dev/feature/**' ]
+  workflow_dispatch:
+    inputs:
+      PACKAGE_VERSION:
+        description: 'Package Version'
+        required: false
+jobs:
+  build-and-distribute:
+    uses: inpsyde/reusable-workflows/.github/workflows/build-and-distribute.yml@main
+    secrets:
+      COMPOSER_AUTH_JSON: ${{ secrets.PACKAGIST_AUTH_JSON }}
+      GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
+      GITHUB_USER_NAME: ${{ secrets.DEPLOYBOT_USER }}
+      GITHUB_USER_SSH_KEY: ${{ secrets.DEPLOYBOT_SSH_PRIVATE_KEY }}
+      GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.DEPLOYBOT_SSH_PUBLIC_KEY }}
+    with:
+      PACKAGE_VERSION: ${{ inputs.PACKAGE_VERSION }}
+```
+
+### Frontend-only Library
+
+For JavaScript-only projects without `composer.json`, you can omit PHP-related secrets:
+
+```yml
+name: Build and push assets
+on:
+  push:
+    branches: [ 'dev/main', 'dev/feature/**' ]
+  workflow_dispatch:
+    inputs:
+      PACKAGE_VERSION:
+        description: 'Package Version'
+        required: false
+jobs:
+  build-and-distribute:
+    uses: inpsyde/reusable-workflows/.github/workflows/build-and-distribute.yml@main
+    secrets:
+      NPM_REGISTRY_TOKEN: ${{ secrets.NPM_TOKEN }}
+      GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
+      GITHUB_USER_NAME: ${{ secrets.DEPLOYBOT_USER }}
+      GITHUB_USER_SSH_KEY: ${{ secrets.DEPLOYBOT_SSH_PRIVATE_KEY }}
+      GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.DEPLOYBOT_SSH_PUBLIC_KEY }}
+    with:
+      PACKAGE_VERSION: ${{ inputs.PACKAGE_VERSION }}
+      NODE_VERSION: 20
+```
+
+**Note**: For frontend-only projects, the workflow automatically skips all PHP-related steps including:
+
+- PHP setup
+- Composer dependency installation
+- `composer.json` version updates
+- WordPress Translation Downloader
+- PHP-Scoper
+
+## Configuration parameters
+
+### Inputs
+
+| Name                  | Default                                          | Description                                                                                                          |
+|-----------------------|--------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
+| `NODE_OPTIONS`        | `''`                                             | Space-separated list of command-line Node options                                                                    |
+| `NODE_VERSION`        | `18`                                             | Node version with which the assets will be compiled                                                                  |
+| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'`                  | Domain of the private npm registry                                                                                   |
+| `PHP_VERSION`         | `'8.2'`                                          | PHP version with which the PHP tools are to be executed                                                              |
+| `PHP_TOOLS`           | `''`                                             | PHP tools supported by shivammathur/setup-php to be installed                                                        |
+| `COMPOSER_ARGS`       | `'--no-dev --prefer-dist --optimize-autoloader'` | Set of arguments passed to Composer when gathering production dependencies                                           |
+| `PACKAGE_NAME`        | `''`                                             | The name of the package (falls back to the repository name)                                                          |
+| `PACKAGE_VERSION`     | `''`                                             | The new package version. If not provided, will use latest tag version with branch name as pre-release identifier   |
+| `PRE_SCRIPT`          | `''`                                             | Run custom shell code before creating the release archive                                                            |
+| `BUILT_BRANCH_NAME`   | `''`                                             | Override the automatic build branch naming (defaults to stripping `dev/` prefix from origin branch)                  |
+
+
+#### A note on `BUILT_BRANCH_NAME`
+
+By default, the workflow strips the `dev/` prefix from the origin branch to determine the build branch. You can override this behavior by providing a custom `BUILT_BRANCH_NAME`. This is useful for specific branching strategies or when you need to maintain compatibility with existing build processes.
+
+## Secrets
+
+| Name                         | Description                                                                              |
+|------------------------------|------------------------------------------------------------------------------------------|
+| `COMPOSER_AUTH_JSON`         | Authentication for privately hosted packages and repositories as a JSON formatted object |
+| `NPM_REGISTRY_TOKEN`         | Authentication for the private npm registry                                              |
+| `GITHUB_USER_EMAIL`          | Email address for the GitHub user configuration                                          |
+| `GITHUB_USER_NAME`           | Username for the GitHub user configuration                                               |
+| `GITHUB_USER_SSH_KEY`        | Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`             |
+| `GITHUB_USER_SSH_PUBLIC_KEY` | Public SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`              |
+| `ENV_VARS`                   | Additional environment variables as a JSON formatted object                              |
+
+### Example with configuration parameters
+
+#### Recommendations
+
+- Set up your repository's default branch to be `dev/main` to follow the new branching convention
+- Ensure your `package.json` includes a `build` script for asset compilation
+- Use `.distignore` to exclude development files from the final build
+- Consider using [path filters](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#example-including-paths) to avoid unnecessary builds when only documentation changes
+- Use [concurrency settings](https://docs.github.com/en/actions/using-jobs/using-concurrency) to prevent conflicts when multiple pushes occur rapidly
+
+```yml
+name: Build and push assets
+on:
+  push:
+    branches: [ 'dev/main', 'dev/develop', 'dev/feature/**', 'dev/hotfix/**' ]
+    paths:
+      - 'src/**'
+      - 'assets/**'
+      - 'package.json'
+      - 'composer.json'
+      - '.github/workflows/build-and-distribute.yml'
+  workflow_dispatch:
+    inputs:
+      CUSTOM_PACKAGE_VERSION:
+        description: 'Custom Package Version (skip auto-detection of pre-release version)'
+        required: false
+      CUSTOM_BUILD_BRANCH:
+        description: 'Custom build branch name'
+        required: false
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-distribute:
+    uses: inpsyde/reusable-workflows/.github/workflows/build-and-distribute.yml@main
+    secrets:
+      COMPOSER_AUTH_JSON: ${{ secrets.PACKAGIST_AUTH_JSON }}
+      NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
+      GITHUB_USER_NAME: ${{ secrets.DEPLOYBOT_USER }}
+      GITHUB_USER_SSH_KEY: ${{ secrets.DEPLOYBOT_SSH_PRIVATE_KEY }}
+      GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.DEPLOYBOT_SSH_PUBLIC_KEY }}
+      ENV_VARS: >-
+        [{"name":"BUILD_ENV", "value":"production"}]
+    with:
+      PACKAGE_VERSION: ${{ inputs.CUSTOM_PACKAGE_VERSION }}
+      BUILT_BRANCH_NAME: ${{ inputs.CUSTOM_BUILD_BRANCH }}
+      NODE_VERSION: 20
+      PHP_VERSION: '8.3'
+      PRE_SCRIPT: |
+        echo "Starting custom build process..."
+```
+
+## Build process details
+
+### Project Type Detection
+
+The workflow automatically detects the project type and adjusts the build process accordingly:
+
+**PHP-based projects** (WordPress plugins/themes or PHP libraries):
+
+- Detected by the presence of `composer.json`
+- Includes PHP setup, Composer dependency installation, and PHP-specific tooling
+- Updates version in `composer.json`
+
+**Frontend-only projects** (JavaScript libraries):
+
+- No `composer.json` present
+- Skips PHP-related steps entirely
+- Only processes Node.js dependencies and asset compilation
+
+This makes the workflow flexible enough to handle both full-stack WordPress projects and frontend-only library packages.
+
+### Version Management
+
+The workflow handles version information for both plugins and themes:
+
+- Updates `Version:` header in the main plugin file
+- Updates `SHA:` header with the current commit hash
+- Updates version in `package.json` and `composer.json`
+
+### Asset Compilation
+
+The workflow expects a `build` script in your `package.json`:
+
+```json
+{
+  "scripts": {
+    "build": "wp-scripts build"
+  }
+}
+```
+
+### PHP-Scoper Integration
+
+If a `scoper.inc.php` file is present, the workflow will:
+
+1. Run PHP-Scoper to prefix all PHP dependencies
+2. Rebuild the autoloader for the scoped dependencies
+3. Ensure unique autoload cache keys to prevent conflicts
+
+### Distignore Support
+
+If a `.distignore` file is present, the workflow will:
+
+1. Replace `.gitignore` with `.distignore` for the build process
+2. Remove all files and directories listed in `.distignore`
+3. Clean up any untracked files that match the ignore patterns
+
+This is particularly useful for excluding source files, tests, and development tools from the final build.
+
+## Artifact Output
+
+The workflow produces two outputs:
+
+1. **Build Branch**: The compiled code pushed to the build branch (e.g., `dev/main` → `main`)
+2. **GitHub Artifact**: A downloadable archive named `{package-name}-{version}` containing the build (without `.git` folder)
+
+## Migration from previous workflows
+
+If you're migrating from a previous build workflow, consider these changes:
+
+1. **Update branch triggers**: Change from `main` to `dev/main` and `feature/**` to `dev/feature/**`
+2. **Update default branch**: Set your repository's default branch to `dev/main`
+3. **Update Composer constraints**: If you use branch-specific Composer constraints, update them to reference the new build branches (e.g., `dev-main` instead of `dev-dev/main`)
+4. **Update deployment targets**: Update any deployment scripts or configurations that reference the old branch names
+
+The new branching convention provides clearer separation between development and production-ready code, with the `main` branch always containing the latest stable build artifacts ready for release.
