@@ -230,14 +230,6 @@ jobs:
           git checkout ${{ github.ref_name }} -- .
           echo "✅ Copied source files to build branch"
 
-      - name: Set up PHP
-        if: ${{ env.HAS_COMPOSER == 'true' }}
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ inputs.PHP_VERSION }}
-          tools: php-scoper, sniccowp/php-scoper-wordpress-excludes, composer/installers, inpsyde/wp-translation-downloader, ${{ inputs.PHP_TOOLS }}
-          coverage: none
-
       - name: Check for composer.json
         id: check-composer
         run: |
@@ -248,6 +240,16 @@ jobs:
             echo "No composer.json found - skipping PHP-related steps"
             echo "HAS_COMPOSER=false" >> $GITHUB_ENV
           fi
+
+      - name: Set up PHP
+        if: ${{ env.HAS_COMPOSER == 'true' }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.PHP_VERSION }}
+          tools: php-scoper, sniccowp/php-scoper-wordpress-excludes, composer/installers, inpsyde/wp-translation-downloader, ${{ inputs.PHP_TOOLS }}
+          coverage: none
+
+
 
       - name: Install Composer dependencies
         if: ${{ env.HAS_COMPOSER == 'true' }}
