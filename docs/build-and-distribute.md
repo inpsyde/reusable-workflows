@@ -44,6 +44,10 @@ This ensures every build has a unique, meaningful version identifier that traces
 
 ## Simple usage example
 
+### WordPress Plugin/Theme or PHP Library
+
+For PHP-based projects with `composer.json`:
+
 ```yml
 name: Build and push assets
 on:
@@ -66,6 +70,41 @@ jobs:
     with:
       PACKAGE_VERSION: ${{ inputs.PACKAGE_VERSION }}
 ```
+
+### Frontend-only Library
+
+For JavaScript-only projects without `composer.json`, you can omit PHP-related secrets:
+
+```yml
+name: Build and push assets
+on:
+  push:
+    branches: [ 'dev/main', 'dev/feature/**' ]
+  workflow_dispatch:
+    inputs:
+      PACKAGE_VERSION:
+        description: 'Package Version'
+        required: false
+jobs:
+  build-and-distribute:
+    uses: inpsyde/reusable-workflows/.github/workflows/build-and-distribute.yml@main
+    secrets:
+      NPM_REGISTRY_TOKEN: ${{ secrets.NPM_TOKEN }}
+      GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
+      GITHUB_USER_NAME: ${{ secrets.DEPLOYBOT_USER }}
+      GITHUB_USER_SSH_KEY: ${{ secrets.DEPLOYBOT_SSH_PRIVATE_KEY }}
+      GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.DEPLOYBOT_SSH_PUBLIC_KEY }}
+    with:
+      PACKAGE_VERSION: ${{ inputs.PACKAGE_VERSION }}
+      NODE_VERSION: 20
+```
+
+**Note**: For frontend-only projects, the workflow automatically skips all PHP-related steps including:
+- PHP setup
+- Composer dependency installation
+- `composer.json` version updates
+- WordPress Translation Downloader
+- PHP-Scoper
 
 ## Configuration parameters
 
@@ -158,6 +197,22 @@ jobs:
 ```
 
 ## Build process details
+
+### Project Type Detection
+
+The workflow automatically detects the project type and adjusts the build process accordingly:
+
+**PHP-based projects** (WordPress plugins/themes or PHP libraries):
+- Detected by the presence of `composer.json`
+- Includes PHP setup, Composer dependency installation, and PHP-specific tooling
+- Updates version in `composer.json`
+
+**Frontend-only projects** (JavaScript libraries):
+- No `composer.json` present
+- Skips PHP-related steps entirely
+- Only processes Node.js dependencies and asset compilation
+
+This makes the workflow flexible enough to handle both full-stack WordPress projects and frontend-only library packages.
 
 ### Version Management
 

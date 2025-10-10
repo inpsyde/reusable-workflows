@@ -231,6 +231,7 @@ jobs:
           echo "✅ Copied source files to build branch"
 
       - name: Set up PHP
+        if: ${{ env.HAS_COMPOSER == 'true' }}
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.PHP_VERSION }}
@@ -238,11 +239,23 @@ jobs:
           coverage: none
 
       - name: Install Composer dependencies
+        if: ${{ env.HAS_COMPOSER == 'true' }}
         uses: ramsey/composer-install@v3
         env:
           COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
         with:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
+
+      - name: Check for composer.json
+        id: check-composer
+        run: |
+          if [ -f "composer.json" ]; then
+            echo "Composer project detected (composer.json exists)"
+            echo "HAS_COMPOSER=true" >> $GITHUB_ENV
+          else
+            echo "No composer.json found - skipping PHP-related steps"
+            echo "HAS_COMPOSER=false" >> $GITHUB_ENV
+          fi
 
       - name: Set up node
         uses: actions/setup-node@v4
@@ -299,6 +312,7 @@ jobs:
         run: npm version ${{ env.PACKAGE_VERSION }} --no-git-tag-version
 
       - name: Update version in composer.json
+        if: ${{ env.HAS_COMPOSER == 'true' }}
         run: |
           echo "Updating composer.json version to ${{ env.PACKAGE_VERSION }}."
           jq --arg version "${{ env.PACKAGE_VERSION }}" '.version = $version' composer.json > composer.json.tmp && mv composer.json.tmp composer.json
@@ -312,10 +326,11 @@ jobs:
         run: npm run build
 
       - name: Run WordPress Translation Downloader
+        if: ${{ env.HAS_COMPOSER == 'true' }}
         run: composer wp-translation-downloader:download
 
       - name: Run PHP-Scoper
-        if: ${{ hashFiles('scoper.inc.php') != '' }}
+        if: ${{ env.HAS_COMPOSER == 'true' && hashFiles('scoper.inc.php') != '' }}
         # The sed call appends the Git commit SHA to the Composer autoload cache key to ensure unique identification for prefixed files.
         # This prevents Composer from skipping autoloaded files due to hash collisions based on relative paths.
         run: |
