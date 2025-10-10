@@ -238,14 +238,6 @@ jobs:
           tools: php-scoper, sniccowp/php-scoper-wordpress-excludes, composer/installers, inpsyde/wp-translation-downloader, ${{ inputs.PHP_TOOLS }}
           coverage: none
 
-      - name: Install Composer dependencies
-        if: ${{ env.HAS_COMPOSER == 'true' }}
-        uses: ramsey/composer-install@v3
-        env:
-          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
-        with:
-          composer-options: ${{ inputs.COMPOSER_ARGS }}
-
       - name: Check for composer.json
         id: check-composer
         run: |
@@ -256,6 +248,14 @@ jobs:
             echo "No composer.json found - skipping PHP-related steps"
             echo "HAS_COMPOSER=false" >> $GITHUB_ENV
           fi
+
+      - name: Install Composer dependencies
+        if: ${{ env.HAS_COMPOSER == 'true' }}
+        uses: ramsey/composer-install@v3
+        env:
+          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
+        with:
+          composer-options: ${{ inputs.COMPOSER_ARGS }}
 
       - name: Set up node
         uses: actions/setup-node@v4
