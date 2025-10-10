@@ -150,7 +150,6 @@ By default, the workflow strips the `dev/` prefix from the origin branch to dete
 - Use `.distignore` to exclude development files from the final build
 - Consider using [path filters](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#example-including-paths) to avoid unnecessary builds when only documentation changes
 - Use [concurrency settings](https://docs.github.com/en/actions/using-jobs/using-concurrency) to prevent conflicts when multiple pushes occur rapidly
-- Do not set `cancel-in-progress: true` as it can interrupt the build process and lead to incomplete builds being pushed to the build branch.
 
 ```yml
 name: Build and push assets
