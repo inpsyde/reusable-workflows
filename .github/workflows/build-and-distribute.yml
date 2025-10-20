@@ -1,4 +1,4 @@
-name: Build and push assets
+name: Build and distribute assets
 
 on:
   workflow_call:
