@@ -309,7 +309,7 @@ jobs:
           sed -Ei "s/SHA: .*/SHA: ${{ github.sha }}/g" style.css
 
       - name: Update version in package.json
-        run: npm version ${{ env.PACKAGE_VERSION }} --no-git-tag-version
+        run: npm version ${{ env.PACKAGE_VERSION }} --no-git-tag-version --allow-same-version
 
       - name: Update version in composer.json
         if: ${{ env.HAS_COMPOSER == 'true' }}
