@@ -154,6 +154,8 @@ jobs:
           set -a && source .env.ci && set +a
           rm .env.ci
           
+          echo $WP_STORAGE_STATE_SKIP_2FA
+          
           npm run ${{ inputs.SCRIPT_NAME }}
 
       - name: Upload artifact
