@@ -138,7 +138,7 @@ jobs:
           cache: ${{ env.NODE_CACHE_MODE }}
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ${{ env.NODE_CACHE_MODE == 'npm' && 'ci' || 'install' }}
 
       - name: Install Playwright dependencies
         run: |
