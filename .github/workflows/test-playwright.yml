@@ -152,6 +152,8 @@ jobs:
           # Ensure .env.ci is deleted on exit
           trap 'rm -f .env.ci' EXIT
           
+          cat .env.ci
+          
           npm run ${{ inputs.SCRIPT_NAME }}
 
       - name: Upload artifact
