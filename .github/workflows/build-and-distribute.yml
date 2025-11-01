@@ -373,7 +373,7 @@ jobs:
           echo "  Artifact structure: artifact-staging/${{ env.PACKAGE_NAME }}/"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ env.PACKAGE_NAME }}-${{ env.PACKAGE_VERSION }}
           path: ./artifact-staging/
