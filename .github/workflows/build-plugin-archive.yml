@@ -129,7 +129,7 @@ jobs:
         run: echo "artifact=interim-deps" >> $GITHUB_OUTPUT
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ steps.set-artifact-name.outputs.artifact }}
           path: |
@@ -224,7 +224,7 @@ jobs:
         run: echo "artifact=interim-built" >> $GITHUB_OUTPUT
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ steps.set-artifact-name.outputs.artifact }}
           path: |
@@ -290,7 +290,7 @@ jobs:
         run: echo "artifact=${{ steps.plugin-data.outputs.archive-name }}" >> $GITHUB_OUTPUT
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ steps.set-artifact-name.outputs.artifact }}
           path: ./dist/*

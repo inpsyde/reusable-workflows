@@ -155,7 +155,7 @@ jobs:
           npm run ${{ inputs.SCRIPT_NAME }}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ inputs.ARTIFACT_NAME }}
           path: | 

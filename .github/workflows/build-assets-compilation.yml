@@ -165,7 +165,7 @@ jobs:
         run: composer compile-assets ${{ inputs.COMPILE_ASSETS_ARGS }}
 
       - name: Upload assets artifact [DEV]
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: ${{ !contains(github.ref, 'refs/tags/') }}
         with:
           name: assets-${{ env.ASSETS_HASH }}
