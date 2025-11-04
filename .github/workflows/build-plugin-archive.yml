@@ -159,7 +159,7 @@ jobs:
           fi
 
       - name: Download Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: ${{ needs.checkout-dependencies.outputs.artifact }}
 
@@ -246,7 +246,7 @@ jobs:
       artifact: ${{ steps.set-artifact-name.outputs.artifact }}
     steps:
       - name: Download Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: ${{ needs.run-build-tools.outputs.artifact }}
 
