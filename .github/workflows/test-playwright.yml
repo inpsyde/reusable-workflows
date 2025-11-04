@@ -82,6 +82,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PHP_CHECK: false
+      NODE_CACHE_MODE: ''
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -102,6 +103,14 @@ jobs:
         run: |
           git config --global user.email "${{ env.GITHUB_USER_EMAIL }}"
           git config --global user.name "${{ env.GITHUB_USER_NAME }}"
+
+      - name: Set up node cache mode
+        run: |
+          if [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ]; then
+            echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV
+          else
+            echo "No lock files found or unknown package manager"
+          fi
 
       - name: Set up PHP
         if: ${{ inputs.COMPOSER_DEPS_INSTALL }}
@@ -126,10 +135,10 @@ jobs:
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
-          cache: 'npm'
+          cache: ${{ env.NODE_CACHE_MODE }}
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ${{ env.NODE_CACHE_MODE == 'npm' && 'ci' || 'install' }}
 
       - name: Install Playwright dependencies
         run: |
