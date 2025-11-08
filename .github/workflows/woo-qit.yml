@@ -1,0 +1,67 @@
+name: Run Woo QIT
+
+on:
+  workflow_call:
+    inputs:
+      ARTIFACT:
+        description: The name of the generated artifact, usually the output of the archive creation workflow.
+        required: true
+        type: string
+      PLUGIN_FOLDER_NAME:
+        description: The name of the plugin folder/slug (falls back to the repository name).
+        default: ''
+        required: false
+        type: string
+      QIT_TEST:
+        description: The name of the QIT test to run (activation, security, ...).
+        default: 'activation'
+        required: false
+        type: string
+      QIT_OPTIONS:
+        description: The string with additional QIT options, such as --wordpress_version=6.5.1 --optional_features=hpos.
+        default: ''
+        required: false
+        type: string
+    secrets:
+      WOO_PARTNER_USER:
+        description: The Woo.com email.
+        required: true
+      WOO_PARTNER_SECRET:
+        description: The Woo.com QIT token.
+        required: true
+
+jobs:
+  qit:
+    name: Run Woo QIT
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    env:
+      PLUGIN_FOLDER_NAME: ${{ inputs.PLUGIN_FOLDER_NAME }}
+      WOO_PARTNER_USER: ${{ secrets.WOO_PARTNER_USER }}
+      WOO_PARTNER_SECRET: ${{ secrets.WOO_PARTNER_SECRET }}
+      QIT_DISABLE_ONBOARDING: yes
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.ARTIFACT }}
+          path: package
+
+      - name: Set up plugin folder name
+        id: plugin-folder-name
+        run: echo "plugin-folder-name=${PLUGIN_FOLDER_NAME:-${{ github.event.repository.name }}}" >> $GITHUB_OUTPUT
+
+      - name: Zip artifact
+        run: zip -r plugin.zip .
+        working-directory: package
+
+      - name: Install QIT
+        run: |
+          wget https://github.com/woocommerce/qit-cli/raw/trunk/qit
+          chmod +x qit
+
+      - name: Add QIT auth
+        run: ./qit partner:add --user="${{ env.WOO_PARTNER_USER }}" --qit_token="${{ env.WOO_PARTNER_SECRET }}"
+
+      - name: Run QIT tests
+        run: ./qit run:${{ inputs.QIT_TEST }} ${{ steps.plugin-folder-name.outputs.plugin-folder-name }} --zip=package/plugin.zip ${{ inputs.QIT_OPTIONS }} --wait
