@@ -91,7 +91,7 @@ jobs:
       PACKAGE_NAME: ${{ inputs.PACKAGE_NAME && inputs.PACKAGE_NAME || github.event.repository.name }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}

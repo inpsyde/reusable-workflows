@@ -100,7 +100,7 @@ jobs:
         run: echo "::warning::This workflow is deprecated and will be removed soon. Use .github/workflows/build-and-distribute.yml instead."
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up custom environment variables
         if: ${{ env.ENV_VARS }}
