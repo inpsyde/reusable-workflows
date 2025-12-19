@@ -1,6 +1,30 @@
 version: 2
+
+registries:
+  private_packagist:
+    type: composer-repository
+    url: https://repo.packagist.com/inpsyde/
+    username: token
+    password: ${{secrets.PACKAGIST_TOKEN}}
+  github:
+    type: git
+    url: https://github.com
+    username: x-access-token
+    password: ${{secrets.DEPLOYBOT_PACKAGES_READ_WRITE_TOKEN}}
+
 updates:
+  - package-ecosystem: "composer"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    registries:
+      - private_packagist
+      - github
   - package-ecosystem: "github-actions"
     directory: "/"
+    schedule:
+      interval: "monthly"
+  - package-ecosystem: "npm"
+    directory: /
     schedule:
       interval: "monthly"
