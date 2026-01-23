@@ -115,8 +115,6 @@ jobs:
       - name: Set up PHP
         if: ${{ inputs.COMPOSER_DEPS_INSTALL }}
         uses: shivammathur/setup-php@v2
-        env:
-          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
         with:
           php-version: ${{ inputs.PHP_VERSION }}
           tools: composer
@@ -125,6 +123,8 @@ jobs:
       - name: Install Composer dependencies
         if: ${{ inputs.COMPOSER_DEPS_INSTALL }}
         uses: ramsey/composer-install@v3
+        env:
+          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
         with:
           composer-options: '--prefer-dist'
 
