@@ -246,8 +246,10 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.PHP_VERSION }}
-          tools: php-scoper, sniccowp/php-scoper-wordpress-excludes, composer/installers, inpsyde/wp-translation-downloader, ${{ inputs.PHP_TOOLS }}
+          tools: php-scoper, sniccowp/php-scoper-wordpress-excludes, inpsyde/wp-translation-downloader, ${{ inputs.PHP_TOOLS }}
           coverage: none
+        env:
+          COMPOSER_ALLOW_PLUGINS: composer/installers
 
       - name: Install Composer dependencies
         if: ${{ env.HAS_COMPOSER == 'true' }}
