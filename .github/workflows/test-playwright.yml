@@ -52,6 +52,11 @@ on:
         default: '--with-deps'
         required: false
         type: string
+      PRE_SCRIPT:
+        description: Run custom shell code before executing the test runner.
+        default: ''
+        required: false
+        type: string
       SCRIPT_NAME:
         description: The name of a custom script to run the tests.
         required: true
@@ -143,6 +148,10 @@ jobs:
       - name: Install Playwright dependencies
         run: |
           npx playwright install ${{ inputs.PLAYWRIGHT_BROWSER_ARGS }}
+
+      - name: Execute custom code before executing the test script
+        run: |
+          ${{ inputs.PRE_SCRIPT }}
 
       - name: Run script for test
         id: run-script
