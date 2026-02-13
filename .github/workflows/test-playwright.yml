@@ -61,6 +61,11 @@ on:
         description: The name of a custom script to run the tests.
         required: true
         type: string
+      WORK_DIR:
+        description: Working directory for npm install, Playwright install, and test execution.
+        default: '.'
+        required: false
+        type: string
     secrets:
       ENV_FILE_DATA:
         description: Additional environment variables for the tests.
@@ -111,7 +116,8 @@ jobs:
 
       - name: Set up node cache mode
         run: |
-          if [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ]; then
+          WORK_DIR="${{ inputs.WORK_DIR }}"
+          if [ -f "${GITHUB_WORKSPACE}/${WORK_DIR}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/${WORK_DIR}/npm-shrinkwrap.json" ]; then
             echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV
           else
             echo "No lock files found or unknown package manager"
@@ -143,19 +149,23 @@ jobs:
           cache: ${{ env.NODE_CACHE_MODE }}
 
       - name: Install dependencies
+        working-directory: ${{ inputs.WORK_DIR }}
         run: npm ${{ env.NODE_CACHE_MODE == 'npm' && 'ci' || 'install' }}
 
       - name: Install Playwright dependencies
+        working-directory: ${{ inputs.WORK_DIR }}
         run: |
           npx playwright install ${{ inputs.PLAYWRIGHT_BROWSER_ARGS }}
 
       - name: Execute custom code before executing the test script
+        working-directory: ${{ inputs.WORK_DIR }}
         run: |
           ${{ inputs.PRE_SCRIPT }}
 
       - name: Run script for test
         id: run-script
         continue-on-error: true
+        working-directory: ${{ inputs.WORK_DIR }}
         run: |
           touch .env.ci
           echo "${{ secrets.ENV_FILE_DATA }}" >> .env.ci
