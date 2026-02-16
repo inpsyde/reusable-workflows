@@ -271,7 +271,7 @@ jobs:
           tools: wp-cli
 
       - name: Install dist-archive command
-        run: wp package install wp-cli/dist-archive-command
+        run: wp package install wp-cli/dist-archive-command:@stable
 
       - name: Execute custom code before archive creation
         run: |
