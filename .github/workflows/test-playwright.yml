@@ -57,8 +57,13 @@ on:
         default: ''
         required: false
         type: string
+      PLAYWRIGHT_GREP_INVERT:
+        description: Grep pattern to exclude tests. Passed as `--grep-invert` flag. When set without SCRIPT_NAME, runs `npx playwright test` directly.
+        default: ''
+        required: false
+        type: string
       PLAYWRIGHT_PROJECT:
-        description: Playwright project name from playwright.config.
+        description: Playwright project name from playwright.config. When set without SCRIPT_NAME, runs `npx playwright test` directly.
         default: ''
         required: false
         type: string
@@ -189,12 +194,20 @@ jobs:
           # Ensure .env.ci is deleted on exit
           trap 'rm -f .env.ci' EXIT
           
-          if [ -n "${{ inputs.PLAYWRIGHT_GREP }}" ]; then
+          if [ -n "${{ inputs.PLAYWRIGHT_GREP }}" ] || [ -n "${{ inputs.PLAYWRIGHT_GREP_INVERT }}" ] || [ -n "${{ inputs.PLAYWRIGHT_PROJECT }}" ]; then
             PROJECT_ARG=""
             if [ -n "${{ inputs.PLAYWRIGHT_PROJECT }}" ]; then
-              PROJECT_ARG="--project=${{ inputs.PLAYWRIGHT_PROJECT }}"
+              PROJECT_ARG="--project=\"${{ inputs.PLAYWRIGHT_PROJECT }}\""
             fi
-            npx playwright test $PROJECT_ARG --grep "${{ inputs.PLAYWRIGHT_GREP }}"
+            GREP_ARG=""
+            if [ -n "${{ inputs.PLAYWRIGHT_GREP }}" ]; then
+              GREP_ARG="--grep=\"${{ inputs.PLAYWRIGHT_GREP }}\""
+            fi
+            GREP_INVERT_ARG=""
+            if [ -n "${{ inputs.PLAYWRIGHT_GREP_INVERT }}" ]; then
+              GREP_INVERT_ARG="--grep-invert=\"${{ inputs.PLAYWRIGHT_GREP_INVERT }}\""
+            fi
+            npx playwright test $PROJECT_ARG $GREP_ARG $GREP_INVERT_ARG
           else
             npm run ${{ inputs.SCRIPT_NAME }}
           fi
