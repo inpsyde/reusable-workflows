@@ -5,8 +5,8 @@ This workflow executes Playwright-based tests in a controlled and isolated envir
 The workflow can:
 
 - execute a building step, both for node and PHP environments (if the PHP version is provided and a `composer.json` file is present)
-- create an environment variables file named `.env.ci` dedicated to the test step; load this file using `dotenv-ci` directly in your test script, e.g., `./node_modules/.bin/dotenv -e .env.ci -- npm run e2e`
-- execute the tests using Playwright — either via a custom npm script or directly with `--grep` and `--project` filters
+- create an environment variables file named `.env.ci` dedicated to the test step; load this file using `dotenv-ci` directly in your test script, e.g., `./node_modules/.bin/dotenv -e .env.ci -- npm run e2e`. The file is also sourced before `PRE_SCRIPT`, making all variables available as environment variables.
+- execute the tests using Playwright — either via a custom npm script or directly with `--grep`, `--grep-invert`, and `--project` filters
 - upload the artifacts
 
 **Simplest possible example:**
@@ -40,17 +40,20 @@ jobs:
 | `NPM_REGISTRY_DOMAIN`           | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                                |
 | `PHP_VERSION`                   | `'8.2'`                         | PHP version with which the dependencies are installed                                             |
 | `PLAYWRIGHT_BROWSER_ARGS`       | `'--with-deps'`                 | Set of arguments passed to `npx playwright install`                                               |
-| `PLAYWRIGHT_GREP`               | `''`                            | Grep pattern to filter tests. When set, `SCRIPT_NAME` is ignored and `npx playwright test --grep` is used instead |
-| `PLAYWRIGHT_PROJECT`            | `''`                            | Playwright project name from `playwright.config`. Passed as `--project` flag when using `PLAYWRIGHT_GREP` |
-| `PRE_SCRIPT`                    | `''`                            | Run custom shell code before executing the test script. `GH_TOKEN` is available for GitHub CLI usage |
-| `SCRIPT_NAME`                   | `''`                            | The name of a custom npm script to run the tests. Ignored when `PLAYWRIGHT_GREP` is set           |
+| `PLAYWRIGHT_GREP`               | `''`                            | Grep pattern to filter tests. When any Playwright flag is set, `SCRIPT_NAME` is ignored and `npx playwright test` is used directly |
+| `PLAYWRIGHT_GREP_INVERT`        | `''`                            | Grep pattern to exclude tests. Passed as `--grep-invert` flag. When any Playwright flag is set, `SCRIPT_NAME` is ignored and `npx playwright test` is used directly |
+| `PLAYWRIGHT_PROJECT`            | `''`                            | Playwright project name from `playwright.config`. When any Playwright flag is set, `SCRIPT_NAME` is ignored and `npx playwright test` is used directly |
+| `PRE_SCRIPT`                    | `''`                            | Run custom shell code before executing the test script. `GH_TOKEN` and all `ENV_FILE_DATA` variables are available |
+| `SCRIPT_NAME`                   | `''`                            | The name of a custom npm script to run the tests. Ignored when any Playwright flag is set         |
 | `WORK_DIR`                      | `'.'`                           | Working directory for npm install, Playwright install, PRE_SCRIPT, and test execution             |
+
+> **Note:** Setting any combination of `PLAYWRIGHT_GREP`, `PLAYWRIGHT_GREP_INVERT`, or `PLAYWRIGHT_PROJECT` will bypass `SCRIPT_NAME` and run `npx playwright test` directly with the specified flags.
 
 ### Secrets
 
 | Name                  | Description                                                                              |
 |-----------------------|------------------------------------------------------------------------------------------|
-| `ENV_FILE_DATA`       | Additional environment variables for the tests                                           |
+| `ENV_FILE_DATA`       | Additional environment variables for the tests. Also sourced before `PRE_SCRIPT`         |
 | `COMPOSER_AUTH_JSON`  | Authentication for privately hosted packages and repositories as a JSON formatted object |
 | `NPM_REGISTRY_TOKEN`  | Authentication for the private npm registry                                              |
 | `GITHUB_USER_EMAIL`   | Email address for the GitHub user configuration                                          |
@@ -105,6 +108,7 @@ on:
         default: 'critical'
         type: choice
         options:
+          - smoke
           - critical
           - all
           - grep
@@ -112,8 +116,12 @@ on:
         description: 'Grep pattern (only used when TEST_SUITE == "grep")'
         required: false
         type: string
+      TEST_GREP_INVERT_PATTERN:
+        description: 'Grep invert pattern (only used when TEST_SUITE == "grep")'
+        required: false
+        type: string
       TEST_PROJECT:
-        description: 'Playwright project name'
+        description: 'Playwright project name (only used when TEST_SUITE == "grep")'
         required: false
         default: 'all'
         type: string
@@ -128,7 +136,8 @@ jobs:
         tests/qa/playwright-report/
       SCRIPT_NAME: ${{ inputs.TEST_SUITE != 'grep' && format('test:{0}', inputs.TEST_SUITE) || '' }}
       PLAYWRIGHT_GREP: ${{ inputs.TEST_SUITE == 'grep' && inputs.TEST_GREP_PATTERN || '' }}
-      PLAYWRIGHT_PROJECT: ${{ inputs.TEST_PROJECT || '' }}
+      PLAYWRIGHT_GREP_INVERT: ${{ inputs.TEST_SUITE == 'grep' && inputs.TEST_GREP_INVERT_PATTERN || '' }}
+      PLAYWRIGHT_PROJECT: ${{ inputs.TEST_SUITE == 'grep' && inputs.TEST_PROJECT || '' }}
       NODE_VERSION: 22
       PLAYWRIGHT_BROWSER_ARGS: 'chromium --with-deps'
       PRE_SCRIPT: |
