@@ -168,11 +168,17 @@ jobs:
         run: |
           npx playwright install ${{ inputs.PLAYWRIGHT_BROWSER_ARGS }}
 
+      - name: Create environment file
+        working-directory: ${{ inputs.WORK_DIR }}
+        run: |
+          touch .env.ci
+          echo "${{ secrets.ENV_FILE_DATA }}" >> .env.ci
+          echo "GH_TOKEN=${{ github.token }}" >> $GITHUB_ENV
+
       - name: Execute custom code before executing the test script
         working-directory: ${{ inputs.WORK_DIR }}
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
+          set -a && source .env.ci && set +a
           ${{ inputs.PRE_SCRIPT }}
 
       - name: Run script for test
@@ -180,8 +186,6 @@ jobs:
         continue-on-error: true
         working-directory: ${{ inputs.WORK_DIR }}
         run: |
-          touch .env.ci
-          echo "${{ secrets.ENV_FILE_DATA }}" >> .env.ci
           # Ensure .env.ci is deleted on exit
           trap 'rm -f .env.ci' EXIT
           
