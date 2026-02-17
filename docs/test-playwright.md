@@ -6,7 +6,7 @@ The workflow can:
 
 - execute a building step, both for node and PHP environments (if the PHP version is provided and a `composer.json` file is present)
 - create an environment variables file named `.env.ci` dedicated to the test step; load this file using `dotenv-ci` directly in your test script, e.g., `./node_modules/.bin/dotenv -e .env.ci -- npm run e2e`
-- execute the tests using Playwright
+- execute the tests using Playwright — either via a custom npm script or directly with `--grep` and `--project` filters
 - upload the artifacts
 
 **Simplest possible example:**
@@ -40,8 +40,11 @@ jobs:
 | `NPM_REGISTRY_DOMAIN`           | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                                |
 | `PHP_VERSION`                   | `'8.2'`                         | PHP version with which the dependencies are installed                                             |
 | `PLAYWRIGHT_BROWSER_ARGS`       | `'--with-deps'`                 | Set of arguments passed to `npx playwright install`                                               |
-| `PRE_SCRIPT`                    | `''`                            | Run custom shell code before executing the test script                                            |
-| `SCRIPT_NAME`                   |                                 | The name of a custom script to run the tests                                                      | 
+| `PLAYWRIGHT_GREP`               | `''`                            | Grep pattern to filter tests. When set, `SCRIPT_NAME` is ignored and `npx playwright test --grep` is used instead |
+| `PLAYWRIGHT_PROJECT`            | `''`                            | Playwright project name from `playwright.config`. Passed as `--project` flag when using `PLAYWRIGHT_GREP` |
+| `PRE_SCRIPT`                    | `''`                            | Run custom shell code before executing the test script. `GH_TOKEN` is available for GitHub CLI usage |
+| `SCRIPT_NAME`                   | `''`                            | The name of a custom npm script to run the tests. Ignored when `PLAYWRIGHT_GREP` is set           |
+| `WORK_DIR`                      | `'.'`                           | Working directory for npm install, Playwright install, PRE_SCRIPT, and test execution             |
 
 ### Secrets
 
@@ -86,6 +89,53 @@ jobs:
       GITHUB_USER_NAME: ${{ secrets.DEPLOYBOT_USER }}
       GITHUB_USER_SSH_KEY: ${{ secrets.DEPLOYBOT_SSH_PRIVATE_KEY }}
       NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_PACKAGES_READ_ACCESS_TOKEN}}
+```
+
+**Example with subdirectory and grep mode:**
+
+```yml
+name: E2E Testing
+
+on:
+  workflow_dispatch:
+    inputs:
+      TEST_SUITE:
+        description: 'Test suite to run'
+        required: true
+        default: 'critical'
+        type: choice
+        options:
+          - critical
+          - all
+          - grep
+      TEST_GREP_PATTERN:
+        description: 'Grep pattern (only used when TEST_SUITE == "grep")'
+        required: false
+        type: string
+      TEST_PROJECT:
+        description: 'Playwright project name'
+        required: false
+        default: 'all'
+        type: string
+
+jobs:
+  e2e-playwright:
+    uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@main
+    with:
+      WORK_DIR: 'tests/qa'
+      ARTIFACT_PATH: |
+        tests/qa/artifacts/*
+        tests/qa/playwright-report/
+      SCRIPT_NAME: ${{ inputs.TEST_SUITE != 'grep' && format('test:{0}', inputs.TEST_SUITE) || '' }}
+      PLAYWRIGHT_GREP: ${{ inputs.TEST_SUITE == 'grep' && inputs.TEST_GREP_PATTERN || '' }}
+      PLAYWRIGHT_PROJECT: ${{ inputs.TEST_PROJECT || '' }}
+      NODE_VERSION: 22
+      PLAYWRIGHT_BROWSER_ARGS: 'chromium --with-deps'
+      PRE_SCRIPT: |
+        gh run download ${{ github.run_id }} -n my-plugin -D resources/files
+        npm run setup:env
+    secrets:
+      ENV_FILE_DATA: ${{ secrets.ENV_FILE_DATA }}
 ```
 
 **Example of secrets:**
