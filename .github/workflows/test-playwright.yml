@@ -195,19 +195,17 @@ jobs:
           trap 'rm -f .env.ci' EXIT
           
           if [ -n "${{ inputs.PLAYWRIGHT_GREP }}" ] || [ -n "${{ inputs.PLAYWRIGHT_GREP_INVERT }}" ] || [ -n "${{ inputs.PLAYWRIGHT_PROJECT }}" ]; then
-            PROJECT_ARG=""
+            CMD="npx playwright test"
             if [ -n "${{ inputs.PLAYWRIGHT_PROJECT }}" ]; then
-              PROJECT_ARG="--project=\"${{ inputs.PLAYWRIGHT_PROJECT }}\""
+              CMD="$CMD --project=${{ inputs.PLAYWRIGHT_PROJECT }}"
             fi
-            GREP_ARG=""
             if [ -n "${{ inputs.PLAYWRIGHT_GREP }}" ]; then
-              GREP_ARG="--grep=\"${{ inputs.PLAYWRIGHT_GREP }}\""
+              CMD="$CMD --grep \"${{ inputs.PLAYWRIGHT_GREP }}\""
             fi
-            GREP_INVERT_ARG=""
             if [ -n "${{ inputs.PLAYWRIGHT_GREP_INVERT }}" ]; then
-              GREP_INVERT_ARG="--grep-invert=\"${{ inputs.PLAYWRIGHT_GREP_INVERT }}\""
+              CMD="$CMD --grep-invert \"${{ inputs.PLAYWRIGHT_GREP_INVERT }}\""
             fi
-            npx playwright test $PROJECT_ARG $GREP_ARG $GREP_INVERT_ARG
+            eval $CMD
           else
             npm run ${{ inputs.SCRIPT_NAME }}
           fi
