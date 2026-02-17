@@ -52,14 +52,25 @@ on:
         default: '--with-deps'
         required: false
         type: string
+      PLAYWRIGHT_GREP:
+        description: Grep pattern to filter tests. When set, SCRIPT_NAME is ignored and `npx playwright test --grep` is used instead.
+        default: ''
+        required: false
+        type: string
+      PLAYWRIGHT_PROJECT:
+        description: Playwright project name from playwright.config.
+        default: ''
+        required: false
+        type: string
       PRE_SCRIPT:
         description: Run custom shell code before executing the test runner.
         default: ''
         required: false
         type: string
       SCRIPT_NAME:
-        description: The name of a custom script to run the tests.
-        required: true
+        description: The name of a custom npm script to run the tests. Ignored when PLAYWRIGHT_GREP is set.
+        default: ''
+        required: false
         type: string
       WORK_DIR:
         description: Working directory for npm install, Playwright install, and test execution.
@@ -174,7 +185,15 @@ jobs:
           # Ensure .env.ci is deleted on exit
           trap 'rm -f .env.ci' EXIT
           
-          npm run ${{ inputs.SCRIPT_NAME }}
+          if [ -n "${{ inputs.PLAYWRIGHT_GREP }}" ]; then
+            PROJECT_ARG=""
+            if [ -n "${{ inputs.PLAYWRIGHT_PROJECT }}" ]; then
+              PROJECT_ARG="--project=${{ inputs.PLAYWRIGHT_PROJECT }}"
+            fi
+            npx playwright test $PROJECT_ARG --grep "${{ inputs.PLAYWRIGHT_GREP }}"
+          else
+            npm run ${{ inputs.SCRIPT_NAME }}
+          fi
 
       - name: Upload artifact
         if: always()
