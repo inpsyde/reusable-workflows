@@ -52,18 +52,8 @@ on:
         default: '--with-deps'
         required: false
         type: string
-      PLAYWRIGHT_GREP:
-        description: Grep pattern to filter tests. When set, SCRIPT_NAME is ignored and `npx playwright test --grep` is used instead.
-        default: ''
-        required: false
-        type: string
-      PLAYWRIGHT_GREP_INVERT:
-        description: Grep pattern to exclude tests. Passed as `--grep-invert` flag. When set without SCRIPT_NAME, runs `npx playwright test` directly.
-        default: ''
-        required: false
-        type: string
-      PLAYWRIGHT_PROJECT:
-        description: Playwright project name from playwright.config. When set without SCRIPT_NAME, runs `npx playwright test` directly.
+      PLAYWRIGHT_CLI_ARGS:
+        description: Arguments and flags for `npx playwright test`. When set SCRIPT_NAME will be ignored.
         default: ''
         required: false
         type: string
@@ -195,18 +185,8 @@ jobs:
           # Ensure .env.ci is deleted on exit
           trap 'rm -f .env.ci' EXIT
           
-          if [ -n "${{ inputs.PLAYWRIGHT_GREP }}" ] || [ -n "${{ inputs.PLAYWRIGHT_GREP_INVERT }}" ] || [ -n "${{ inputs.PLAYWRIGHT_PROJECT }}" ]; then
-            CMD="npx playwright test"
-            if [ -n "${{ inputs.PLAYWRIGHT_PROJECT }}" ]; then
-              CMD="$CMD --project=${{ inputs.PLAYWRIGHT_PROJECT }}"
-            fi
-            if [ -n "${{ inputs.PLAYWRIGHT_GREP }}" ]; then
-              CMD="$CMD --grep \"${{ inputs.PLAYWRIGHT_GREP }}\""
-            fi
-            if [ -n "${{ inputs.PLAYWRIGHT_GREP_INVERT }}" ]; then
-              CMD="$CMD --grep-invert \"${{ inputs.PLAYWRIGHT_GREP_INVERT }}\""
-            fi
-            eval $CMD
+          if [ -n "${{ inputs.PLAYWRIGHT_CLI_ARGS }}" ]; then
+            npx playwright test ${{ inputs.PLAYWRIGHT_CLI_ARGS }}
           else
             npm run ${{ inputs.SCRIPT_NAME }}
           fi
