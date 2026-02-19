@@ -1,0 +1,50 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+name: wordpress.org publishing
+
+on:
+  workflow_call:
+    inputs:
+      SVN_REPOSITORY:
+        description: "SVN repository to push a new version to. Defaults to wordpress.org"
+        type: string
+        default: "https://plugins.svn.wordpress.org"
+        required: false
+
+      SVN_PLUGIN_SLUG:
+        description: "Plugin slug in the SVN repository. E.g. if plugin URL is https://wordpress.org/plugins/payoneer-checkout, slug is payoneer-checkout."
+        type: string
+        required: true
+
+      SVN_USERNAME:
+        description: "In case of wordpress.org, this is your username"
+        type: string
+        required: true
+
+      SVN_PASSWORD:
+        description: "In case of wordpress.org, it should be a separate SVN password, not account password. See https://make.wordpress.org/meta/handbook/tutorials-guides/svn-access/ for more details."
+        type: string
+        required: true
+
+env:
+  SVN_REPO_PATH: $HOME/svn_repository
+
+jobs:
+  check_out_git_repository:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout git repository
+        uses: actions/checkout@v6
+
+  check_out_svn_repository:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout SVN repository
+        run: |
+          echo "Checking out SVN repository"
+          mkdir $SVN_REPO_PATH && cd $SVN_REPO_PATH
+          svn checkout "${{ inputs.SVN_REPOSITORY }}/${{ inputs.SVN_PLUGIN_SLUG }}"
+
+      - name: Synchronize SVN repository with Git
+        run: |
+      # run rsync here
