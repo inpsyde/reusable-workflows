@@ -26,9 +26,6 @@ on:
         type: string
         required: true
 
-env:
-  SVN_REPO_PATH: $HOME/svn_repository
-
 jobs:
   check_out_git_repository:
     runs-on: ubuntu-latest
