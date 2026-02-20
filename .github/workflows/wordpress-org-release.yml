@@ -44,7 +44,6 @@ jobs:
       - name: Checkout SVN repository
         run: |
           set -euo pipefail
-          echo "Checking out SVN repository"
           mkdir -p $SVN_REPO_PATH && cd $SVN_REPO_PATH
           svn checkout "${{ inputs.SVN_REPOSITORY }}/${{ inputs.SVN_PLUGIN_SLUG }}"
 
