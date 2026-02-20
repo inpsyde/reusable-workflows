@@ -1,0 +1,88 @@
+name: Deploy with Deployer
+
+on:
+  workflow_call:
+    inputs:
+      ENVIRONMENT:
+        description: Name of the target environment to load Deployer settings.
+        type: string
+        required: true
+      HOSTNAME:
+        description: Name of the target host.
+        type: string
+        required: true
+      PORT:
+        description: SSH port on the target host.
+        type: string
+        required: true
+      USERNAME:
+        description: SSH user on the target host.
+        type: string
+        required: true
+      VERBOSITY:
+        description: Deployer command verbosity.
+        required: true
+        type: choice
+        default: 'v'
+        options:
+          - 'v'
+          - 'vv'
+          - 'vvv'
+          - 'vvvv'
+          - 'q'
+      PHP_VERSION:
+        description: PHP version with which the scripts are executed.
+        default: '8.2'
+        required: false
+        type: string
+    secrets:
+      COMPOSER_AUTH_JSON:
+        description: Authentication for privately hosted packages and repositories as a JSON formatted object.
+        required: false
+      GITHUB_USER_SSH_KEY:
+        description: Private SSH key to be used to reach remote destinations.
+        required: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.PHP_VERSION }}
+          tools: composer
+          coverage: none
+
+      - name: Install Website
+        uses: ramsey/composer-install@v3
+        env:
+          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
+        with:
+          composer-options: --no-dev --optimize-autoloader --no-interaction
+
+      - name: Install Deployer
+        uses: ramsey/composer-install@v3
+        with:
+          working-directory: ./deployment
+          composer-options: --no-dev --optimize-autoloader --no-interaction
+
+      - name: Run Deployer
+        env:
+          DEPLOY_HOSTNAME: ${{ inputs.HOSTNAME }}
+          DEPLOY_PORT: ${{ inputs.PORT }}
+          DEPLOY_USER: ${{ inputs.USERNAME }}
+        run: |
+          cd deployment
+          ./vendor/bin/dep deploy ${{ inputs.ENVIRONMENT }} -${{ inputs.VERBOSITY}}
