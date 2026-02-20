@@ -48,6 +48,11 @@ jobs:
           mkdir $SVN_REPO_PATH && cd $SVN_REPO_PATH
           svn checkout "${{ inputs.SVN_REPOSITORY }}/${{ inputs.SVN_PLUGIN_SLUG }}"
 
+      - name: Install required tools
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y subversion rsync
+
       - name: Synchronize SVN repository with Git
         run: |
       # run rsync here
