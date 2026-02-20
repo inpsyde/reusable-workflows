@@ -43,10 +43,41 @@ jobs:
 
       - name: Checkout SVN repository
         run: |
+          set -euo pipefail
           echo "Checking out SVN repository"
           mkdir -p $SVN_REPO_PATH && cd $SVN_REPO_PATH
           svn checkout "${{ inputs.SVN_REPOSITORY }}/${{ inputs.SVN_PLUGIN_SLUG }}"
 
       - name: Synchronize SVN repository with Git
         run: |
-      # run rsync here
+          set -euo pipefail
+
+          touch .distignore
+
+          EXTRA_EXCLUDES=""
+          if [[ ! -f "$GITHUB_WORKSPACE/readme.txt" ]]; then 
+            echo "No readme.txt in the Git repository - preserving exising one";
+            EXTRA_EXCLUDES="--exclude=readme.txt" 
+          else
+            echo ""
+          fi
+          
+          rsync -rc \
+          --delete \
+          --delete-excluded \
+          --exclude='.git' \
+          --exclude='.svn' \
+          --exclude='auth.json' \
+          --exclude='.env' \
+          --exclude='.env.*' \
+          --exclude='composer.json' \
+          --exclude='composer.lock' \
+          --exclude='package.json' \
+          --exclude='package-lock.json' \
+          --exclude='yarn.lock' \
+          --exclude='node_modules' \
+          --exclude='.github' \
+          --exclude='.ddev' \
+          --exclude-from='.distignore' \
+          $EXTRA_EXCLUDES \
+          "$GITHUB_WORKSPACE/" "$SVN_TRUNK_PATH/"
