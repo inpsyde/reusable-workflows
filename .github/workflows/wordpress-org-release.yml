@@ -44,7 +44,7 @@ jobs:
       - name: Checkout SVN repository
         run: |
           echo "Checking out SVN repository"
-          mkdir $SVN_REPO_PATH && cd $SVN_REPO_PATH
+          mkdir -p $SVN_REPO_PATH && cd $SVN_REPO_PATH
           svn checkout "${{ inputs.SVN_REPOSITORY }}/${{ inputs.SVN_PLUGIN_SLUG }}"
 
       - name: Synchronize SVN repository with Git
