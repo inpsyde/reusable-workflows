@@ -37,6 +37,9 @@ jobs:
         uses: actions/checkout@v6
 
   update_svn_from_git:
+    env:
+      SVN_REPO_PATH: "$HOME/svn_repository"
+      SVN_TRUNK_PATH: "$SVN_REPO_PATH/trunk"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout SVN repository
