@@ -27,18 +27,15 @@ on:
         required: true
 
 jobs:
-  check_out_git_repository:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout git repository
-        uses: actions/checkout@v6
-
   update_svn_from_git:
     env:
       SVN_REPO_PATH: "$HOME/svn_repository"
       SVN_TRUNK_PATH: "$SVN_REPO_PATH/trunk"
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout git repository
+        uses: actions/checkout@v6
+
       - name: Checkout SVN repository
         run: |
           echo "Checking out SVN repository"
