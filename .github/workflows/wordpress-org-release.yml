@@ -16,14 +16,11 @@ on:
         type: string
         required: true
 
+    secrets:
       SVN_USERNAME:
-        description: "In case of wordpress.org, this is your username"
-        type: string
         required: true
 
       SVN_PASSWORD:
-        description: "In case of wordpress.org, it should be a separate SVN password, not account password. See https://make.wordpress.org/meta/handbook/tutorials-guides/svn-access/ for more details."
-        type: string
         required: true
 
 jobs:
