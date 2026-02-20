@@ -36,7 +36,7 @@ jobs:
       - name: Checkout git repository
         uses: actions/checkout@v6
 
-  check_out_svn_repository:
+  update_svn_from_git:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout SVN repository
