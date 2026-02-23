@@ -7,29 +7,11 @@ on:
         description: Name of the target environment to load Deployer settings.
         type: string
         required: true
-      HOSTNAME:
-        description: Name of the target host.
-        type: string
-        required: true
-      PORT:
-        description: SSH port on the target host.
-        type: string
-        required: true
-      USERNAME:
-        description: SSH user on the target host.
-        type: string
-        required: true
       VERBOSITY:
         description: Deployer command verbosity.
-        required: true
-        type: choice
+        required: false
         default: 'v'
-        options:
-          - 'v'
-          - 'vv'
-          - 'vvv'
-          - 'vvvv'
-          - 'q'
+        type: string
       PHP_VERSION:
         description: PHP version with which the scripts are executed.
         default: '8.2'
@@ -42,6 +24,15 @@ on:
       GITHUB_USER_SSH_KEY:
         description: Private SSH key to be used to reach remote destinations.
         required: false
+      DEPLOY_HOSTNAME:
+        description: Name of the target host.
+        required: true
+      DEPLOY_PORT:
+        description: SSH port on the target host.
+        required: true
+      DEPLOY_USERNAME:
+        description: SSH user on the target host.
+        required: true
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -78,11 +69,16 @@ jobs:
           working-directory: ./deployment
           composer-options: --no-dev --optimize-autoloader --no-interaction
 
+      - name: Configure ssh key
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_HOSTNAME }} >> ~/.ssh/known_hosts
+
       - name: Run Deployer
         env:
-          DEPLOY_HOSTNAME: ${{ inputs.HOSTNAME }}
-          DEPLOY_PORT: ${{ inputs.PORT }}
-          DEPLOY_USER: ${{ inputs.USERNAME }}
+          DEPLOY_HOSTNAME: ${{ secrets.DEPLOY_HOSTNAME }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
         run: |
           cd deployment
           ./vendor/bin/dep deploy ${{ inputs.ENVIRONMENT }} -${{ inputs.VERBOSITY}}
