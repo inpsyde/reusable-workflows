@@ -30,7 +30,7 @@ on:
       DEPLOY_PORT:
         description: SSH port on the target host.
         required: true
-      DEPLOY_USERNAME:
+      DEPLOY_USER:
         description: SSH user on the target host.
         required: true
 jobs:
