@@ -53,7 +53,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.PHP_VERSION }}
-          tools: composer
+          tools: composer, inpsyde/wp-translation-downloader
           coverage: none
 
       - name: Install Website
@@ -62,6 +62,9 @@ jobs:
           COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
         with:
           composer-options: --no-dev --optimize-autoloader --no-interaction
+
+      - name: Run WordPress Translation Downloader
+        run: composer wp-translation-downloader:download
 
       - name: Install Deployer
         uses: ramsey/composer-install@v3
