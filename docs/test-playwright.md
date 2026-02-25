@@ -135,7 +135,7 @@ jobs:
 
 Example `PLAYWRIGHT_CLI_ARGS` values:
 
-```
+```bash
 --project=chrome --grep "@Critical"
 --project=all --grep "@Smoke" --grep-invert "@Flaky"
 --project=firefox --workers=4 --retries=2
