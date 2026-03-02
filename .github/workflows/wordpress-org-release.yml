@@ -77,3 +77,11 @@ jobs:
           --exclude='.ddev' \
           --exclude-from='.distignore' \
           "$GITHUB_WORKSPACE/" "$SVN_REPO_ROOT/trunk/"
+
+      - name: Update SVN tracking
+        run: |
+          cd $SVN_REPO_ROOT
+          svn add . --force
+          svn status | grep '^!' | cut -c9- | while IFS= read -r file; do
+            svn delete "$file@"  # @ suffix handles files with @ in name
+          done
