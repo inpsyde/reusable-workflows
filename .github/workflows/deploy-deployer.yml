@@ -72,7 +72,7 @@ jobs:
 
       - name: Set up WireGuard
         uses: inpsyde/actions/setup-wireguard@v1
-        if: ${{ secrets.WIREGUARD_CONFIGURATION }}
+        if: ${{ secrets.WIREGUARD_CONFIGURATION != '' }}
         with:
           wireguard-configuration: ${{ secrets.WIREGUARD_CONFIGURATION }}
 
