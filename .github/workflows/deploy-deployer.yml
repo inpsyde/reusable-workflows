@@ -30,10 +30,10 @@ on:
     secrets:
       COMPOSER_AUTH_JSON:
         description: Authentication for privately hosted packages and repositories as a JSON formatted object.
-        required: false
+        required: true
       GITHUB_USER_SSH_KEY:
         description: Private SSH key to be used to reach remote destinations.
-        required: false
+        required: true
       DEPLOY_HOSTNAME:
         description: Name of the target host.
         required: false
