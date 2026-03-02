@@ -16,6 +16,12 @@ on:
         type: string
         required: true
 
+      TEST_MODE:
+        description: "In test mode no commit to SVN repository happens. Instead, local SVN repository is used, and then provided as an archive for manual checking."
+        type: boolean
+        default: false
+        required: false
+
     secrets:
       SVN_USERNAME:
         required: true
@@ -85,3 +91,7 @@ jobs:
           svn status | grep '^!' | cut -c9- | while IFS= read -r file; do
             svn delete "$file@"  # @ suffix handles files with @ in name
           done
+
+      - name: [TEST MODE] Pack files and provide as an artefact instead of commiting to the actual repository
+          if: ${{ inputs.TEST_MODE }}
+          run: | #TODO: create an artifact and upload it here
