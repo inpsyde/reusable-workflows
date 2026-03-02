@@ -54,9 +54,6 @@ jobs:
           if [[ ! -f "$GITHUB_WORKSPACE/readme.txt" ]]; then 
             echo "No readme.txt in the Git repository - preserving exising one";
             EXTRA_EXCLUDES="--exclude=readme.txt" 
-          else
-            echo ""
-          fi
           
           rsync -rc \
           --delete \
