@@ -92,6 +92,16 @@ jobs:
             svn delete "$file@"  # @ suffix handles files with @ in name
           done
 
-      - name: [TEST MODE] Pack files and provide as an artefact instead of commiting to the actual repository
-          if: ${{ inputs.TEST_MODE }}
-          run: | #TODO: create an artifact and upload it here
+      - name: Commit changes to SVN repository
+        if: inputs.TEST_MODE != true
+        run: | #TODO: do SVN commit here
+          echo 'Committing...'
+
+      - name: Compress and upload trunk contents as an artifact
+        if: inputs.TEST_MODE == true
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.SVN_PLUGIN_SLUG }}
+          path: ${{ runner.workspace }}/svn_repository/${{ inputs.SVN_PLUGIN_SLUG }}/trunk
+          include-hidden-files: true
+          compression-level: 1
