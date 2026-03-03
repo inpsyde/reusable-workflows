@@ -1,0 +1,152 @@
+name: Deploy with Deployer
+
+on:
+  workflow_call:
+    inputs:
+      ENVIRONMENT:
+        description: Name of the target environment to load Deployer settings.
+        type: string
+        required: true
+      VERBOSITY:
+        description: Deployer command verbosity.
+        required: false
+        default: 'v'
+        type: string
+      PHP_VERSION:
+        description: PHP version with which the scripts are executed.
+        default: '8.2'
+        required: false
+        type: string
+      NODE_VERSION:
+        description: Node.js version to use when npm workspaces are detected.
+        default: '22'
+        required: false
+        type: string
+      NPM_REGISTRY_DOMAIN:
+        description: Domain of the private npm registry.
+        default: https://npm.pkg.github.com/
+        required: false
+        type: string
+    secrets:
+      COMPOSER_AUTH_JSON:
+        description: Authentication for privately hosted packages and repositories as a JSON formatted object.
+        required: true
+      GITHUB_USER_SSH_KEY:
+        description: Private SSH key to be used to reach remote destinations.
+        required: true
+      DEPLOY_HOSTNAME:
+        description: Name of the target host.
+        required: false
+      DEPLOY_PORT:
+        description: SSH port on the target host.
+        required: false
+      DEPLOY_USER:
+        description: SSH user on the target host.
+        required: false
+      WIREGUARD_CONFIGURATION:
+        description: The full content of the WireGuard configuration file.
+        required: false
+      NPM_REGISTRY_TOKEN:
+        description: Authentication for the private npm registry.
+        required: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      NODE_CACHE_MODE: ''
+      COMPOSER_NO_DEV: 1
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.PHP_VERSION }}
+          tools: composer
+          coverage: none
+
+      - name: Set up WireGuard
+        uses: inpsyde/actions/setup-wireguard@v1
+        env:
+          WIREGUARD_CONFIGURATION: ${{ secrets.WIREGUARD_CONFIGURATION }}
+        if: ${{ env.WIREGUARD_CONFIGURATION != '' }}
+        with:
+          wireguard-configuration: ${{ secrets.WIREGUARD_CONFIGURATION }}
+
+      - name: Validate composer.json and composer.lock
+        run: composer validate
+
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v3
+        env:
+          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
+
+      - name: Detect npm workspaces
+        id: npm-workspaces
+        run: |
+          if [ -f package.json ] && node -e "const p = require('./package.json'); if (!p.workspaces) process.exit(1)"; then
+            echo "enabled=true" >> $GITHUB_OUTPUT
+          else
+            echo "enabled=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set up node cache mode
+        run: |
+          if [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ]; then
+            echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV
+          else
+            echo "No lock files found or unknown package manager"
+          fi
+
+      - name: Set up node
+        if: steps.npm-workspaces.outputs.enabled == 'true'
+        uses: actions/setup-node@v4
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+        with:
+          node-version: ${{ inputs.NODE_VERSION }}
+          registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
+          cache: ${{ env.NODE_CACHE_MODE }}
+
+      - name: Install npm dependencies
+        if: steps.npm-workspaces.outputs.enabled == 'true'
+        run: npm ${{ env.NODE_CACHE_MODE == 'npm' && 'ci' || 'install' }}
+
+      - name: Run the build using workspaces
+        if: steps.npm-workspaces.outputs.enabled == 'true'
+        run: npm run build -ws --if-present
+
+      - name: Install Deployer
+        uses: ramsey/composer-install@v3
+        env:
+          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
+        with:
+          working-directory: ./deployment
+
+      - name: Configure ssh key
+        env:
+          DEPLOY_HOSTNAME: ${{ secrets.DEPLOY_HOSTNAME }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+        if: ${{ env.DEPLOY_HOSTNAME && env.DEPLOY_PORT }}
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_HOSTNAME }} >> ~/.ssh/known_hosts
+
+      - name: Run Deployer
+        env:
+          DEPLOY_HOSTNAME: ${{ secrets.DEPLOY_HOSTNAME }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          cd deployment
+          ./vendor/bin/dep deploy ${{ inputs.ENVIRONMENT }} -${{ inputs.VERBOSITY}}
