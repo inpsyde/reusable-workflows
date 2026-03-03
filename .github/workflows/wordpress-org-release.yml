@@ -80,6 +80,8 @@ jobs:
 
       - name: Update SVN tracking
         run: |
+          set -euo pipefail
+          
           cd $SVN_REPO_ROOT
           svn add . --force
           svn status | grep '^!' | cut -c9- | while IFS= read -r file; do
