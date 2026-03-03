@@ -25,7 +25,7 @@ $hostname = getenv('DEPLOY_HOSTNAME');
 $port = getenv('DEPLOY_PORT');
 $user = getenv('DEPLOY_USER');
 
-host('acme_staging')
+host('staging')
     ->setHostname($hostname)
     ->setRemoteUser($user)
     ->setPort((int) $port)
