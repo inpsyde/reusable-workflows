@@ -11,7 +11,7 @@ on:
         required: true
 
       TEST_MODE:
-        description: "In test mode no commit to SVN repository happens. Instead, local SVN repository is used, and then provided as an archive for manual checking."
+        description: "In test mode no commit to the SVN repository happens. Instead, files from trunk are provided as an artifact."
         type: boolean
         default: false
         required: false
