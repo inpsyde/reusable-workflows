@@ -72,7 +72,9 @@ jobs:
 
       - name: Set up WireGuard
         uses: inpsyde/actions/setup-wireguard@v1
-        if: ${{ secrets.WIREGUARD_CONFIGURATION != '' }}
+        env:
+          WIREGUARD_CONFIGURATION: ${{ secrets.WIREGUARD_CONFIGURATION }}
+        if: ${{ env.WIREGUARD_CONFIGURATION != '' }}
         with:
           wireguard-configuration: ${{ secrets.WIREGUARD_CONFIGURATION }}
 
@@ -127,7 +129,10 @@ jobs:
           working-directory: ./deployment
 
       - name: Configure ssh key
-        if: ${{ secrets.DEPLOY_HOSTNAME && secrets.DEPLOY_PORT }}
+        env:
+          DEPLOY_HOSTNAME: ${{ secrets.DEPLOY_HOSTNAME }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+        if: ${{ env.DEPLOY_HOSTNAME && env.DEPLOY_PORT }}
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_HOSTNAME }} >> ~/.ssh/known_hosts
