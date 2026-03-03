@@ -63,6 +63,11 @@ jobs:
           fetch-depth: 0
           ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
+
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
