@@ -5,12 +5,6 @@ name: wordpress.org publishing
 on:
   workflow_call:
     inputs:
-      SVN_REPOSITORY:
-        description: "SVN repository to push a new version to. Defaults to wordpress.org"
-        type: string
-        default: "https://plugins.svn.wordpress.org"
-        required: false
-
       SVN_PLUGIN_SLUG:
         description: "Plugin slug in the SVN repository. E.g. if plugin URL is https://wordpress.org/plugins/payoneer-checkout, slug is payoneer-checkout."
         type: string
@@ -57,7 +51,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p $SVN_REPO_PATH && cd $SVN_REPO_PATH
-          svn checkout "${{ inputs.SVN_REPOSITORY }}/${{ inputs.SVN_PLUGIN_SLUG }}"          
+          svn checkout "https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}"          
 
       - name: Synchronize SVN repository with Git
         run: |
