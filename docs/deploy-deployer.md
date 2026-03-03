@@ -74,7 +74,6 @@ jobs:
 | `PHP_VERSION`         | `'8.2'`                         | PHP version with which the scripts are executed          |
 | `NODE_VERSION`        | `'22'`                          | Node.js version to use when npm workspaces are detected  |
 | `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                       |
-| `COMPOSER_ARGS`       | `''`                            | Set of arguments passed to Composer                      |
 
 ### Secrets
 
@@ -118,5 +117,4 @@ jobs:
       PHP_VERSION: '8.3'
       NODE_VERSION: '22'
       VERBOSITY: 'vvv'
-      COMPOSER_ARGS: '--no-plugins'
 ```
