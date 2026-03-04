@@ -47,6 +47,11 @@ on:
         default: '8.2'
         required: false
         type: string
+      PHP_EXTENSIONS:
+        description: PHP extensions to be enabled or disabled by shivammathur/setup-php.
+        default: ''
+        required: false
+        type: string
       PLAYWRIGHT_BROWSER_ARGS:
         description: Set of arguments passed to `npx playwright install`.
         default: '--with-deps'
@@ -122,6 +127,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.PHP_VERSION }}
+          extensions: ${{ inputs.PHP_EXTENSIONS }}
           tools: composer
           coverage: none
 

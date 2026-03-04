@@ -67,13 +67,14 @@ jobs:
 
 ### Inputs
 
-| Name                  | Default                         | Description                                              |
-|-----------------------|---------------------------------|----------------------------------------------------------|
-| `ENVIRONMENT`         |                                 | Name of the target environment to load Deployer settings |
-| `VERBOSITY`           | `'v'`                           | Deployer command verbosity                               |
-| `PHP_VERSION`         | `'8.2'`                         | PHP version with which the scripts are executed          |
-| `NODE_VERSION`        | `'22'`                          | Node.js version to use when npm workspaces are detected  |
-| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                       |
+| Name                  | Default                         | Description                                                        |
+|-----------------------|---------------------------------|--------------------------------------------------------------------|
+| `ENVIRONMENT`         |                                 | Name of the target environment to load Deployer settings           |
+| `VERBOSITY`           | `'v'`                           | Deployer command verbosity                                         |
+| `PHP_VERSION`         | `'8.2'`                         | PHP version with which the scripts are executed                    |
+| `PHP_EXTENSIONS`      | `''`                            | PHP extensions to be enabled or disabled by shivammathur/setup-php |
+| `NODE_VERSION`        | `'22'`                          | Node.js version to use when npm workspaces are detected            |
+| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                 |
 
 ### Secrets
 

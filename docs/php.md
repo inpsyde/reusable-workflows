@@ -26,6 +26,7 @@ jobs:
 | Name            | Default                                                  | Description                                     |
 |-----------------|----------------------------------------------------------|-------------------------------------------------|
 | `PHP_VERSION`   | `'8.2'`                                                  | PHP version with which the scripts are executed |
+| `PHP_EXTENSIONS`      | `''`                                             | PHP extensions to be enabled or disabled by shivammathur/setup-php                                               |
 | `COMPOSER_ARGS` | `'--prefer-dist'`                                        | Set of arguments passed to Composer             |
 | `PHPCS_ARGS`    | `'--report-full --report-checkstyle=./phpcs-report.xml'` | Set of arguments passed to PHP_CodeSniffer      |
 | `CS2PR_ARGS`    | `'--graceful-warnings ./phpcs-report.xml'`               | Set of arguments passed to cs2pr                |
@@ -91,6 +92,7 @@ jobs:
 | Name            | Default                               | Description                                     |
 |-----------------|---------------------------------------|-------------------------------------------------|
 | `PHP_VERSION`   | `'8.2'`                               | PHP version with which the scripts are executed |
+| `PHP_EXTENSIONS`      | `''`                            | PHP extensions to be enabled or disabled by shivammathur/setup-php |
 | `COMPOSER_ARGS` | `'--prefer-dist'`                     | Set of arguments passed to Composer             |
 | `PSALM_ARGS`    | `'--output-format=github --no-cache'` | Set of arguments passed to Psalm                |
 | `PHPSTAN_ARGS`  | `'--no-progress --memory-limit=1G'`   | Set of arguments passed to PHPStan              |
