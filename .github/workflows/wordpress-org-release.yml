@@ -79,6 +79,7 @@ jobs:
           --exclude='.ddev' \
           --exclude='.idea' \
           --exclude='.vscode' \
+          --exclude='.distignore' \
           --exclude-from='.distignore' \
           "$GITHUB_WORKSPACE/" "$SVN_REPO_ROOT/trunk/"
           
