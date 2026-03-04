@@ -6,7 +6,7 @@ on:
   workflow_call:
     inputs:
       SVN_PLUGIN_SLUG:
-        description: "Plugin slug in the SVN repository. E.g. if plugin URL is https://wordpress.org/plugins/payoneer-checkout, slug is payoneer-checkout."
+        description: "WordPress.org plugin slug (e.g., 'woocommerce' from https://wordpress.org/plugins/woocommerce)"
         type: string
         required: true
 
@@ -59,6 +59,8 @@ jobs:
 
           touch .distignore
           
+          ls $GITHUB_WORKSPACE
+          
           rsync -rc \
           --delete \
           --delete-excluded \
@@ -77,6 +79,8 @@ jobs:
           --exclude='.ddev' \
           --exclude-from='.distignore' \
           "$GITHUB_WORKSPACE/" "$SVN_REPO_ROOT/trunk/"
+          
+          cd "$SVN_REPO_ROOT/trunk" && pwd && ls -lha
 
       - name: Update SVN tracking
         run: |
