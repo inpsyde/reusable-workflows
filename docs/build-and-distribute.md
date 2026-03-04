@@ -111,19 +111,19 @@ jobs:
 
 ### Inputs
 
-| Name                  | Default                                          | Description                                                                                                          |
-|-----------------------|--------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
-| `NODE_OPTIONS`        | `''`                                             | Space-separated list of command-line Node options                                                                    |
-| `NODE_VERSION`        | `18`                                             | Node version with which the assets will be compiled                                                                  |
-| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'`                  | Domain of the private npm registry                                                                                   |
-| `PHP_VERSION`         | `'8.2'`                                          | PHP version with which the PHP tools are to be executed                                                              |
-| `PHP_EXTENSIONS`      | `''`                                             | PHP extensions to be enable or disabled by shivammathur/setup-php                                                        |
-| `PHP_TOOLS`           | `''`                                             | PHP tools supported by shivammathur/setup-php to be installed                                                        |
-| `COMPOSER_ARGS`       | `'--no-dev --prefer-dist --optimize-autoloader'` | Set of arguments passed to Composer when gathering production dependencies                                           |
-| `PACKAGE_NAME`        | `''`                                             | The name of the package (falls back to the repository name)                                                          |
-| `PACKAGE_VERSION`     | `''`                                             | The new package version. If not provided, will use latest tag version with branch name as pre-release identifier   |
-| `PRE_SCRIPT`          | `''`                                             | Run custom shell code before creating the release archive                                                            |
-| `BUILT_BRANCH_NAME`   | `''`                                             | Override the automatic build branch naming (defaults to stripping `dev/` prefix from origin branch)                  |
+| Name                  | Default                                          | Description                                                                                                      |
+|-----------------------|--------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
+| `NODE_OPTIONS`        | `''`                                             | Space-separated list of command-line Node options                                                                |
+| `NODE_VERSION`        | `18`                                             | Node version with which the assets will be compiled                                                              |
+| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'`                  | Domain of the private npm registry                                                                               |
+| `PHP_VERSION`         | `'8.2'`                                          | PHP version with which the PHP tools are to be executed                                                          |
+| `PHP_EXTENSIONS`      | `''`                                             | PHP extensions to be enabled or disabled by shivammathur/setup-php                                               |
+| `PHP_TOOLS`           | `''`                                             | PHP tools supported by shivammathur/setup-php to be installed                                                    |
+| `COMPOSER_ARGS`       | `'--no-dev --prefer-dist --optimize-autoloader'` | Set of arguments passed to Composer when gathering production dependencies                                       |
+| `PACKAGE_NAME`        | `''`                                             | The name of the package (falls back to the repository name)                                                      |
+| `PACKAGE_VERSION`     | `''`                                             | The new package version. If not provided, will use latest tag version with branch name as pre-release identifier |
+| `PRE_SCRIPT`          | `''`                                             | Run custom shell code before creating the release archive                                                        |
+| `BUILT_BRANCH_NAME`   | `''`                                             | Override the automatic build branch naming (defaults to stripping `dev/` prefix from origin branch)              |
 
 
 #### A note on `BUILT_BRANCH_NAME`
