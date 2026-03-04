@@ -54,6 +54,7 @@ jobs:
           svn checkout "https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}"          
 
       - name: Synchronize SVN repository with Git
+        working-directory: ${{ github.workspace }} #Make sure we are in the right place before start sync
         run: |
           set -euo pipefail
 
@@ -81,7 +82,7 @@ jobs:
           --exclude='.vscode' \
           --exclude='.distignore' \
           --exclude-from='.distignore' \
-          "$GITHUB_WORKSPACE/" "$SVN_REPO_ROOT/trunk/"
+          ./ "$SVN_REPO_ROOT/trunk/"
           
           cd "$SVN_REPO_ROOT/trunk" && pwd && ls -lha
 
