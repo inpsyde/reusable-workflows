@@ -10,8 +10,8 @@ on:
         type: string
         required: true
 
-      TEST_MODE:
-        description: "In test mode no commit to the SVN repository happens. Instead, files from trunk are provided as an artifact."
+      DRY_RUN:
+        description: "In dry-run mode no commit to the SVN repository happens. Instead, files from trunk are provided as an artifact."
         type: boolean
         default: false
         required: false
@@ -93,12 +93,12 @@ jobs:
           done
 
       - name: Commit changes to SVN repository
-        if: inputs.TEST_MODE != true
+        if: inputs.DRY_RUN != true
         run: | #TODO: do SVN commit here
           echo 'Committing...'
 
       - name: Compress and upload trunk contents as an artifact
-        if: inputs.TEST_MODE == true
+        if: inputs.DRY_RUN == true
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.SVN_PLUGIN_SLUG }}
