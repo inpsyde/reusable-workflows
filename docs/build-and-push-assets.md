@@ -117,7 +117,6 @@ the workflow.
 | `BUILT_BRANCH_NAME`   | `''`                            | Sets the target branch for pushing assets on the `branch` event                                                                 |
 | `RELEASE_BRANCH_NAME` | `''`                            | On tag events, target branch where compiled assets are pushed and the tag is moved to                                           |
 | `PHP_VERSION`         | `'8.2'`                         | PHP version with which the PHP tools are to be executed                                                                         |
-| `PHP_EXTENSIONS`      | `''`                            | PHP extensions to be enabled or disabled by shivammathur/setup-php                                                              |
 | `PHP_TOOLS`           | `''`                            | PHP tools supported by [shivammathur/setup-php](https://github.com/shivammathur/setup-php#wrench-tools-support) to be installed |
 
 ## Secrets

@@ -26,21 +26,21 @@ To achieve that, the reusable workflow:
 ```yml
 name: Create release package
 on:
-  workflow_dispatch:
-    inputs:
-      PACKAGE_VERSION:
-        description: 'Package Version'
-        required: true
+   workflow_dispatch:
+      inputs:
+         PACKAGE_VERSION:
+            description: 'Package Version'
+            required: true
 jobs:
-  create_archive:
-    uses: inpsyde/reusable-workflows/.github/workflows/build-plugin-archive.yml@main
-    secrets:
-      COMPOSER_AUTH_JSON: ${{ secrets.PACKAGIST_AUTH_JSON }}
-    with:
-      PLUGIN_MAIN_FILE: my-plugin.php
-      PLUGIN_VERSION: ${{ inputs.PACKAGE_VERSION }}
-      PRE_SCRIPT: |
-        echo 'hello world!';
+   create_archive:
+      uses: inpsyde/reusable-workflows/.github/workflows/build-plugin-archive.yml@main
+      secrets:
+         COMPOSER_AUTH_JSON: ${{ secrets.PACKAGIST_AUTH_JSON }}
+      with:
+         PLUGIN_MAIN_FILE: my-plugin.php
+         PLUGIN_VERSION: ${{ inputs.PACKAGE_VERSION }}
+         PRE_SCRIPT: |
+            echo 'hello world!';
 
 ```
 
@@ -48,22 +48,20 @@ jobs:
 
 ### Inputs
 
-| Name                   | Default                                                       | Description                                                                                    |
-|------------------------|---------------------------------------------------------------|------------------------------------------------------------------------------------------------|
-| `NODE_OPTIONS`         | `''`                                                          | Space-separated list of command-line Node options                                              |
-| `NODE_VERSION`         | `18`                                                          | Node version with which the assets will be compiled                                            |
-| `NPM_REGISTRY_DOMAIN`  | `'https://npm.pkg.github.com/'`                               | Domain of the private npm registry                                                             |
-| `COMPOSER_ARGS`        | `'--no-dev --no-scripts --prefer-dist --optimize-autoloader'` | Set of arguments passed to Composer when gathering production dependencies                     |
-| `PHP_VERSION`          | `'8.2'`                                                       | PHP version to use when gathering production dependencies                                      |
-| `PHP_EXTENSIONS`       | `''`                                                          | PHP extensions to be enabled or disabled by shivammathur/setup-php                             |
-| `PHP_VERSION_BUILD`    | `'8.2'`                                                       | PHP version to use when executing build tools                                                  |
-| `PHP_EXTENSIONS_BUILD` | `''`                                                          | PHP extensions to be enabled or disabled by shivammathur/setup-php when executing build tools  |
-| `ARCHIVE_NAME`         | `''`                                                          | The name of the zip archive (falls back to the repository name)                                |
-| `PLUGIN_MAIN_FILE`     | `'index.php'`                                                 | The name of the main plugin file                                                               |
-| `PLUGIN_FOLDER_NAME`   | `''`                                                          | The name of the plugin folder (falls back to the archive name, if set, or the repository name) |
-| `PLUGIN_VERSION`       | -                                                             | The new plugin version                                                                         |
-| `PRE_SCRIPT`           | `''`                                                          | Run custom shell code before creating the release archive                                      |
-| `COMPILE_ASSETS_ARGS`  | `'-v --env=root'`                                             | Set of arguments passed to Composer Asset Compiler                                             |
+| Name                  | Default                                                       | Description                                                                                    |
+|-----------------------|---------------------------------------------------------------|------------------------------------------------------------------------------------------------|
+| `NODE_OPTIONS`        | `''`                                                          | Space-separated list of command-line Node options                                              |
+| `NODE_VERSION`        | `18`                                                          | Node version with which the assets will be compiled                                            |
+| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'`                               | Domain of the private npm registry                                                             |
+| `COMPOSER_ARGS`       | `'--no-dev --no-scripts --prefer-dist --optimize-autoloader'` | Set of arguments passed to Composer when gathering production dependencies                     |
+| `PHP_VERSION`         | `'8.2'`                                                       | PHP version to use when gathering production dependencies                                      |
+| `PHP_VERSION_BUILD`   | `'8.2'`                                                       | PHP version to use when executing build tools                                                  |
+| `ARCHIVE_NAME`        | `''`                                                          | The name of the zip archive (falls back to the repository name)                                |
+| `PLUGIN_MAIN_FILE`    | `'index.php'`                                                 | The name of the main plugin file                                                               |
+| `PLUGIN_FOLDER_NAME`  | `''`                                                          | The name of the plugin folder (falls back to the archive name, if set, or the repository name) |
+| `PLUGIN_VERSION`      | -                                                             | The new plugin version                                                                         |
+| `PRE_SCRIPT`          | `''`                                                          | Run custom shell code before creating the release archive                                      |
+| `COMPILE_ASSETS_ARGS` | `'-v --env=root'`                                             | Set of arguments passed to Composer Asset Compiler                                             |
 
 #### A note on `PLUGIN_VERSION`
 

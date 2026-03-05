@@ -33,19 +33,9 @@ on:
         default: '8.2'
         required: false
         type: string
-      PHP_EXTENSIONS:
-        description: PHP extensions to be enabled or disabled by shivammathur/setup-php.
-        default: ''
-        required: false
-        type: string
       PHP_VERSION_BUILD:
         description: PHP version to use when executing build tools.
         default: '8.2'
-        required: false
-        type: string
-      PHP_EXTENSIONS_BUILD:
-        description: PHP extensions to be enabled or disabled by shivammathur/setup-php when executing build tools.
-        default: ''
         required: false
         type: string
       ARCHIVE_NAME:
@@ -125,7 +115,6 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.PHP_VERSION }}
-          extensions: ${{ inputs.PHP_EXTENSIONS }}
           tools: wp-cli
 
       - name: Install Composer dependencies without dev dependencies
@@ -178,7 +167,6 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.PHP_VERSION_BUILD }}
-          extensions: ${{ inputs.PHP_EXTENSIONS_BUILD }}
           tools: rector, php-scoper, sniccowp/php-scoper-wordpress-excludes, composer/installers, inpsyde/composer-assets-compiler, inpsyde/wp-translation-downloader
 
       - name: Set up node cache mode
