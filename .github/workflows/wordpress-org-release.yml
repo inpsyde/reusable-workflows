@@ -103,8 +103,10 @@ jobs:
 
       - name: Commit changes to SVN repository
         if: inputs.DRY_RUN != true
-        run: | #TODO: do SVN commit here
-          echo 'Committing...'
+        run: |
+          cd "$SVN_REPO_ROOT"
+          svn copy trunk "tags/$TAG" #TODO: put sanitized and validated tag into this env var or use step outputs instead
+          echo 'Committing...' #TODO: do SVN commit here
 
       - name: Compress and upload trunk contents as an artifact
         if: inputs.DRY_RUN == true
