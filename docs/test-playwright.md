@@ -21,7 +21,7 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@main
     with:
       ARTIFACT_PATH: './artifacts'
-      SCRIPT_NAME: 'ci-test-e2e'
+      PLAYWRIGHT_SCRIPT: 'ci-test-e2e'
 ```
 
 ## Configuration parameters
@@ -41,7 +41,7 @@ jobs:
 | `PHP_VERSION`                   | `'8.2'`                         | PHP version with which the dependencies are installed                                             |
 | `PLAYWRIGHT_BROWSER_ARGS`       | `'--with-deps'`                 | Set of arguments passed to `npx playwright install`                                               |
 | `PRE_SCRIPT`                    | `''`                            | Run custom shell code before executing the test script. `GH_TOKEN` and all `ENV_FILE_DATA` variables are available |
-| `SCRIPT_NAME`                   | `''`                            | The name of a custom npm script to run the tests.                                                 |
+| `PLAYWRIGHT_SCRIPT`                   | `''`                            | The name of a custom npm script to run the tests.                                                 |
 | `WORK_DIR`                      | `'.'`                           | Working directory for npm install, Playwright install, PRE_SCRIPT, and test execution             |
 
 
@@ -74,7 +74,7 @@ jobs:
         artifacts/*
         playwright-report/
       ARTIFACT_INCLUDE_HIDDEN_FILES: true
-      SCRIPT_NAME: 'ci-test-e2e'
+      PLAYWRIGHT_SCRIPT: 'ci-test-e2e'
       COMPOSER_DEPS_INSTALL: true
       PHP_VERSION: ${{ matrix.php }}
       NODE_VERSION: 20
@@ -116,7 +116,7 @@ jobs:
       ARTIFACT_PATH: |
         tests/qa/artifacts/*
         tests/qa/playwright-report/
-      SCRIPT_NAME: ${{ inputs.TEST_SUITE }}
+      PLAYWRIGHT_SCRIPT: ${{ inputs.TEST_SUITE }}
       NODE_VERSION: 22
       PLAYWRIGHT_BROWSER_ARGS: 'chromium --with-deps'
       PRE_SCRIPT: |

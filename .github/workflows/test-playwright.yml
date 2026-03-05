@@ -57,7 +57,7 @@ on:
         default: ''
         required: false
         type: string
-      SCRIPT_NAME:
+      PLAYWRIGHT_SCRIPT:
         description: The name of a custom npm script to run the tests.
         default: ''
         required: false
@@ -180,7 +180,7 @@ jobs:
           # Ensure .env.ci is deleted on exit
           trap 'rm -f .env.ci' EXIT
           
-          npm run ${{ inputs.SCRIPT_NAME }}
+          npm run ${{ inputs.PLAYWRIGHT_SCRIPT }}
 
       - name: Upload artifact
         if: always()
