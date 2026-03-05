@@ -83,8 +83,6 @@ jobs:
           --exclude='.distignore' \
           --exclude-from='.distignore' \
           ./ "$SVN_REPO_ROOT/trunk/"
-          
-          cd "$SVN_REPO_ROOT/trunk" && pwd && ls -lha
 
       - name: Update SVN tracking
         run: |
