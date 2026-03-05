@@ -52,18 +52,13 @@ on:
         default: '--with-deps'
         required: false
         type: string
-      PLAYWRIGHT_CLI_ARGS:
-        description: Arguments and flags for `npx playwright test`. When set SCRIPT_NAME will be ignored.
-        default: ''
-        required: false
-        type: string
       PRE_SCRIPT:
         description: Run custom shell code before executing the test runner.
         default: ''
         required: false
         type: string
       SCRIPT_NAME:
-        description: The name of a custom npm script to run the tests. Ignored when PLAYWRIGHT_GREP is set.
+        description: The name of a custom npm script to run the tests.
         default: ''
         required: false
         type: string
@@ -185,11 +180,7 @@ jobs:
           # Ensure .env.ci is deleted on exit
           trap 'rm -f .env.ci' EXIT
           
-          if [ -n "${{ inputs.PLAYWRIGHT_CLI_ARGS }}" ]; then
-            npx playwright test ${{ inputs.PLAYWRIGHT_CLI_ARGS }}
-          else
-            npm run ${{ inputs.SCRIPT_NAME }}
-          fi
+          npm run ${{ inputs.SCRIPT_NAME }}
 
       - name: Upload artifact
         if: always()
