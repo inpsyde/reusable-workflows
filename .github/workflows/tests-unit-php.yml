@@ -9,7 +9,7 @@ on:
         required: false
         type: string
       PHP_EXTENSIONS:
-        description: PHP extensions to be enabled or disabled by shivammathur/setup-php.
+        description: PHP extensions supported by shivammathur/setup-php to be installed or disabled.
         default: ''
         required: false
         type: string

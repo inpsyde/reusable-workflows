@@ -117,7 +117,7 @@ jobs:
 | `NODE_VERSION`        | `18`                                             | Node version with which the assets will be compiled                                                              |
 | `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'`                  | Domain of the private npm registry                                                                               |
 | `PHP_VERSION`         | `'8.2'`                                          | PHP version with which the PHP tools are to be executed                                                          |
-| `PHP_EXTENSIONS`      | `''`                                             | PHP extensions to be enabled or disabled by shivammathur/setup-php                                               |
+| `PHP_EXTENSIONS`      | `''`                                             | PHP extensions supported by shivammathur/setup-php to be installed or disabled                                   |
 | `PHP_TOOLS`           | `''`                                             | PHP tools supported by shivammathur/setup-php to be installed                                                    |
 | `COMPOSER_ARGS`       | `'--no-dev --prefer-dist --optimize-autoloader'` | Set of arguments passed to Composer when gathering production dependencies                                       |
 | `PACKAGE_NAME`        | `''`                                             | The name of the package (falls back to the repository name)                                                      |
