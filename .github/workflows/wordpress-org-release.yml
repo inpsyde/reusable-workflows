@@ -10,6 +10,11 @@ on:
         type: string
         required: true
 
+      TAG:
+        description: "Git tag to publish to publish at WordPress.org (note: it must exist in git and not exist in SVN)"
+        type: string
+        required: true
+
       DRY_RUN:
         description: "In dry-run mode no commit to the SVN repository happens. Instead, files from trunk are provided as an artifact."
         type: boolean
@@ -33,7 +38,7 @@ jobs:
     #     SVN_REPO_ROOT: "${{ runner.workspace }}/svn_repository/${{ inputs.SVN_PLUGIN_SLUG }}"
     runs-on: ubuntu-latest
     steps:
-        #TODO: remove this step (see the comment above for details)
+      #TODO: remove this step (see the comment above for details)
       - name: Configure paths
         run: |
           echo "SVN_REPO_PATH=${{ runner.workspace }}/svn_repository" >> $GITHUB_ENV
@@ -46,6 +51,8 @@ jobs:
 
       - name: Checkout git repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.TAG }} #TODO: Sanitize and validate tag name
 
       - name: Checkout SVN repository
         run: |
