@@ -26,21 +26,21 @@ To achieve that, the reusable workflow:
 ```yml
 name: Create release package
 on:
-   workflow_dispatch:
-      inputs:
-         PACKAGE_VERSION:
-            description: 'Package Version'
-            required: true
+  workflow_dispatch:
+    inputs:
+      PACKAGE_VERSION:
+        description: 'Package Version'
+        required: true
 jobs:
-   create_archive:
-      uses: inpsyde/reusable-workflows/.github/workflows/build-plugin-archive.yml@main
-      secrets:
-         COMPOSER_AUTH_JSON: ${{ secrets.PACKAGIST_AUTH_JSON }}
-      with:
-         PLUGIN_MAIN_FILE: my-plugin.php
-         PLUGIN_VERSION: ${{ inputs.PACKAGE_VERSION }}
-         PRE_SCRIPT: |
-            echo 'hello world!';
+  create_archive:
+    uses: inpsyde/reusable-workflows/.github/workflows/build-plugin-archive.yml@main
+    secrets:
+      COMPOSER_AUTH_JSON: ${{ secrets.PACKAGIST_AUTH_JSON }}
+    with:
+      PLUGIN_MAIN_FILE: my-plugin.php
+      PLUGIN_VERSION: ${{ inputs.PACKAGE_VERSION }}
+      PRE_SCRIPT: |
+        echo 'hello world!';
 
 ```
 
