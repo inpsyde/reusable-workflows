@@ -8,6 +8,11 @@ on:
         default: '8.2'
         required: false
         type: string
+      PHP_EXTENSIONS:
+        description: PHP extensions supported by shivammathur/setup-php to be installed or disabled.
+        default: ''
+        required: false
+        type: string
       COMPOSER_ARGS:
         description: Set of arguments passed to Composer.
         default: '--prefer-dist'
@@ -54,6 +59,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.PHP_VERSION }}
+          extensions: ${{ inputs.PHP_EXTENSIONS }}
           tools: composer, cs2pr
           coverage: none
 
