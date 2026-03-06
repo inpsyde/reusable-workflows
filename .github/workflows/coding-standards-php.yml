@@ -28,6 +28,11 @@ on:
         default: '--graceful-warnings ./phpcs-report.xml'
         required: false
         type: string
+      VENDOR_DIR:
+        description: Path to the Composer vendor directory, relative to the repository root.
+        default: 'vendor'
+        required: false
+        type: string
     secrets:
       COMPOSER_AUTH_JSON:
         description: Authentication for privately hosted packages and repositories as a JSON formatted object.
@@ -74,7 +79,7 @@ jobs:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
 
       - name: Run PHP_CodeSniffer
-        run: ./vendor/bin/phpcs ${{ inputs.PHPCS_ARGS }}
+        run: ./${{ inputs.VENDOR_DIR }}/bin/phpcs ${{ inputs.PHPCS_ARGS }}
 
       - name: Annotate PHP_CodeSniffer report
         if: ${{ always() }}
