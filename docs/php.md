@@ -5,7 +5,7 @@
 ## Coding standards analysis
 
 This workflow runs [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer). It does so by
-executing the binary in the `./vendor/bin/` folder.
+executing the binary resolved via `composer config bin-dir`.
 
 **Simplest possible example:**
 
@@ -64,7 +64,7 @@ versions.
 
 This workflow runs either [Psalm](https://psalm.dev/) or [PHPStan](https://phpstan.org/), or both, based on the existence of a supported configuration file in your repository root folder. 
 
-It does so by executing the binary in the `./vendor/bin/` folder.
+It does so by executing the binary resolved via `composer config bin-dir`.
 
 **Supported configuration files:**
 
@@ -128,8 +128,8 @@ with multiple PHP versions, use the [Lint PHP](#lint-php) workflow.
 
 ## Unit tests PHP
 
-This workflow runs [PHPUnit](https://phpunit.de/). It does so by executing the binary in the
-`./vendor/bin/` folder.
+This workflow runs [PHPUnit](https://phpunit.de/). It does so by executing the binary resolved via
+`composer config bin-dir`.
 
 **Simplest possible example:**
 
