@@ -10,8 +10,13 @@ on:
         type: string
         required: true
 
-      TAG:
-        description: "Git tag to publish to publish at WordPress.org (note: it must exist in git and not exist in SVN)"
+      PLUGIN_VERSION:
+        description: "Plugin version to publish at WordPress.org (note: it must not exist in SVN)"
+        type: string
+        required: true
+
+      GIT_REF:
+        description: "Git ref to publish at WordPress.org (tag, branch or commit)"
         type: string
         required: true
 
@@ -49,10 +54,35 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y subversion rsync
 
+      - name: Validate versions
+        env:
+          PLUGIN_VERSION: ${{ inputs.PLUGIN_VERSION }}
+          GIT_REF: ${{ inputs.GIT_REF }}
+        run: |
+          set -euo pipefail
+
+          if [[ ! "$PLUGIN_VERSION" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "❌ WordPress.org expects version formatted as MAJOR.MINOR.PATCH"
+            echo "   Three groups of numbers separated by dots"
+            echo "   Each group: either 0 or digits not starting with 0"
+            echo "   Received: $PLUGIN_VERSION"
+            exit 1
+          fi
+
+          echo "VALIDATED_PLUGIN_VERSION=$PLUGIN_VERSION" >> $GITHUB_ENV
+          echo "✅ Valid WordPress.org version: $PLUGIN_VERSION"
+
+          if ! git check-ref-format --allow-onelevel "$GIT_REF"; then
+            echo "❌ Invalid Git ref name: $GIT_REF"
+            exit 1
+          fi
+        # We do not create VALIDATED_GIT_REF env var here because actions/checkout action we are going to use it with cannot take ref from vars anyway.
+        # But since it is validated, it is safe to use it directly from user input.
+
       - name: Checkout git repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.TAG }} #TODO: Sanitize and validate tag name
+          ref: ${{ inputs.GIT_REF }}
 
       - name: Checkout SVN repository
         run: |
@@ -105,7 +135,7 @@ jobs:
         if: inputs.DRY_RUN != true
         run: |
           cd "$SVN_REPO_ROOT"
-          svn copy trunk "tags/$TAG" #TODO: put sanitized and validated tag into this env var or use step outputs instead
+          svn copy trunk "tags/$VALIDATED_PLUGIN_VERSION"
           echo 'Committing...' #TODO: do SVN commit here
 
       - name: Compress and upload trunk contents as an artifact
