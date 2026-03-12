@@ -129,9 +129,12 @@ jobs:
           
           cd $SVN_REPO_ROOT
           svn add . --force
-          svn status | grep '^!' | cut -c9- | while IFS= read -r file; do
-            svn delete "$file@"  # @ suffix handles files with @ in name
-          done
+          
+          if svn status | grep -q '^!'; then #Only run if there's anything to delete
+            svn status | grep '^!' | cut -c9- | while IFS= read -r file; do
+              svn delete "$file@"  # @ suffix handles files with @ in name
+            done
+          fi
 
       - name: Commit changes to SVN repository
         if: inputs.DRY_RUN != true
