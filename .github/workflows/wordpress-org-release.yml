@@ -83,6 +83,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.GIT_REF }}
+          ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
       - name: Checkout SVN repository
         run: |
