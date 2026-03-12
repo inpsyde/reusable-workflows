@@ -34,7 +34,7 @@ on:
         required: false
       NODE_VERSION:
         description: Node version with which the node script will be executed.
-        default: 18
+        default: '24'
         required: false
         type: string
       NPM_REGISTRY_DOMAIN:
