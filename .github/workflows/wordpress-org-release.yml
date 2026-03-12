@@ -70,6 +70,19 @@ jobs:
         # We do not create VALIDATED_GIT_REF env var here because actions/checkout action we are going to use it with cannot take ref from vars anyway.
         # But since it is validated, it is safe to use it directly from user input.
 
+      - name: Checkout git repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.GIT_REF }}
+          ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
+
+      - name: Checkout SVN repository
+        run: |
+          set -euo pipefail
+          mkdir -p "$SVN_REPO_PATH" && cd "$SVN_REPO_PATH"
+          svn checkout "https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}" --depth immediates
+          cd "$SVN_REPO_ROOT" && svn update trunk --set-depth infinity
+
       - name: Verify version doesn't exist in SVN
         run: |
           set -euo pipefail
@@ -84,19 +97,6 @@ jobs:
           fi
 
           echo "✅ Version $VALIDATED_PLUGIN_VERSION is available"
-
-      - name: Checkout git repository
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.GIT_REF }}
-          ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
-
-      - name: Checkout SVN repository
-        run: |
-          set -euo pipefail
-          mkdir -p "$SVN_REPO_PATH" && cd "$SVN_REPO_PATH"
-          svn checkout "https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}" --depth immediates
-          cd "$SVN_REPO_ROOT" && svn update trunk --set-depth infinity
 
       - name: Synchronize SVN repository with Git
         working-directory: ${{ github.workspace }} #Make sure we are in the right place before start sync
