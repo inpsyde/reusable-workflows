@@ -6,17 +6,17 @@ on:
   workflow_call:
     inputs:
       SVN_PLUGIN_SLUG:
-        description: "WordPress.org plugin slug (e.g., 'woocommerce' from https://wordpress.org/plugins/woocommerce)"
+        description: "WordPress.org plugin slug (e.g., 'woocommerce')"
         type: string
         required: true
 
       PLUGIN_VERSION:
-        description: "Plugin version to publish at WordPress.org (note: it must not exist in SVN)"
+        description: "Plugin version to publish (MAJOR.MINOR.PATCH)"
         type: string
         required: true
 
       GIT_REF:
-        description: "Git ref to publish at WordPress.org (tag, branch or commit)"
+        description: "Git ref to publish (tag, branch, or commit)"
         type: string
         required: true
 
