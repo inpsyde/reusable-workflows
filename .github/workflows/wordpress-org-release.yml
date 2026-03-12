@@ -79,6 +79,21 @@ jobs:
         # We do not create VALIDATED_GIT_REF env var here because actions/checkout action we are going to use it with cannot take ref from vars anyway.
         # But since it is validated, it is safe to use it directly from user input.
 
+      - name: Verify version doesn't exist in SVN
+        run: |
+          set -euo pipefail
+
+          cd "${SVN_REPO_ROOT}/tags"
+          svn update --set-depth immediates
+
+          if [ -d "$VALIDATED_PLUGIN_VERSION" ]; then
+            echo "❌ Version $VALIDATED_PLUGIN_VERSION already exists in WordPress.org!"
+            echo "   Check: https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}/tags/"
+            exit 1
+          fi
+
+          echo "✅ Version $VALIDATED_PLUGIN_VERSION is available"
+
       - name: Checkout git repository
         uses: actions/checkout@v4
         with:
