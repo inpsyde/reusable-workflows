@@ -36,8 +36,8 @@ on:
 jobs:
   update_svn_from_git:
     env:
-      SVN_REPO_PATH: "${{ runner.workspace }}/svn_repository"
-      SVN_REPO_ROOT: "${{ runner.workspace }}/svn_repository/${{ inputs.SVN_PLUGIN_SLUG }}"
+      SVN_REPO_PATH: "${{ github.workspace }}/svn_repository"
+      SVN_REPO_ROOT: "${{ github.workspace }}/svn_repository/${{ inputs.SVN_PLUGIN_SLUG }}"
     runs-on: ubuntu-latest
     steps:
       - name: Install required tools
