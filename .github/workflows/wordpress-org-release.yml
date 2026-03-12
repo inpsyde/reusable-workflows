@@ -88,7 +88,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p $SVN_REPO_PATH && cd $SVN_REPO_PATH
-          svn checkout "https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}"          
+          svn checkout "https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}" --depth immediates
+          cd $SVN_REPO_ROOT && svn update trunk --set-depth infinity
 
       - name: Synchronize SVN repository with Git
         working-directory: ${{ github.workspace }} #Make sure we are in the right place before start sync
