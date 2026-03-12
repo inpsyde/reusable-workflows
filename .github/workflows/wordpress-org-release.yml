@@ -151,10 +151,39 @@ jobs:
 
       - name: Commit changes to SVN repository
         if: inputs.DRY_RUN != true
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
         run: |
+          set -euo pipefail
+
+          [ -d "$SVN_REPO_ROOT" ] || { echo "❌ SVN_REPO_ROOT not found"; exit 1; }
           cd "$SVN_REPO_ROOT"
-          svn copy trunk "tags/${VALIDATED_PLUGIN_VERSION}"
-          echo 'Committing...' #TODO: do SVN commit here
+
+          svn status trunk | grep -q '^C' && { echo "❌ SVN conflicts in trunk"; exit 1; }
+          svn status trunk | grep -q '^[ADMR!~]' || { echo "❌ No changes in trunk"; exit 1; }
+
+          # WordPress.org SVN doesn't support SSH keys or tokens.
+          # Keeping credentials as step-level env vars with --no-auth-cache is the best available option.
+          echo '🚀 Committing...'
+
+          svn commit trunk \
+            --username "$SVN_USERNAME" \
+            --password "$SVN_PASSWORD" \
+            --no-auth-cache \
+            --non-interactive \
+            -m "Update trunk to version ${VALIDATED_PLUGIN_VERSION}"
+
+          svn copy \
+            "https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}/trunk" \
+            "https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}/tags/${VALIDATED_PLUGIN_VERSION}" \
+            --username "$SVN_USERNAME" \
+            --password "$SVN_PASSWORD" \
+            --no-auth-cache \
+            --non-interactive \
+            -m "Tagging version ${VALIDATED_PLUGIN_VERSION}"
+
+          echo "✅ Version ${VALIDATED_PLUGIN_VERSION} was published to WordPress.org"
 
       - name: Compress and upload trunk contents as an artifact
         if: inputs.DRY_RUN == true
