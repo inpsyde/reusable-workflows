@@ -127,7 +127,7 @@ jobs:
         run: |
           set -euo pipefail
           
-          cd $SVN_REPO_ROOT
+          cd "${SVN_REPO_ROOT}/trunk"
           svn add . --force
           
           if svn status | grep -q '^!'; then #Only run if there's anything to delete
