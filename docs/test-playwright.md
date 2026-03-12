@@ -56,7 +56,7 @@ jobs:
 | `GITHUB_USER_NAME`    | Username for the GitHub user configuration                                               |
 | `GITHUB_USER_SSH_KEY` | Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`             |
 
-**Example with configuration parameters:**
+## Example with configuration parameters
 
 ```yml
 name: E2E Testing
@@ -90,7 +90,7 @@ jobs:
       NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_PACKAGES_READ_ACCESS_TOKEN}}
 ```
 
-**Example with custom inputs:**
+## Example with custom inputs
 
 ```yml
 name: E2E Testing
@@ -127,11 +127,75 @@ jobs:
       NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_PACKAGES_READ_ACCESS_TOKEN}}
 ```
 
-**Example of secrets:**
+## Example of secrets
 
 For `ENV_FILE_DATA`:
 
-```SHELL
-TEST_EXEC_KEY=YOUR-KEY
-WP_BASE_URL=https://example.com
+```bash
+# playwright-utils config
+WP_BASE_URL='http://mywp.site'
+WP_USERNAME=admin
+WP_PASSWORD=password
+WP_BASIC_AUTH_USER=admin
+WP_BASIC_AUTH_PASS=password
+STORAGE_STATE_PATH='./storage-states'
+STORAGE_STATE_PATH_ADMIN='./storage-states/admin.json'
+WORDPRESS_DB_USER=root
+WORDPRESS_DB_PASSWORD=password
+
+WPCLI_ENV_TYPE= # localhost, vip, wpenv, ddev, ssh
+WPCLI_PATH= # for localhost, wpenv
+# For WPCLI_ENV_TYPE=ssh
+SSH_LOGIN=
+SSH_HOST=
+SSH_PORT=
+SSH_PATH=
+# For WPCLI_ENV_TYPE=vip
+VIP_APP=
+VIP_ENV=
+
+# WooCommerce specific env vars
+WC_API_KEY=
+WC_API_SECRET=
+WC_DEFAULT_COUNTRY=usa
+WC_DEFAULT_CURRENCY=USD
+
+# Xray in Jira
+XRAY_CLIENT_ID=
+XRAY_CLIENT_SECRET=
+TEST_EXEC_KEY=
 ```
+
+## Examples of `PRE_SCRIPT`
+
+### VIP connection
+
+```bash
+PRE_SCRIPT: |
+      npm install -g @automattic/vip
+      mkdir -p ~/.config/configstore
+      echo '{"vip-go-cli": "'"$VIP_TOKEN"'"}' > ~/.config/configstore/vip-go-cli.json
+```
+
+### Distributing vars per env
+
+In case of several test environments (staging, production, etc.) `PRE_SCRIPT` can be used to setup env-specific vars from `ENV_FILE_DATA`. For example `PERCY_TOKEN`:
+
+```bash
+PRE_SCRIPT: |
+      echo "PERCY_TOKEN=$PERCY_TOKEN_STAGE" >> "$GITHUB_ENV"
+```
+
+### Download and zip plugin artifact
+
+For cases when plugin is built within the same workflow:
+
+```bash
+PRE_SCRIPT: |
+  gh run download ${{ github.run_id }} -p "woocommerce-paypal-payments-*" -D tests/qa/resources/files
+  cd tests/qa/resources/files
+  mv woocommerce-paypal-payments-*/woocommerce-paypal-payments .
+  zip -r woocommerce-paypal-payments.zip woocommerce-paypal-payments
+  rm -rf woocommerce-paypal-payments woocommerce-paypal-payments-*/
+```
+	
