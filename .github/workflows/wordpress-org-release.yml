@@ -21,7 +21,7 @@ on:
         required: true
 
       DRY_RUN:
-        description: "In dry-run mode no commit to the SVN repository happens. Instead, files from trunk are provided as an artifact."
+        description: "Create artifact from trunk instead of committing to SVN"
         type: boolean
         default: false
         required: false
@@ -147,4 +147,4 @@ jobs:
           name: ${{ inputs.SVN_PLUGIN_SLUG }}
           path: ${{ runner.workspace }}/svn_repository/${{ inputs.SVN_PLUGIN_SLUG }}/trunk
           include-hidden-files: true
-          compression-level: 1
+          compression-level: 1 #Minimal compression - we don't want to waste resources for this
