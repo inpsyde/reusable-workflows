@@ -99,8 +99,6 @@ jobs:
 
           touch .distignore
           
-          ls $GITHUB_WORKSPACE
-          
           rsync -rc \
           --delete \
           --delete-excluded \
