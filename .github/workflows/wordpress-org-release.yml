@@ -84,8 +84,8 @@ jobs:
           set -euo pipefail
           mkdir -p "$SVN_REPO_PATH" && cd "$SVN_REPO_PATH"
           
-          #We only getting full contents of trunk here, the rest of directories we left empty.
-          #For some older plugins, tags directory may take gigabytes, and we don't need them here.
+          # We only do a full checkout of trunk here, leaving other directories empty.
+          # Tags directory can take gigabytes for older plugins, and we don't need them for publishing.
           
           svn checkout "https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}" --depth immediates
           cd "$SVN_REPO_ROOT" && svn update trunk --set-depth infinity
