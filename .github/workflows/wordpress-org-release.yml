@@ -145,6 +145,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.SVN_PLUGIN_SLUG }}
-          path: ${{ runner.workspace }}/svn_repository/${{ inputs.SVN_PLUGIN_SLUG }}/trunk
+          path: ${{ env.SVN_REPO_ROOT }}/trunk
           include-hidden-files: true
           compression-level: 1 #Minimal compression - we don't want to waste resources for this
