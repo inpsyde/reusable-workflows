@@ -103,7 +103,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          touch .distignore
+          touch .distignore # Ensure file exists so --exclude-from doesn't fail
           
           rsync -rc \
           --delete \
@@ -134,7 +134,8 @@ jobs:
           cd "${SVN_REPO_ROOT}/trunk"
           svn add . --force
           
-          if svn status | grep -q '^!'; then #Only run if there's anything to delete
+          #Only run if there's anything to delete
+          if svn status | grep -q '^!'; then
             svn status | grep '^!' | cut -c9- | while IFS= read -r file; do
               svn delete "$file@"  # @ suffix handles files with @ in name
             done
