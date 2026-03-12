@@ -35,20 +35,11 @@ on:
 
 jobs:
   update_svn_from_git:
-    # TODO: Set env vars here and remove an extra step.
-    # This works in real GH Actions but act doesn't support runner context at job level, so we had to create an extra step
-    # Desired format:
-    #   env:
-    #     SVN_REPO_PATH: "${{ runner.workspace }}/svn_repository"
-    #     SVN_REPO_ROOT: "${{ runner.workspace }}/svn_repository/${{ inputs.SVN_PLUGIN_SLUG }}"
+    env:
+      SVN_REPO_PATH: "${{ runner.workspace }}/svn_repository"
+      SVN_REPO_ROOT: "${{ runner.workspace }}/svn_repository/${{ inputs.SVN_PLUGIN_SLUG }}"
     runs-on: ubuntu-latest
     steps:
-      #TODO: remove this step (see the comment above for details)
-      - name: Configure paths
-        run: |
-          echo "SVN_REPO_PATH=${{ runner.workspace }}/svn_repository" >> $GITHUB_ENV
-          echo "SVN_REPO_ROOT=${{ runner.workspace }}/svn_repository/${{ inputs.SVN_PLUGIN_SLUG }}" >> $GITHUB_ENV
-
       - name: Install required tools
         run: |
           sudo apt-get update -y
