@@ -1,0 +1,194 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+name: wordpress.org publishing
+
+on:
+  workflow_call:
+    inputs:
+      SVN_PLUGIN_SLUG:
+        description: "WordPress.org plugin slug (e.g., 'woocommerce')"
+        type: string
+        required: true
+
+      PLUGIN_VERSION:
+        description: "Plugin version to publish (MAJOR.MINOR.PATCH)"
+        type: string
+        required: true
+
+      GIT_REF:
+        description: "Git ref to publish (tag, branch, or commit)"
+        type: string
+        required: true
+
+      DRY_RUN:
+        description: "Create artifact from trunk instead of committing to SVN"
+        type: boolean
+        default: false
+        required: false
+
+    secrets:
+      SVN_USERNAME:
+        required: true
+
+      SVN_PASSWORD:
+        required: true
+
+      GITHUB_USER_SSH_KEY:
+        required: true
+
+jobs:
+  update_svn_from_git:
+    env:
+      SVN_REPO_PATH: "${{ github.workspace }}/svn_repository"
+      SVN_REPO_ROOT: "${{ github.workspace }}/svn_repository/${{ inputs.SVN_PLUGIN_SLUG }}"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install required tools
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y subversion rsync
+
+      - name: Validate versions
+        env:
+          PLUGIN_VERSION: ${{ inputs.PLUGIN_VERSION }}
+          GIT_REF: ${{ inputs.GIT_REF }}
+        run: |
+          set -euo pipefail
+
+          if [[ ! "$PLUGIN_VERSION" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "❌ WordPress.org expects version formatted as MAJOR.MINOR.PATCH"
+            echo "   Three groups of numbers separated by dots"
+            echo "   Each group: either 0 or digits not starting with 0"
+            echo "   Received: $PLUGIN_VERSION"
+            exit 1
+          fi
+
+          echo "VALIDATED_PLUGIN_VERSION=$PLUGIN_VERSION" >> $GITHUB_ENV
+          echo "✅ Valid WordPress.org version: $PLUGIN_VERSION"
+
+          if ! git check-ref-format --allow-onelevel "$GIT_REF"; then
+            echo "❌ Invalid Git ref name: $GIT_REF"
+            exit 1
+          fi
+        # We do not create VALIDATED_GIT_REF env var here because actions/checkout action we are going to use it with cannot take ref from vars anyway.
+        # But since it is validated, it is safe to use it directly from user input.
+
+      - name: Checkout git repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.GIT_REF }}
+          ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
+
+      - name: Checkout SVN repository
+        run: |
+          set -euo pipefail
+          mkdir -p "$SVN_REPO_PATH" && cd "$SVN_REPO_PATH"
+          
+          # We only do a full checkout of trunk here, leaving other directories empty.
+          # Tags directory can take gigabytes for older plugins, and we don't need them for publishing.
+          
+          svn checkout "https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}" --depth immediates
+          cd "$SVN_REPO_ROOT" && svn update trunk --set-depth infinity
+
+      - name: Verify version doesn't exist in SVN
+        run: |
+          set -euo pipefail
+
+          cd "${SVN_REPO_ROOT}/tags"
+          svn update --set-depth immediates
+
+          if [ -d "$VALIDATED_PLUGIN_VERSION" ]; then
+            echo "❌ Version $VALIDATED_PLUGIN_VERSION already exists in WordPress.org!"
+            echo "   Check: https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}/tags/"
+            exit 1
+          fi
+
+          echo "✅ Version $VALIDATED_PLUGIN_VERSION is available"
+
+      - name: Synchronize SVN repository with Git
+        working-directory: ${{ github.workspace }} #Make sure we are in the right place before start sync
+        run: |
+          set -euo pipefail
+
+          touch .distignore # Ensure file exists so --exclude-from doesn't fail
+          
+          rsync -rc \
+          --delete \
+          --delete-excluded \
+          --exclude='.git' \
+          --exclude='.svn' \
+          --exclude='auth.json' \
+          --exclude='.env' \
+          --exclude='.env.*' \
+          --exclude='composer.json' \
+          --exclude='composer.lock' \
+          --exclude='package.json' \
+          --exclude='package-lock.json' \
+          --exclude='yarn.lock' \
+          --exclude='node_modules' \
+          --exclude='.github' \
+          --exclude='.ddev' \
+          --exclude='.idea' \
+          --exclude='.vscode' \
+          --exclude='.distignore' \
+          --exclude-from='.distignore' \
+          ./ "$SVN_REPO_ROOT/trunk/"
+
+      - name: Update SVN tracking
+        run: |
+          set -euo pipefail
+          
+          cd "${SVN_REPO_ROOT}/trunk"
+          svn add . --force
+          
+          #Only run if there's anything to delete
+          if svn status | grep -q '^!'; then
+            svn status | grep '^!' | cut -c9- | while IFS= read -r file; do
+              svn delete "$file@"  # @ suffix handles files with @ in name
+            done
+          fi
+
+      - name: Commit changes to SVN repository
+        if: inputs.DRY_RUN != true
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          [ -d "$SVN_REPO_ROOT" ] || { echo "❌ SVN_REPO_ROOT not found"; exit 1; }
+          cd "$SVN_REPO_ROOT"
+
+          svn status trunk | grep -q '^C' && { echo "❌ SVN conflicts in trunk"; exit 1; }
+          svn status trunk | grep -q '^[ADMR!~]' || { echo "❌ No changes in trunk"; exit 1; }
+
+          # WordPress.org SVN doesn't support SSH keys or tokens.
+          # Keeping credentials as step-level env vars with --no-auth-cache is the best available option.
+          echo '🚀 Committing...'
+
+          svn commit trunk \
+            --username "$SVN_USERNAME" \
+            --password "$SVN_PASSWORD" \
+            --no-auth-cache \
+            --non-interactive \
+            -m "Update trunk to version ${VALIDATED_PLUGIN_VERSION}"
+
+          svn copy \
+            "https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}/trunk" \
+            "https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}/tags/${VALIDATED_PLUGIN_VERSION}" \
+            --username "$SVN_USERNAME" \
+            --password "$SVN_PASSWORD" \
+            --no-auth-cache \
+            --non-interactive \
+            -m "Tagging version ${VALIDATED_PLUGIN_VERSION}"
+
+          echo "✅ Version ${VALIDATED_PLUGIN_VERSION} was published to WordPress.org"
+
+      - name: Compress and upload trunk contents as an artifact
+        if: inputs.DRY_RUN == true
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.SVN_PLUGIN_SLUG }}
+          path: ${{ env.SVN_REPO_ROOT }}/trunk
+          include-hidden-files: true
+          compression-level: 1 #Minimal compression - we don't want to waste resources for this
