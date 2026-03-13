@@ -155,4 +155,4 @@ jobs:
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
         run: |
           cd deployment
-          ./vendor/bin/dep deploy ${{ inputs.ENVIRONMENT }} -${{ inputs.VERBOSITY}}
+          ./$(composer config bin-dir)/dep deploy ${{ inputs.ENVIRONMENT }} -${{ inputs.VERBOSITY}}

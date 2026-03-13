@@ -74,7 +74,7 @@ jobs:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
 
       - name: Run PHP_CodeSniffer
-        run: ./vendor/bin/phpcs ${{ inputs.PHPCS_ARGS }}
+        run: ./$(composer config bin-dir)/phpcs ${{ inputs.PHPCS_ARGS }}
 
       - name: Annotate PHP_CodeSniffer report
         if: ${{ always() }}
