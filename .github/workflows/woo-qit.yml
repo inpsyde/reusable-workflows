@@ -64,4 +64,4 @@ jobs:
         run: ./qit partner:add --user="${{ env.WOO_PARTNER_USER }}" --qit_token="${{ env.WOO_PARTNER_SECRET }}"
 
       - name: Run QIT tests
-        run: ./qit run:${{ inputs.QIT_TEST }} ${{ steps.plugin-folder-name.outputs.plugin-folder-name }} --zip=package/plugin.zip ${{ inputs.QIT_OPTIONS }}
+        run: ./qit run:${{ inputs.QIT_TEST }} ${{ steps.plugin-folder-name.outputs.plugin-folder-name }} --zip=package/plugin.zip ${{ inputs.QIT_OPTIONS }} --print-report-url
