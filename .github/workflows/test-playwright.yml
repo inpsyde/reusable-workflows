@@ -34,7 +34,7 @@ on:
         required: false
       NODE_VERSION:
         description: Node version with which the node script will be executed.
-        default: 18
+        default: '24'
         required: false
         type: string
       NPM_REGISTRY_DOMAIN:
@@ -62,9 +62,15 @@ on:
         default: ''
         required: false
         type: string
-      SCRIPT_NAME:
-        description: The name of a custom script to run the tests.
-        required: true
+      PLAYWRIGHT_SCRIPT:
+        description: The name of a custom npm script to run the tests.
+        default: ''
+        required: false
+        type: string
+      WORK_DIR:
+        description: Working directory for npm install, Playwright install, and test execution.
+        default: '.'
+        required: false
         type: string
     secrets:
       ENV_FILE_DATA:
@@ -88,7 +94,7 @@ on:
 
 jobs:
   run-playwright-test:
-    timeout-minutes: 60
+    timeout-minutes: 120
     runs-on: ubuntu-latest
     env:
       PHP_CHECK: false
@@ -116,7 +122,8 @@ jobs:
 
       - name: Set up node cache mode
         run: |
-          if [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ]; then
+          WORK_DIR="${{ inputs.WORK_DIR }}"
+          if [ -f "${GITHUB_WORKSPACE}/${WORK_DIR}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/${WORK_DIR}/npm-shrinkwrap.json" ]; then
             echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV
           else
             echo "No lock files found or unknown package manager"
@@ -149,26 +156,38 @@ jobs:
           cache: ${{ env.NODE_CACHE_MODE }}
 
       - name: Install dependencies
+        working-directory: ${{ inputs.WORK_DIR }}
         run: npm ${{ env.NODE_CACHE_MODE == 'npm' && 'ci' || 'install' }}
 
       - name: Install Playwright dependencies
+        working-directory: ${{ inputs.WORK_DIR }}
         run: |
           npx playwright install ${{ inputs.PLAYWRIGHT_BROWSER_ARGS }}
 
+      - name: Create environment file
+        working-directory: ${{ inputs.WORK_DIR }}
+        env:
+          ENV_FILE_DATA: ${{ secrets.ENV_FILE_DATA }}
+        run: printenv ENV_FILE_DATA > .env.ci
+
       - name: Execute custom code before executing the test script
+        working-directory: ${{ inputs.WORK_DIR }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
         run: |
+          set -a && source .env.ci && set +a
           ${{ inputs.PRE_SCRIPT }}
 
       - name: Run script for test
         id: run-script
         continue-on-error: true
+        working-directory: ${{ inputs.WORK_DIR }}
         run: |
-          touch .env.ci
-          echo "${{ secrets.ENV_FILE_DATA }}" >> .env.ci
           # Ensure .env.ci is deleted on exit
           trap 'rm -f .env.ci' EXIT
           
-          npm run ${{ inputs.SCRIPT_NAME }}
+          npm run ${{ inputs.PLAYWRIGHT_SCRIPT }}
 
       - name: Upload artifact
         if: always()
