@@ -17,6 +17,11 @@ on:
         default: '8.2'
         required: false
         type: string
+      PHP_TOOLS:
+        description: PHP tools supported by shivammathur/setup-php to be installed.
+        default: ''
+        required: false
+        type: string
       PHP_EXTENSIONS:
         description: PHP extensions supported by shivammathur/setup-php to be installed or disabled.
         default: ''
@@ -78,7 +83,7 @@ jobs:
         with:
           php-version: ${{ inputs.PHP_VERSION }}
           extensions: ${{ inputs.PHP_EXTENSIONS }}
-          tools: composer
+          tools: composer, ${{ inputs.PHP_TOOLS }}
           coverage: none
 
       - name: Set up WireGuard
