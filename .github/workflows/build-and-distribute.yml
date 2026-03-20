@@ -13,6 +13,11 @@ on:
         default: 18
         required: false
         type: string
+      NPM_BUILD_SCRIPT:
+        description: The script to be used to run the build. e.g. build:dev
+        default: ''
+        required: false
+        type: string
       NPM_REGISTRY_DOMAIN:
         description: Domain of the private npm registry.
         default: https://npm.pkg.github.com/
@@ -329,7 +334,7 @@ jobs:
           ${{ inputs.PRE_SCRIPT }}
 
       - name: Compile assets
-        run: npm run build
+        run: npm run ${{ inputs.NPM_BUILD_SCRIPT || 'build' }}
 
       - name: Run WordPress Translation Downloader
         if: ${{ env.HAS_COMPOSER == 'true' }}

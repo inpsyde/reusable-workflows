@@ -111,19 +111,20 @@ jobs:
 
 ### Inputs
 
-| Name                  | Default                                          | Description                                                                                                      |
-|-----------------------|--------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
-| `NODE_OPTIONS`        | `''`                                             | Space-separated list of command-line Node options                                                                |
-| `NODE_VERSION`        | `18`                                             | Node version with which the assets will be compiled                                                              |
-| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'`                  | Domain of the private npm registry                                                                               |
-| `PHP_VERSION`         | `'8.2'`                                          | PHP version with which the PHP tools are to be executed                                                          |
-| `PHP_EXTENSIONS`      | `''`                                             | PHP extensions supported by shivammathur/setup-php to be installed or disabled                                   |
-| `PHP_TOOLS`           | `''`                                             | PHP tools supported by shivammathur/setup-php to be installed                                                    |
-| `COMPOSER_ARGS`       | `'--no-dev --prefer-dist --optimize-autoloader'` | Set of arguments passed to Composer when gathering production dependencies                                       |
-| `PACKAGE_NAME`        | `''`                                             | The name of the package (falls back to the repository name)                                                      |
-| `PACKAGE_VERSION`     | `''`                                             | The new package version. If not provided, will use latest tag version with branch name as pre-release identifier |
-| `PRE_SCRIPT`          | `''`                                             | Run custom shell code before creating the release archive                                                        |
-| `BUILT_BRANCH_NAME`   | `''`                                             | Override the automatic build branch naming (defaults to stripping `dev/` prefix from origin branch)              |
+| Name                   | Default                                          | Description                                                                                                      |
+|------------------------|--------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
+| `NODE_OPTIONS`         | `''`                                             | Space-separated list of command-line Node options                                                                |
+| `NODE_VERSION`         | `18`                                             | Node version with which the assets will be compiled                                                              |
+| `NPM_REGISTRY_DOMAIN`  | `'https://npm.pkg.github.com/'`                  | Domain of the private npm registry                                                                               |
+| `NPM_BUILD_SCRIPT`     | `''`                                             | The npm script used to compile assets (falls back to `build`). e.g. `build:dev`                                  |
+| `PHP_VERSION`          | `'8.2'`                                          | PHP version with which the PHP tools are to be executed                                                          |
+| `PHP_EXTENSIONS`       | `''`                                             | PHP extensions supported by shivammathur/setup-php to be installed or disabled                                   |
+| `PHP_TOOLS`            | `''`                                             | PHP tools supported by shivammathur/setup-php to be installed                                                    |
+| `COMPOSER_ARGS`        | `'--no-dev --prefer-dist --optimize-autoloader'` | Set of arguments passed to Composer when gathering production dependencies                                       |
+| `PACKAGE_NAME`         | `''`                                             | The name of the package (falls back to the repository name)                                                      |
+| `PACKAGE_VERSION`      | `''`                                             | The new package version. If not provided, will use latest tag version with branch name as pre-release identifier |
+| `PRE_SCRIPT`           | `''`                                             | Run custom shell code before creating the release archive                                                        |
+| `BUILT_BRANCH_NAME`    | `''`                                             | Override the automatic build branch naming (defaults to stripping `dev/` prefix from origin branch)              |
 
 
 #### A note on `BUILT_BRANCH_NAME`
@@ -227,12 +228,20 @@ The workflow handles version information for both plugins and themes:
 
 ### Asset Compilation
 
-The workflow expects a `build` script in your `package.json`:
+The workflow runs `npm run build` by default. Use the `NPM_BUILD_SCRIPT` input to override this — for example, to run a development build on feature branches and a production build on stable branches:
+
+```yml
+with:
+  NPM_BUILD_SCRIPT: ${{ (github.ref_name == 'dev/main' || github.ref_name == 'dev/beta' || github.ref_type == 'tag') && 'build' || 'build:dev' }}
+```
+
+Your `package.json` should define the corresponding scripts:
 
 ```json
 {
   "scripts": {
-    "build": "wp-scripts build"
+    "build": "wp-scripts build",
+    "build:dev": "wp-scripts build --mode=development"
   }
 }
 ```
