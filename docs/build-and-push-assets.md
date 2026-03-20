@@ -1,5 +1,8 @@
 # Build and push assets
 
+> [!CAUTION]
+> This workflow is deprecated and will be removed soon. Use `.github/workflows/build-and-distribute.yml` ([documentation](build-and-distribute.md)) instead.
+
 This action can be used to build assets in a controlled and isolated environment via GitHub Actions.
 
 To achieve that, the reusable workflow:

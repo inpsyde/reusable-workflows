@@ -39,7 +39,9 @@ jobs:
 | `NODE_VERSION`                  | `18`                            | Node version with which the node script will be executed                                          |
 | `NPM_REGISTRY_DOMAIN`           | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                                |
 | `PHP_VERSION`                   | `'8.2'`                         | PHP version with which the dependencies are installed                                             |
+| `PHP_EXTENSIONS`                | `''`                            | PHP extensions supported by shivammathur/setup-php to be installed or disabled                    |
 | `PLAYWRIGHT_BROWSER_ARGS`       | `'--with-deps'`                 | Set of arguments passed to `npx playwright install`                                               |
+| `PRE_SCRIPT`                    | `''`                            | Run custom shell code before executing the test script                                            |
 | `SCRIPT_NAME`                   |                                 | The name of a custom script to run the tests                                                      | 
 
 ### Secrets
@@ -76,6 +78,8 @@ jobs:
       PHP_VERSION: ${{ matrix.php }}
       NODE_VERSION: 20
       PLAYWRIGHT_BROWSER_ARGS: 'chromium --with-deps'
+      PRE_SCRIPT: |
+        echo "Starting custom logic..."
     secrets:
       ENV_FILE_DATA: ${{ secrets.ENV_FILE_DATA }}
       COMPOSER_AUTH_JSON: '${{ secrets.PACKAGIST_AUTH_JSON }}'

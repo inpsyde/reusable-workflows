@@ -47,9 +47,19 @@ on:
         default: '8.2'
         required: false
         type: string
+      PHP_EXTENSIONS:
+        description: PHP extensions supported by shivammathur/setup-php to be installed or disabled.
+        default: ''
+        required: false
+        type: string
       PLAYWRIGHT_BROWSER_ARGS:
         description: Set of arguments passed to `npx playwright install`.
         default: '--with-deps'
+        required: false
+        type: string
+      PRE_SCRIPT:
+        description: Run custom shell code before executing the test runner.
+        default: ''
         required: false
         type: string
       SCRIPT_NAME:
@@ -82,6 +92,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PHP_CHECK: false
+      NODE_CACHE_MODE: ''
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -90,7 +101,7 @@ jobs:
         env:
           GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
         if: ${{ env.GITHUB_USER_SSH_KEY != '' }}
-        uses: webfactory/ssh-agent@v0.9.0
+        uses: webfactory/ssh-agent@v0.9.1
         with:
           ssh-private-key: ${{ env.GITHUB_USER_SSH_KEY }}
 
@@ -103,19 +114,28 @@ jobs:
           git config --global user.email "${{ env.GITHUB_USER_EMAIL }}"
           git config --global user.name "${{ env.GITHUB_USER_NAME }}"
 
+      - name: Set up node cache mode
+        run: |
+          if [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ]; then
+            echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV
+          else
+            echo "No lock files found or unknown package manager"
+          fi
+
       - name: Set up PHP
         if: ${{ inputs.COMPOSER_DEPS_INSTALL }}
         uses: shivammathur/setup-php@v2
-        env:
-          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
         with:
           php-version: ${{ inputs.PHP_VERSION }}
+          extensions: ${{ inputs.PHP_EXTENSIONS }}
           tools: composer
           coverage: none
 
       - name: Install Composer dependencies
         if: ${{ inputs.COMPOSER_DEPS_INSTALL }}
         uses: ramsey/composer-install@v3
+        env:
+          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
         with:
           composer-options: '--prefer-dist'
 
@@ -126,16 +146,21 @@ jobs:
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
-          cache: 'npm'
+          cache: ${{ env.NODE_CACHE_MODE }}
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ${{ env.NODE_CACHE_MODE == 'npm' && 'ci' || 'install' }}
 
       - name: Install Playwright dependencies
         run: |
           npx playwright install ${{ inputs.PLAYWRIGHT_BROWSER_ARGS }}
 
+      - name: Execute custom code before executing the test script
+        run: |
+          ${{ inputs.PRE_SCRIPT }}
+
       - name: Run script for test
+        id: run-script
         continue-on-error: true
         run: |
           touch .env.ci
@@ -146,6 +171,7 @@ jobs:
           npm run ${{ inputs.SCRIPT_NAME }}
 
       - name: Upload artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.ARTIFACT_NAME }}
@@ -154,3 +180,9 @@ jobs:
           overwrite: ${{ inputs.ARTIFACT_OVERWRITE }}
           include-hidden-files: ${{ inputs.ARTIFACT_INCLUDE_HIDDEN_FILES }}
           retention-days: ${{ inputs.ARTIFACT_RETENTION_DAYS }}
+
+      - name: Check test results
+        if: steps.run-script.outcome == 'failure'
+        run: |
+          echo "Tests failed! Check the artifacts for details."
+          exit 1

@@ -1,5 +1,8 @@
 # Assets compilation
 
+> [!CAUTION]
+> This workflow is deprecated and will be removed soon. Use `.github/workflows/build-and-distribute.yml` ([documentation](build-and-distribute.md)) instead.
+
 This workflow utilizes
 the [Composer Asset Compiler](https://github.com/inpsyde/composer-asset-compiler) to compile assets.
 For details, refer
