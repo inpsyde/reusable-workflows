@@ -173,6 +173,10 @@ jobs:
           set -a && source .env.ci && set +a
           ${{ inputs.PRE_SCRIPT }}
 
+      - name: Boot wp-env
+        if: ${{ hashFiles('.wp-env.json') != '' }}
+        run: npm -g i @wordpress/env && wp-env start
+
       - name: Run script for test
         id: run-script
         continue-on-error: true
