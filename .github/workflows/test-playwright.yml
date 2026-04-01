@@ -166,7 +166,9 @@ jobs:
 
       - name: Boot wp-env
         if: ${{ hashFiles('.wp-env.json') != '' }}
-        run: npm -g i @wordpress/env && wp-env start
+        run: |
+          set -a && source .env.ci && set +a
+          npm -g i @wordpress/env && wp-env start
 
       - name: Execute custom code before executing the test script
         working-directory: ${{ inputs.WORK_DIR }}
