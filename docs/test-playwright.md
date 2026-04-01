@@ -5,9 +5,9 @@ This workflow executes Playwright-based tests in a controlled and isolated envir
 The workflow can:
 
 - execute a building step, both for node and PHP environments (if the PHP version is provided and a `composer.json` file is present)
-- create an environment variables file named `.env.ci` dedicated to the test step; load this file using `dotenv-ci` directly in your test script, e.g., `./node_modules/.bin/dotenv -e .env.ci -- npm run e2e`
-- execute the tests using Playwright
-- upload the artifacts
+- create an environment variables file named `.env.ci` dedicated to the test step; load this file using `dotenv-ci` directly in your test script, e.g., `./node_modules/.bin/dotenv -e .env.ci -- npm run e2e`. The file is also sourced before `PRE_SCRIPT`, making all variables available as environment variables.
+- execute the tests using Playwright via a custom npm script.
+- upload the artifacts.
 
 **Simplest possible example:**
 
@@ -21,7 +21,7 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@main
     with:
       ARTIFACT_PATH: './artifacts'
-      SCRIPT_NAME: 'ci-test-e2e'
+      PLAYWRIGHT_SCRIPT: 'ci-test-e2e'
 ```
 
 ## Configuration parameters
@@ -41,21 +41,23 @@ jobs:
 | `PHP_VERSION`                   | `'8.2'`                         | PHP version with which the dependencies are installed                                             |
 | `PHP_EXTENSIONS`                | `''`                            | PHP extensions supported by shivammathur/setup-php to be installed or disabled                    |
 | `PLAYWRIGHT_BROWSER_ARGS`       | `'--with-deps'`                 | Set of arguments passed to `npx playwright install`                                               |
-| `PRE_SCRIPT`                    | `''`                            | Run custom shell code before executing the test script                                            |
-| `SCRIPT_NAME`                   |                                 | The name of a custom script to run the tests                                                      | 
+| `PRE_SCRIPT`                    | `''`                            | Run custom shell code before executing the test script. `GH_TOKEN` and all `ENV_FILE_DATA` variables are available |
+| `PLAYWRIGHT_SCRIPT`                   | `''`                            | The name of a custom npm script to run the tests.                                                 |
+| `WORK_DIR`                      | `'.'`                           | Working directory for npm install, Playwright install, PRE_SCRIPT, and test execution             |
+
 
 ### Secrets
 
 | Name                  | Description                                                                              |
 |-----------------------|------------------------------------------------------------------------------------------|
-| `ENV_FILE_DATA`       | Additional environment variables for the tests                                           |
+| `ENV_FILE_DATA`       | Additional environment variables for the tests. Also sourced before `PRE_SCRIPT`         |
 | `COMPOSER_AUTH_JSON`  | Authentication for privately hosted packages and repositories as a JSON formatted object |
 | `NPM_REGISTRY_TOKEN`  | Authentication for the private npm registry                                              |
 | `GITHUB_USER_EMAIL`   | Email address for the GitHub user configuration                                          |
 | `GITHUB_USER_NAME`    | Username for the GitHub user configuration                                               |
 | `GITHUB_USER_SSH_KEY` | Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`             |
 
-**Example with configuration parameters:**
+## Example with configuration parameters
 
 ```yml
 name: E2E Testing
@@ -73,7 +75,7 @@ jobs:
         artifacts/*
         playwright-report/
       ARTIFACT_INCLUDE_HIDDEN_FILES: true
-      SCRIPT_NAME: 'ci-test-e2e'
+      PLAYWRIGHT_SCRIPT: 'ci-test-e2e'
       COMPOSER_DEPS_INSTALL: true
       PHP_VERSION: ${{ matrix.php }}
       NODE_VERSION: 20
@@ -89,11 +91,112 @@ jobs:
       NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_PACKAGES_READ_ACCESS_TOKEN}}
 ```
 
-**Example of secrets:**
+## Example with custom inputs
+
+```yml
+name: E2E Testing
+
+on:
+  workflow_dispatch:
+    inputs:
+      TEST_SUITE:
+        description: 'Test suite to run'
+        required: true
+        default: 'critical'
+        type: choice
+        options:
+          - smoke
+          - critical
+          - all
+
+jobs:
+  e2e-playwright:
+    uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@main
+    with:
+      WORK_DIR: 'tests/qa'
+      ARTIFACT_PATH: |
+        tests/qa/artifacts/*
+        tests/qa/playwright-report/
+      PLAYWRIGHT_SCRIPT: ${{ inputs.TEST_SUITE }}
+      NODE_VERSION: 22
+      PLAYWRIGHT_BROWSER_ARGS: 'chromium --with-deps'
+      PRE_SCRIPT: |
+        gh run download ${{ github.run_id }} -p "my-plugin-*" -D resources/files
+        npm run setup:env
+    secrets:
+      ENV_FILE_DATA: ${{ secrets.ENV_FILE_DATA }}
+      NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_PACKAGES_READ_ACCESS_TOKEN}}
+```
+
+## Example of secrets
 
 For `ENV_FILE_DATA`:
 
-```SHELL
-TEST_EXEC_KEY=YOUR-KEY
-WP_BASE_URL=https://example.com
+```bash
+# playwright-utils config
+WP_BASE_URL='http://mywp.site'
+WP_USERNAME=admin
+WP_PASSWORD=password
+WP_BASIC_AUTH_USER=admin
+WP_BASIC_AUTH_PASS=password
+STORAGE_STATE_PATH='./storage-states'
+STORAGE_STATE_PATH_ADMIN='./storage-states/admin.json'
+WORDPRESS_DB_USER=root
+WORDPRESS_DB_PASSWORD=password
+
+WPCLI_ENV_TYPE= # localhost, vip, wpenv, ddev, ssh
+WPCLI_PATH= # for localhost, wpenv
+# For WPCLI_ENV_TYPE=ssh
+SSH_LOGIN=
+SSH_HOST=
+SSH_PORT=
+SSH_PATH=
+# For WPCLI_ENV_TYPE=vip
+VIP_APP=
+VIP_ENV=
+
+# WooCommerce specific env vars
+WC_API_KEY=
+WC_API_SECRET=
+WC_DEFAULT_COUNTRY=usa
+WC_DEFAULT_CURRENCY=USD
+
+# Xray in Jira
+XRAY_CLIENT_ID=
+XRAY_CLIENT_SECRET=
+TEST_EXEC_KEY=
 ```
+
+## Examples of `PRE_SCRIPT`
+
+### VIP connection
+
+```bash
+PRE_SCRIPT: |
+      npm install -g @automattic/vip
+      mkdir -p ~/.config/configstore
+      echo '{"vip-go-cli": "'"$VIP_TOKEN"'"}' > ~/.config/configstore/vip-go-cli.json
+```
+
+### Distributing vars per env
+
+In case of several test environments (staging, production, etc.) `PRE_SCRIPT` can be used to setup env-specific vars from `ENV_FILE_DATA`. For example `PERCY_TOKEN`:
+
+```bash
+PRE_SCRIPT: |
+      echo "PERCY_TOKEN=$PERCY_TOKEN_STAGE" >> "$GITHUB_ENV"
+```
+
+### Download and zip plugin artifact
+
+For cases when plugin is built within the same workflow:
+
+```bash
+PRE_SCRIPT: |
+  gh run download ${{ github.run_id }} -p "woocommerce-paypal-payments-*" -D tests/qa/resources/files
+  cd tests/qa/resources/files
+  mv woocommerce-paypal-payments-*/woocommerce-paypal-payments .
+  zip -r woocommerce-paypal-payments.zip woocommerce-paypal-payments
+  rm -rf woocommerce-paypal-payments woocommerce-paypal-payments-*/
+```
+	
