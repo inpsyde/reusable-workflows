@@ -8,7 +8,7 @@ The workflow can:
 - create an environment variables file named `.env.ci` dedicated to the test step; load this file using `dotenv-ci` directly in your test script, e.g., `./node_modules/.bin/dotenv -e .env.ci -- npm run e2e`. The file is also sourced before `PRE_SCRIPT`, making all variables available as environment variables.
 - execute the tests using Playwright via a custom npm script.
 - upload the artifacts.
-- optionally start an [ngrok](https://ngrok.com/) tunnel for webhook delivery to `wp-env` environments (when `NGROK_AUTHTOKEN` is provided).
+- optionally start an [ngrok](https://ngrok.com/) tunnel for webhook delivery to `wp-env` environments (when `NGROK_AUTH_TOKEN` is provided).
 
 **Simplest possible example:**
 
@@ -37,7 +37,7 @@ jobs:
 | `ARTIFACT_PATH`                 |                                 | A file, directory or wildcard pattern that describes what to upload                               |
 | `ARTIFACT_RETENTION_DAYS`       | `30`                            | Duration after which artifact will expire in day                                                  |
 | `COMPOSER_DEPS_INSTALL`         | `false`                         | Whether to install Composer dependencies                                                          |
-| `NGROK_DOMAIN`                  | `''`                            | Reserved ngrok domain for the tunnel (paid account). Required when `NGROK_AUTHTOKEN` is provided  |
+| `NGROK_DOMAIN`                  | `''`                            | Reserved ngrok domain for the tunnel (paid account). Required when `NGROK_AUTH_TOKEN` is provided  |
 | `NODE_VERSION`                  | `24`                            | Node version with which the node script will be executed                                          |
 | `NPM_REGISTRY_DOMAIN`           | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                                |
 | `PHP_VERSION`                   | `'8.2'`                         | PHP version with which the dependencies are installed                                             |
@@ -56,12 +56,12 @@ jobs:
 | `GITHUB_USER_EMAIL`   | Email address for the GitHub user configuration                                          |
 | `GITHUB_USER_NAME`    | Username for the GitHub user configuration                                               |
 | `GITHUB_USER_SSH_KEY` | Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`             |
-| `NGROK_AUTHTOKEN`     | Ngrok auth token. When set, ngrok is installed and a tunnel is started before tests run  |
+| `NGROK_AUTH_TOKEN`     | Ngrok auth token. When set, ngrok is installed and a tunnel is started before tests run  |
 | `NPM_REGISTRY_TOKEN`  | Authentication for the private npm registry                                              |
 
 ## Ngrok tunnel
 
-When `NGROK_AUTHTOKEN` is provided, the workflow automatically:
+When `NGROK_AUTH_TOKEN` is provided, the workflow automatically:
 
 1. Installs ngrok on the runner.
 2. Starts an HTTPS tunnel to port 80 using the reserved domain from `NGROK_DOMAIN`.
@@ -129,7 +129,7 @@ jobs:
     secrets:
       ENV_FILE_DATA: ${{ secrets.ENV_FILE_DATA }}
       NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_PACKAGES_READ_ACCESS_TOKEN }}
-      NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
+      NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
 ```
 
 ## Example with custom inputs
@@ -209,7 +209,7 @@ TEST_EXEC_KEY=
 
 # Ngrok (optional, enables tunnel for webhook delivery)
 NGROK_DOMAIN=
-NGROK_AUTHTOKEN=
+NGROK_AUTH_TOKEN=
 ```
 
 ## Examples of `PRE_SCRIPT`

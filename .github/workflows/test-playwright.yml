@@ -68,7 +68,7 @@ on:
         required: false
         type: string
       NGROK_DOMAIN:
-        description: Reserved ngrok domain for the tunnel (paid account). Required when NGROK_AUTHTOKEN is provided.
+        description: Reserved ngrok domain for the tunnel (paid account). Required when NGROK_AUTH_TOKEN is provided.
         default: ''
         required: false
         type: string
@@ -91,7 +91,7 @@ on:
       COMPOSER_AUTH_JSON:
         description: Authentication for privately hosted packages and repositories as a JSON formatted object.
         required: false
-      NGROK_AUTHTOKEN:
+      NGROK_AUTH_TOKEN:
         description: Ngrok auth token for tunneling. When set, ngrok is installed and a tunnel is started.
         required: false
 
@@ -180,8 +180,8 @@ jobs:
 
       - name: Install ngrok
         env:
-          NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
-        if: ${{ env.NGROK_AUTHTOKEN != '' }}
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+        if: ${{ env.NGROK_AUTH_TOKEN != '' }}
         run: |
           curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
             | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
@@ -191,12 +191,12 @@ jobs:
 
       - name: Start ngrok tunnel
         env:
-          NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
           NGROK_DOMAIN: ${{ inputs.NGROK_DOMAIN }}
-        if: ${{ env.NGROK_AUTHTOKEN != '' }}
+        if: ${{ env.NGROK_AUTH_TOKEN != '' }}
         working-directory: ${{ inputs.WORK_DIR }}
         run: |
-          ngrok config add-authtoken "$NGROK_AUTHTOKEN"
+          ngrok config add-authtoken "$NGROK_AUTH_TOKEN"
 
           DOMAIN_FLAG=""
           if [ -n "$NGROK_DOMAIN" ]; then
@@ -220,8 +220,8 @@ jobs:
 
       - name: Update WordPress URLs to ngrok
         env:
-          NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
-        if: ${{ env.NGROK_AUTHTOKEN != '' }}
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+        if: ${{ env.NGROK_AUTH_TOKEN != '' }}
         working-directory: ${{ inputs.WORK_DIR }}
         run: |
           wp-env run tests-cli wp config set WP_SITEURL "$NGROK_URL"
