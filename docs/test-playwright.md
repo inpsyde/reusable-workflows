@@ -9,6 +9,7 @@ The workflow can:
 - execute the tests using Playwright via a custom npm script.
 - upload the artifacts.
 - optionally start an [ngrok](https://ngrok.com/) tunnel for webhook delivery to `wp-env` environments (when `NGROK_AUTH_TOKEN` is provided).
+- optionally append test reporting variables (`TESTRAIL_PLAN_ID`, `TESTRAIL_RUN_ID`, `XRAY_TEST_EXEC_KEY`) to `.env.ci` for integration with TestRail or Xray.
 
 **Simplest possible example:**
 
@@ -43,7 +44,10 @@ jobs:
 | `PHP_VERSION`                   | `'8.2'`                         | PHP version with which the dependencies are installed                                             |
 | `PLAYWRIGHT_BROWSER_ARGS`       | `'--with-deps'`                 | Set of arguments passed to `npx playwright install`                                               |
 | `PRE_SCRIPT`                    | `''`                            | Run custom shell code before executing the test script. `GH_TOKEN` and all `ENV_FILE_DATA` variables are available |
-| `PLAYWRIGHT_SCRIPT`                   | `''`                            | The name of a custom npm script to run the tests.                                                 |
+| `PLAYWRIGHT_SCRIPT`             | `''`                            | The name of a custom npm script to run the tests                                                  |
+| `TESTRAIL_PLAN_ID`              | `''`                            | TestRail plan ID for reporting. When set, appended to `.env.ci`                                   |
+| `TESTRAIL_RUN_ID`               | `''`                            | TestRail run ID for reporting. When set, appended to `.env.ci`                                    |
+| `XRAY_TEST_EXEC_KEY`            | `''`                            | Xray test execution key for reporting. When set, appended to `.env.ci`                            |
 | `WORK_DIR`                      | `'.'`                           | Working directory for npm install, Playwright install, PRE_SCRIPT, and test execution             |
 
 
@@ -70,6 +74,16 @@ When `NGROK_AUTH_TOKEN` is provided, the workflow automatically:
 This runs **after** `wp-env` boots and **before** `PRE_SCRIPT`, so webhooks from external services (e.g. payment gateways) can reach the test environment.
 
 Requires a [paid ngrok account](https://ngrok.com/pricing) with a reserved domain.
+
+## Test reporting
+
+The workflow supports optional integration with TestRail and Xray. When any of the following inputs are provided, they are appended to `.env.ci` with the same name, making them available to your test runner and reporters:
+
+- `TESTRAIL_PLAN_ID` — TestRail plan ID
+- `TESTRAIL_RUN_ID` — TestRail run ID
+- `XRAY_TEST_EXEC_KEY` — Xray test execution key
+
+These are regular workflow inputs (not secrets), so they can be passed directly from `workflow_dispatch` inputs for on-demand runs.
 
 ## Example with configuration parameters
 
@@ -130,6 +144,43 @@ jobs:
       ENV_FILE_DATA: ${{ secrets.ENV_FILE_DATA }}
       NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_PACKAGES_READ_ACCESS_TOKEN }}
       NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+```
+
+## Example with test reporting
+
+```yml
+name: E2E Testing
+
+on:
+  workflow_dispatch:
+    inputs:
+      TEST_SUITE:
+        description: 'Test suite to run'
+        required: true
+        default: 'smoke'
+        type: choice
+        options:
+          - smoke
+          - critical
+          - all
+      XRAY_TEST_EXEC_KEY:
+        description: 'Xray test execution key'
+        required: false
+        default: ''
+
+jobs:
+  e2e-playwright:
+    uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@main
+    with:
+      ARTIFACT_PATH: |
+        artifacts/*
+        playwright-report/
+      PLAYWRIGHT_SCRIPT: ${{ inputs.TEST_SUITE }}
+      NODE_VERSION: 24
+      XRAY_TEST_EXEC_KEY: ${{ inputs.XRAY_TEST_EXEC_KEY }}
+    secrets:
+      ENV_FILE_DATA: ${{ secrets.ENV_FILE_DATA }}
+      NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_PACKAGES_READ_ACCESS_TOKEN }}
 ```
 
 ## Example with custom inputs
