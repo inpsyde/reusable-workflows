@@ -1,4 +1,4 @@
-name: Run Woo QIT
+name: Run Quality Insights Toolkit (QIT) for WooCommerce extensions
 
 on:
   workflow_call:

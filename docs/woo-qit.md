@@ -1,4 +1,4 @@
-# Run Woo QIT
+# Run Quality Insights Toolkit (QIT) for WooCommerce extensions
 
 This workflow runs the [Quality Insights Toolkit](https://qit.woo.com/) tests.
 
