@@ -2,7 +2,7 @@
 
 This workflow runs the [Quality Insights Toolkit](https://qit.woo.com/) tests.
 
-Usually it should be used after the [archive creation workflow](/docs/archive-creation.md).
+Usually, it should be used after the [archive creation workflow](/docs/archive-creation.md).
 
 ## Simple usage example
 
