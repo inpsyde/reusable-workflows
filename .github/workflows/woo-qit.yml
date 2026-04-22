@@ -3,7 +3,7 @@ name: Run Woo QIT
 on:
   workflow_call:
     inputs:
-      ARTIFACT:
+      ARTIFACT_NAME:
         description: The name of the generated artifact, usually the output of the archive creation workflow.
         required: true
         type: string
@@ -44,7 +44,7 @@ jobs:
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
-          name: ${{ inputs.ARTIFACT }}
+          name: ${{ inputs.ARTIFACT_NAME }}
           path: package
 
       - name: Set up plugin folder name

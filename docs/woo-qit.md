@@ -23,7 +23,7 @@ jobs:
       WOO_PARTNER_USER: ${{ secrets.WOO_PARTNER_USER }}
       WOO_PARTNER_SECRET: ${{ secrets.WOO_PARTNER_SECRET }}
     with:
-      ARTIFACT: ${{ needs.create_archive.outputs.artifact }}
+      ARTIFACT_NAME: ${{ needs.create_archive.outputs.artifact }}
       QIT_TEST: ${{ matrix.test }}
 ```
 
@@ -31,12 +31,12 @@ jobs:
 
 ### Inputs
 
-| Name                   | Default                | Description                                                                                              |
-|------------------------|------------------------|----------------------------------------------------------------------------------------------------------|
-| `ARTIFACT`             |                        | The name of the generated artifact, usually the output of the archive creation workflow.                 |
-| `PLUGIN_FOLDER_NAME`   | `''`                   | The name of the plugin folder/slug (falls back to the repository name).                                  |
-| `QIT_TEST`             | `'activation'`         | The name of the QIT test to run (activation, security, ...).                                             |
-| `QIT_OPTIONS`          | `''`                   | The string with additional QIT options, such as `'--wordpress_version=6.5.1 --optional_features=hpos'`.  |
+| Name                 | Default        | Description                                                                                             |
+|----------------------|----------------|---------------------------------------------------------------------------------------------------------|
+| `ARTIFACT_NAME`      |                | The name of the generated artifact, usually the output of the archive creation workflow.                |
+| `PLUGIN_FOLDER_NAME` | `''`           | The name of the plugin folder/slug (falls back to the repository name).                                 |
+| `QIT_TEST`           | `'activation'` | The name of the QIT test to run (activation, security, ...).                                            |
+| `QIT_OPTIONS`        | `''`           | The string with additional QIT options, such as `'--wordpress_version=6.5.1 --optional_features=hpos'`. |
 
 
 ## Secrets
