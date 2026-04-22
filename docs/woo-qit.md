@@ -41,7 +41,7 @@ jobs:
 
 ## Secrets
 
-| Name                 | Description                                                                              |
-|----------------------|------------------------------------------------------------------------------------------|
-| `WOO_PARTNER_USER`   | The Woo.com email.                                                                       |
-| `WOO_PARTNER_SECRET` | The Woo.com [QIT token](https://qit.woo.com/docs/support/authenticating/).               |
+| Name                 | Description                                                                             |
+|----------------------|-----------------------------------------------------------------------------------------|
+| `WOO_PARTNER_USER`   | The Woo.com email                                                                       |
+| `WOO_PARTNER_SECRET` | The Woo.com [QIT token](https://qit.woo.com/docs/support/authenticating/)               |
