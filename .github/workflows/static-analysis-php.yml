@@ -5,7 +5,12 @@ on:
     inputs:
       PHP_VERSION:
         description: PHP version with which the scripts are executed.
-        default: "8.0"
+        default: '8.2'
+        required: false
+        type: string
+      PHP_EXTENSIONS:
+        description: PHP extensions supported by shivammathur/setup-php to be installed or disabled.
+        default: ''
         required: false
         type: string
       COMPOSER_ARGS:
@@ -16,6 +21,11 @@ on:
       PSALM_ARGS:
         description: Set of arguments passed to Psalm.
         default: '--output-format=github --no-cache'
+        required: false
+        type: string
+      PHPSTAN_ARGS:
+        description: Set of arguments passed to PHPStan.
+        default: '--no-progress --memory-limit=1G'
         required: false
         type: string
     secrets:
@@ -30,8 +40,6 @@ jobs:
   static-analysis-php:
     timeout-minutes: 5
     runs-on: ubuntu-latest
-    env:
-      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -51,6 +59,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.PHP_VERSION }}
+          extensions: ${{ inputs.PHP_EXTENSIONS }}
           tools: composer, cs2pr
           coverage: none
 
@@ -59,8 +68,15 @@ jobs:
 
       - name: Install Composer dependencies
         uses: ramsey/composer-install@v3
+        env:
+          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
         with:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
 
       - name: Run Psalm
-        run: ./vendor/bin/psalm --php-version="${{ inputs.PHP_VERSION }}" ${{ inputs.PSALM_ARGS }}
+        if: ${{ hashFiles('psalm.xml', 'psalm.xml.dist') != '' }}
+        run: ./$(composer config bin-dir)/psalm --php-version="${{ inputs.PHP_VERSION }}" ${{ inputs.PSALM_ARGS }}
+
+      - name: Run PHPStan
+        if: ${{ hashFiles('phpstan.dist.neon', 'phpstan.neon', 'phpstan.neon.dist') != '' }}
+        run: ./$(composer config bin-dir)/phpstan ${{ inputs.PHPSTAN_ARGS }}

@@ -1,4 +1,4 @@
-name: Create plugin archive
+name: "[DEPRECATED] Create plugin archive"
 
 on:
   workflow_call:
@@ -20,7 +20,7 @@ on:
         type: string
       PACKAGE_MANAGER:
         description: Package manager with which the dependencies should be installed (`npm` or `yarn`).
-        default: 'yarn'
+        default: 'npm'
         required: false
         type: string
       COMPOSER_ARGS:
@@ -30,12 +30,12 @@ on:
         type: string
       PHP_VERSION:
         description: PHP version to use when gathering production dependencies.
-        default: "8.0"
+        default: '8.2'
         required: false
         type: string
       PHP_VERSION_BUILD:
         description: PHP version to use when executing build tools.
-        default: "8.0"
+        default: '8.2'
         required: false
         type: string
       ARCHIVE_NAME:
@@ -87,14 +87,18 @@ jobs:
     name: Install production dependencies
     timeout-minutes: 5
     runs-on: ubuntu-latest
+    outputs:
+      artifact: ${{ steps.set-artifact-name.outputs.artifact }}
     env:
       ENV_VARS: ${{ secrets.ENV_VARS }}
-      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
       # Disables symlinking of local path repositories.
       # During development, symlinking is preferable.
       # In resulting builds, you will likely want to ship the actual install location and remove the source directory.
       COMPOSER_MIRROR_PATH_REPOS: 1
     steps:
+      - name: Deprecation warning
+        run: echo "::warning::This workflow is deprecated and will be removed soon. Use .github/workflows/build-and-distribute.yml instead."
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -115,6 +119,8 @@ jobs:
 
       - name: Install Composer dependencies without dev dependencies
         uses: ramsey/composer-install@v3
+        env:
+          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
         with:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
 
@@ -131,43 +137,37 @@ jobs:
             !./.git
             !./.ddev
             !./.github
+          include-hidden-files: true
+
   run-build-tools:
     name: Process build steps
-    timeout-minutes: 5
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     needs: checkout-dependencies
     env:
-      NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
-      NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       NODE_CACHE_MODE: ''
     outputs:
       artifact: ${{ steps.set-artifact-name.outputs.artifact }}
     steps:
+      - name: PACKAGE_MANAGER deprecation warning
+        if: ${{ inputs.PACKAGE_MANAGER != '' }}
+        run: |
+          if [ "${{ inputs.PACKAGE_MANAGER }}" == 'npm' ]; then
+            echo "::warning::The PACKAGE_MANAGER input is deprecated and will be removed soon. Please remove it. The workflow already uses npm by default."
+          else
+            echo "::warning::The PACKAGE_MANAGER input is deprecated and will be removed soon. Please update your workflow to use npm."          
+          fi
+
       - name: Download Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: ${{ needs.checkout-dependencies.outputs.artifact }}
-      - name: Check optional Composer build tools
-        id: composer-tools
-        run: |
-          hasAssetConfig(){
-            test -f assets-compiler.json
-            local EXIT=$?
-            if [ ! $EXIT ]; then
-              echo "$EXIT"
-              exit 0
-            fi
-            jq '.extra | has("composer-asset-compiler")' < composer.json >/dev/null 2>&1
-            local EXIT=$?
-            echo "$EXIT"
-          }
-          hasTranslateConfig(){
-            jq '.extra | has("wp-translation-downloader")' < composer.json >/dev/null 2>&1
-            local EXIT=$?
-            echo "$EXIT"
-          }
-          echo "assets-compiler=$( hasAssetConfig )" >> $GITHUB_OUTPUT
-          echo "translation-downloader=$( hasTranslateConfig )" >> $GITHUB_OUTPUT
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.PHP_VERSION_BUILD }}
+          tools: rector, php-scoper, sniccowp/php-scoper-wordpress-excludes, composer/installers, inpsyde/composer-assets-compiler, inpsyde/wp-translation-downloader
 
       - name: Set up node cache mode
         run: |
@@ -180,38 +180,58 @@ jobs:
           fi
 
       - name: Set up node
-        if: steps.composer-tools.outputs.assets-compiler == '0'
         uses: actions/setup-node@v4
+        env:
+          NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
           cache: ${{ env.NODE_CACHE_MODE }}
 
-      - name: Install and run Composer Asset Compiler
-        if: steps.composer-tools.outputs.assets-compiler == '0'
+      - name: Run Composer Asset Compiler
         run: |
-          composer global config --no-plugins --no-interaction allow-plugins.inpsyde/composer-assets-compiler true
-          composer global require inpsyde/composer-assets-compiler
           composer compile-assets ${{ inputs.COMPILE_ASSETS_ARGS }}
 
-      - name: Install and run WordPress Translation Downloader
-        if: steps.composer-tools.outputs.translation-downloader == '0'
+      - name: Run WordPress Translation Downloader
         run: |
-          composer global config --no-plugins --no-interaction allow-plugins.composer/installers true
-          composer global config --no-plugins --no-interaction allow-plugins.inpsyde/wp-translation-downloader true
-          composer global require inpsyde/wp-translation-downloader
           composer wp-translation-downloader:download
+
+      - name: Run Rector
+        if: ${{ hashFiles('rector.php') != '' }}
+        run: |
+          rector
+
+      - name: Run PHP-Scoper ensuring isolated file autoloading
+        if: ${{ hashFiles('scoper.inc.php') != '' }}
+        run: |
+          php-scoper add-prefix --force --output-dir=build
+          composer --working-dir=build dump-autoload -o
+          
+          # Appends the Git commit SHA to the Composer autoload cache key to ensure unique identification for prefixed files.
+          # Prevents Composer from skipping autoloaded files due to hash collisions based on relative paths.
+          sed -i "s/'__composer_autoload_files'/\'__composer_autoload_files_${{ github.sha }}'/g" "build/vendor/composer/autoload_real.php"
+
+      - name: Move code to the `build/` directory
+        if: ${{ hashFiles('scoper.inc.php') == '' }}
+        run: |
+          shopt -s extglob dotglob
+          mkdir build
+          mv !(build) build
 
       - name: Set artifact name
         id: set-artifact-name
         run: echo "artifact=interim-built" >> $GITHUB_OUTPUT
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.set-artifact-name.outputs.artifact }}
           path: |
-            .
-            !**/node_modules
+            build/
+            !build/**/node_modules
+          include-hidden-files: true
+
   create-plugin-archive:
     name: Create build archive
     timeout-minutes: 5
@@ -226,7 +246,7 @@ jobs:
       artifact: ${{ steps.set-artifact-name.outputs.artifact }}
     steps:
       - name: Download Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: ${{ needs.run-build-tools.outputs.artifact }}
 
@@ -239,11 +259,9 @@ jobs:
         run: echo "archive-name=${ARCHIVE_NAME:-${{ github.event.repository.name }}}" >> $GITHUB_OUTPUT
 
       - name: Add commit hash to plugin header
-        working-directory: interim-deps
         run: 'sed -Ei "s/SHA: .*/SHA: ${GIT_SHA}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
 
       - name: Set plugin version header
-        working-directory: interim-deps
         run: 'sed -Ei "s/Version: .*/Version: ${PLUGIN_VERSION}/g" ${{ inputs.PLUGIN_MAIN_FILE }}'
 
       - name: Set up PHP
@@ -261,7 +279,7 @@ jobs:
 
       - name: Run WP-CLI command
         run: |
-          wp dist-archive ./interim-deps ./archive.zip --plugin-dirname=${{ steps.plugin-folder-name.outputs.plugin-folder-name }}
+          wp dist-archive . ./archive.zip --plugin-dirname=${{ steps.plugin-folder-name.outputs.plugin-folder-name }}
 
         # GitHub Action artifacts would otherwise produce a zip within a zip
       - name: Unzip archive to dist/
@@ -276,3 +294,4 @@ jobs:
         with:
           name: ${{ steps.set-artifact-name.outputs.artifact }}
           path: ./dist/*
+          include-hidden-files: true

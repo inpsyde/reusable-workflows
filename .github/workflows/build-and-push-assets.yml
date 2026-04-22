@@ -1,4 +1,4 @@
-name: Build and push assets
+name: "[DEPRECATED] Build and push assets"
 
 on:
   workflow_call:
@@ -20,7 +20,7 @@ on:
         type: string
       PACKAGE_MANAGER:
         description: Package manager with which the dependencies should be installed (`npm` or `yarn`).
-        default: 'yarn'
+        default: 'npm'
         required: false
         type: string
       WORKING_DIRECTORY:
@@ -53,11 +53,6 @@ on:
         default: ''
         required: false
         type: string
-      BUILT_BRANCH_SUFFIX:
-        description: Suffix to calculate the target branch for pushing assets on the `branch` event (deprecated).
-        type: string
-        default: ''
-        required: false
       BUILT_BRANCH_NAME:
         description: Sets the target branch for pushing assets on the `branch` event.
         type: string
@@ -70,7 +65,7 @@ on:
         required: false
       PHP_VERSION:
         description: PHP version with which the PHP tools are to be executed.
-        default: '8.0'
+        default: '8.2'
         required: false
         type: string
       PHP_TOOLS:
@@ -91,6 +86,9 @@ on:
       GITHUB_USER_SSH_KEY:
         description: Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`.
         required: false
+      GITHUB_USER_SSH_PUBLIC_KEY:
+        description: Public SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`.
+        required: false
       ENV_VARS:
         description: Additional environment variables as a JSON formatted object.
         required: false
@@ -101,6 +99,9 @@ jobs:
       is_development_branch_last_commit: ${{ github.sha == steps.detect_development_branch_last_commit.outputs.development_branch_last_commit && 'yes' || 'no' }}
       is_moved_tag: ${{ (github.ref_type == 'tag' && contains(steps.detect_tag_annotation.outputs.tag_annotation, env.MOVED_TAG_ANNOTATION_PATTERN)) && 'yes' || 'no' }}
     steps:
+      - name: Deprecation warning
+        run: echo "::warning::This workflow is deprecated and will be removed soon. Use .github/workflows/build-and-distribute.yml instead."
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -136,41 +137,53 @@ jobs:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     env:
-      NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
-      NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       NODE_CACHE_MODE: ''
-      GITHUB_USER_EMAIL: ${{ secrets.GITHUB_USER_EMAIL }}
-      GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
-      GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
       COMPILE_SCRIPT: ''
       TAG_NAME: ''                                     # we'll override if the push is for tag
       TAG_BRANCH_NAME: ''                              # we'll override if the push is for tag
-      LOCK_FILE: ''                                    # we'll override after checking files
       NO_CHANGES: ''                                   # we'll override if no changes to commit
     steps:
-      - name: Deprecation warning
-        if: ${{ inputs.BUILT_BRANCH_SUFFIX != '' }}
+      - name: PACKAGE_MANAGER deprecation warning
+        if: ${{ inputs.PACKAGE_MANAGER != '' }}
         run: |
-          echo '::warning::The BUILT_BRANCH_SUFFIX input is deprecated and will be removed soon. Please update your workflow to use BUILT_BRANCH_NAME with ${{ github.ref_name }}-built.'
+          if [ "${{ inputs.PACKAGE_MANAGER }}" == 'npm' ]; then
+            echo "::warning::The PACKAGE_MANAGER input is deprecated and will be removed soon. Please remove it. The workflow already uses npm by default."
+          else
+            echo "::warning::The PACKAGE_MANAGER input is deprecated and will be removed soon. Please update your workflow to use npm."          
+          fi
 
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ssh-key: ${{ env.GITHUB_USER_SSH_KEY }}
+          ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
       - name: Set up SSH
+        env:
+          GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
         if: ${{ env.GITHUB_USER_SSH_KEY != '' }}
-        uses: webfactory/ssh-agent@v0.9.0
+        uses: webfactory/ssh-agent@v0.9.1
         with:
           ssh-private-key: ${{ env.GITHUB_USER_SSH_KEY }}
 
       - name: Set up Git
         run: |
-          git config --global user.email "${{ env.GITHUB_USER_EMAIL }}"
-          git config --global user.name "${{ env.GITHUB_USER_NAME }}"
+          git config --global user.email "${{ secrets.GITHUB_USER_EMAIL }}"
+          git config --global user.name "${{ secrets.GITHUB_USER_NAME }}"
           git config --global advice.addIgnoredFile false
           git config --global push.autoSetupRemote true
+
+      - name: Set up signing commits
+        env:
+          GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.GITHUB_USER_SSH_PUBLIC_KEY }}
+        if: ${{ env.GITHUB_USER_SSH_PUBLIC_KEY != '' }}
+        run: |
+          : # Create empty SSH private key file so Git does not complain.
+          touch "${{ runner.temp }}/signingkey"
+          echo "${{ env.GITHUB_USER_SSH_PUBLIC_KEY }}" > "${{ runner.temp }}/signingkey.pub"
+          git config --global commit.gpgsign true
+          git config --global gpg.format ssh
+          git config --global user.signingkey "${{ runner.temp }}/signingkey.pub"
 
       - name: Set up custom environment variables
         env:
@@ -198,7 +211,7 @@ jobs:
       - name: Set branch environment variables
         if: ${{ github.ref_type == 'branch' }}
         run: |
-          echo "BUILT_BRANCH_NAME=${{ inputs.BUILT_BRANCH_NAME && inputs.BUILT_BRANCH_NAME || format('{0}{1}', github.ref_name, inputs.BUILT_BRANCH_SUFFIX) }}" >> $GITHUB_ENV
+          echo "BUILT_BRANCH_NAME=${{ inputs.BUILT_BRANCH_NAME && inputs.BUILT_BRANCH_NAME || github.ref_name }}" >> $GITHUB_ENV
 
       - name: Set tag environment variables
         if: ${{ github.ref_type == 'tag' }}
@@ -209,18 +222,18 @@ jobs:
       - name: Checkout and merge the built branch
         if: ${{ github.ref_type == 'branch' }}
         run: |
-          git checkout ${{ env.BUILT_BRANCH_NAME }} || git checkout -b ${{ env.BUILT_BRANCH_NAME }}
+          git show-ref -q refs/remotes/origin/${{ env.BUILT_BRANCH_NAME }} && git checkout ${{ env.BUILT_BRANCH_NAME }} || git checkout -b ${{ env.BUILT_BRANCH_NAME }}
           git merge ${{ github.ref_name }}
 
       - name: Git pull on re-run
         if: ${{ (github.run_attempt > 1) && (github.ref_type != 'tag') }}
-        run: git pull
+        run: git show-ref -q refs/remotes/origin/$(git branch --show-current) && git pull || true
 
       - name: Checkout and merge the release branch
         if: ${{ github.ref_type == 'tag' && env.RELEASE_BRANCH_ENABLED == 'yes' }}
         run: |
           git checkout ${{ github.event.repository.default_branch }}
-          git checkout ${{ inputs.RELEASE_BRANCH_NAME }} || git checkout -b ${{ inputs.RELEASE_BRANCH_NAME }}
+          git show-ref -q refs/remotes/origin/${{ inputs.RELEASE_BRANCH_NAME }} && git checkout ${{ inputs.RELEASE_BRANCH_NAME }} || git checkout -b ${{ inputs.RELEASE_BRANCH_NAME }}
           git merge ${{ github.event.repository.default_branch }}
 
       - name: Checkout temporary tag branch
@@ -245,6 +258,9 @@ jobs:
 
       - name: Set up node
         uses: actions/setup-node@v4
+        env:
+          NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
@@ -276,7 +292,7 @@ jobs:
           git commit -m "[BOT] Add compiled assets for #${{ github.ref }}" --no-verify || ((echo "NO_CHANGES=yes" >> $GITHUB_ENV) && (echo "No changes to commit"))
 
       - name: Git push for branch
-        if: ${{ github.ref_type == 'branch' && (env.NO_CHANGES != 'yes' || inputs.BUILT_BRANCH_SUFFIX != '') }}
+        if: ${{ github.ref_type == 'branch' }}
         run: git push
 
       - name: Git push for tag
@@ -292,8 +308,16 @@ jobs:
           git push origin --tags
 
       - name: Delete temporary tag branch
-        if: ${{ always() && (env.TAG_BRANCH_NAME != '' && env.NO_CHANGES != 'yes') }}
+        if: ${{ always() && env.TAG_BRANCH_NAME != '' && env.NO_CHANGES != 'yes' }}
         run: |
           git checkout --detach
           git branch -d ${{ env.TAG_BRANCH_NAME }}
           git push origin --delete ${{ env.TAG_BRANCH_NAME }}
+
+      - name: Delete signing key files
+        env:
+          GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.GITHUB_USER_SSH_PUBLIC_KEY }}
+        if: ${{ always() && env.GITHUB_USER_SSH_PUBLIC_KEY != '' }}
+        run: |
+          rm -f "${{ runner.temp }}/signingkey"
+          rm -f "${{ runner.temp }}/signingkey.pub"

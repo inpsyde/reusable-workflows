@@ -1,4 +1,4 @@
-name: Assets compilation
+name: "[DEPRECATED] Assets compilation"
 
 on:
   workflow_call:
@@ -20,12 +20,12 @@ on:
         type: string
       PACKAGE_MANAGER:
         description: Package manager with which the dependencies should be installed (`npm` or `yarn`).
-        default: 'yarn'
+        default: 'npm'
         required: false
         type: string
       PHP_VERSION:
         description: PHP version with which the assets compilation is to be executed.
-        default: "8.0"
+        default: '8.2'
         required: false
         type: string
       COMPOSER_ARGS:
@@ -63,14 +63,20 @@ jobs:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     env:
-      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
-      NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
-      NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       NODE_CACHE_MODE: ''
-      GITHUB_USER_EMAIL: ${{ secrets.GITHUB_USER_EMAIL }}
-      GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
-      GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
     steps:
+      - name: Deprecation warning
+        run: echo "::warning::This workflow is deprecated and will be removed soon. Use .github/workflows/build-and-distribute.yml instead."
+
+      - name: PACKAGE_MANAGER deprecation warning
+        if: ${{ inputs.PACKAGE_MANAGER != '' }}
+        run: |
+          if [ "${{ inputs.PACKAGE_MANAGER }}" == 'npm' ]; then
+            echo "::warning::The PACKAGE_MANAGER input is deprecated and will be removed soon. Please remove it. The workflow already uses npm by default."
+          else
+            echo "::warning::The PACKAGE_MANAGER input is deprecated and will be removed soon. Please update your workflow to use npm."          
+          fi
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -86,12 +92,17 @@ jobs:
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
       - name: Set up SSH
+        env:
+          GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
         if: ${{ env.GITHUB_USER_SSH_KEY != '' }}
-        uses: webfactory/ssh-agent@v0.9.0
+        uses: webfactory/ssh-agent@v0.9.1
         with:
           ssh-private-key: ${{ env.GITHUB_USER_SSH_KEY }}
 
       - name: Set up Git
+        env:
+          GITHUB_USER_EMAIL: ${{ secrets.GITHUB_USER_EMAIL }}
+          GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
         if: ${{ env.GITHUB_USER_EMAIL != '' && env.GITHUB_USER_NAME != '' }}
         run: |
           git config --global user.email "${{ env.GITHUB_USER_EMAIL }}"
@@ -109,6 +120,9 @@ jobs:
 
       - name: Set up node
         uses: actions/setup-node@v4
+        env:
+          NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
@@ -123,6 +137,8 @@ jobs:
 
       - name: Install Composer dependencies
         uses: ramsey/composer-install@v3
+        env:
+          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
         with:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
 
@@ -144,14 +160,18 @@ jobs:
           echo "ENCORE_ENV=production" >> $GITHUB_ENV
 
       - name: Compile assets
+        env:
+          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
         run: composer compile-assets ${{ inputs.COMPILE_ASSETS_ARGS }}
 
       - name: Upload assets artifact [DEV]
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ !contains(github.ref, 'refs/tags/') }}
         with:
           name: assets-${{ env.ASSETS_HASH }}
           path: assets
+          overwrite: true
+          include-hidden-files: true
 
       - name: Zip assets folder [PROD]
         uses: montudor/action-zip@v1

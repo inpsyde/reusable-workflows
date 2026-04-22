@@ -6,8 +6,8 @@ With [GitHub Actions](https://github.com/features/actions), you can create custo
 software development lifecycle directly in your GitHub repository. These workflows consist of
 different tasks, called actions, that can be executed automatically when certain events occur.
 
-At Syde, we use GitHub Actions for a wide range of tasks. From various quality assurance tests
-(e.g. static analysis checks, PHPUnit tests, etc.), to asset (pre)compilation
+At Syde, we use GitHub Actions for a wide range of tasks. From various quality assurance tests (
+e.g., static analysis checks, PHPUnit tests, etc.), to asset (pre)compilation
 with [Composer Asset Compiler](https://github.com/inpsyde/composer-asset-compiler), release
 generation, deployments (CI/CD), and container registry management: all automatable, recurring tasks
 are performed in GitHub Actions.
@@ -39,9 +39,14 @@ groups here:
 
 * Assets linting and formatting with [`@wordpress/scripts`](./docs/wp-scripts.md)
 * Linting, formatting, and testing tools for [PHP](./docs/php.md)
+* [Linting GitHub Actions workflow files](./docs/lint-workflows.md)
 * Unit tests for [JavaScript](./docs/js.md)
 * Assets compilation with [Composer Asset Compiler](./docs/assets-compilation.md) or
   the [Build and push](./docs/build-and-push-assets.md) approach
 * [Create plugin archive](./docs/archive-creation.md)
 * [Automatic release](./docs/automatic-release.md)
 * [DDEV Playwright](./docs/ddev-playwright.md)
+
+**Note:**
+
+Workflow files prefixed with `_` are specific to the repository and cannot be reused.

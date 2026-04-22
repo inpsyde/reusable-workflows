@@ -4,7 +4,8 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
-    reviewers:
-      - "Chrico"
-      - "pablok34"
-      - "tyrann0us"
+
+  - package-ecosystem: "npm"
+    directory: /
+    schedule:
+      interval: "monthly"
