@@ -17,6 +17,16 @@ on:
         default: '8.2'
         required: false
         type: string
+      PHP_TOOLS:
+        description: PHP tools supported by shivammathur/setup-php to be installed.
+        default: ''
+        required: false
+        type: string
+      PHP_EXTENSIONS:
+        description: PHP extensions supported by shivammathur/setup-php to be installed or disabled.
+        default: ''
+        required: false
+        type: string
       NODE_VERSION:
         description: Node.js version to use when npm workspaces are detected.
         default: '22'
@@ -72,7 +82,8 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.PHP_VERSION }}
-          tools: composer
+          extensions: ${{ inputs.PHP_EXTENSIONS }}
+          tools: composer, ${{ inputs.PHP_TOOLS }}
           coverage: none
 
       - name: Set up WireGuard
@@ -149,4 +160,4 @@ jobs:
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
         run: |
           cd deployment
-          ./vendor/bin/dep deploy ${{ inputs.ENVIRONMENT }} -${{ inputs.VERBOSITY}}
+          ./$(composer config bin-dir)/dep deploy ${{ inputs.ENVIRONMENT }} -${{ inputs.VERBOSITY}}

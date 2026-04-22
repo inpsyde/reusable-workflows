@@ -5,7 +5,7 @@
 ## Coding standards analysis
 
 This workflow runs [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer). It does so by
-executing the binary in the `./vendor/bin/` folder.
+executing the binary resolved via `composer config bin-dir`.
 
 **Simplest possible example:**
 
@@ -23,12 +23,13 @@ jobs:
 
 #### Inputs
 
-| Name            | Default                                                  | Description                                     |
-|-----------------|----------------------------------------------------------|-------------------------------------------------|
-| `PHP_VERSION`   | `'8.2'`                                                  | PHP version with which the scripts are executed |
-| `COMPOSER_ARGS` | `'--prefer-dist'`                                        | Set of arguments passed to Composer             |
-| `PHPCS_ARGS`    | `'--report-full --report-checkstyle=./phpcs-report.xml'` | Set of arguments passed to PHP_CodeSniffer      |
-| `CS2PR_ARGS`    | `'--graceful-warnings ./phpcs-report.xml'`               | Set of arguments passed to cs2pr                |
+| Name             | Default                                                  | Description                                                                    |
+|------------------|----------------------------------------------------------|--------------------------------------------------------------------------------|
+| `PHP_VERSION`    | `'8.2'`                                                  | PHP version with which the scripts are executed                                |
+| `PHP_EXTENSIONS` | `''`                                                     | PHP extensions supported by shivammathur/setup-php to be installed or disabled |
+| `COMPOSER_ARGS`  | `'--prefer-dist'`                                        | Set of arguments passed to Composer                                            |
+| `PHPCS_ARGS`     | `'--report-full --report-checkstyle=./phpcs-report.xml'` | Set of arguments passed to PHP_CodeSniffer                                     |
+| `CS2PR_ARGS`     | `'--graceful-warnings ./phpcs-report.xml'`               | Set of arguments passed to cs2pr                                               |
 
 #### Secrets
 
@@ -63,7 +64,7 @@ versions.
 
 This workflow runs either [Psalm](https://psalm.dev/) or [PHPStan](https://phpstan.org/), or both, based on the existence of a supported configuration file in your repository root folder. 
 
-It does so by executing the binary in the `./vendor/bin/` folder.
+It does so by executing the binary resolved via `composer config bin-dir`.
 
 **Supported configuration files:**
 
@@ -88,12 +89,13 @@ jobs:
 
 #### Inputs
 
-| Name            | Default                               | Description                                     |
-|-----------------|---------------------------------------|-------------------------------------------------|
-| `PHP_VERSION`   | `'8.2'`                               | PHP version with which the scripts are executed |
-| `COMPOSER_ARGS` | `'--prefer-dist'`                     | Set of arguments passed to Composer             |
-| `PSALM_ARGS`    | `'--output-format=github --no-cache'` | Set of arguments passed to Psalm                |
-| `PHPSTAN_ARGS`  | `'--no-progress --memory-limit=1G'`   | Set of arguments passed to PHPStan              |
+| Name             | Default                               | Description                                                                    |
+|------------------|---------------------------------------|--------------------------------------------------------------------------------|
+| `PHP_VERSION`    | `'8.2'`                               | PHP version with which the scripts are executed                                |
+| `PHP_EXTENSIONS` | `''`                                  | PHP extensions supported by shivammathur/setup-php to be installed or disabled |
+| `COMPOSER_ARGS`  | `'--prefer-dist'`                     | Set of arguments passed to Composer                                            |
+| `PSALM_ARGS`     | `'--output-format=github --no-cache'` | Set of arguments passed to Psalm                                               |
+| `PHPSTAN_ARGS`   | `'--no-progress --memory-limit=1G'`   | Set of arguments passed to PHPStan                                             |
 
 #### Secrets
 
@@ -126,8 +128,8 @@ with multiple PHP versions, use the [Lint PHP](#lint-php) workflow.
 
 ## Unit tests PHP
 
-This workflow runs [PHPUnit](https://phpunit.de/). It does so by executing the binary in the
-`./vendor/bin/` folder.
+This workflow runs [PHPUnit](https://phpunit.de/). It does so by executing the binary resolved via
+`composer config bin-dir`.
 
 **Simplest possible example:**
 
@@ -145,11 +147,12 @@ jobs:
 
 #### Inputs
 
-| Name            | Default             | Description                                     |
-|-----------------|---------------------|-------------------------------------------------|
-| `PHP_VERSION`   | `'8.2'`             | PHP version with which the scripts are executed |
-| `COMPOSER_ARGS` | `'--prefer-dist'`   | Set of arguments passed to Composer             |
-| `PHPUNIT_ARGS`  | `'--coverage-text'` | Set of arguments passed to PHPUnit              |
+| Name             | Default             | Description                                                                    |
+|------------------|---------------------|--------------------------------------------------------------------------------|
+| `PHP_VERSION`    | `'8.2'`             | PHP version with which the scripts are executed                                |
+| `PHP_EXTENSIONS` | `''`                | PHP extensions supported by shivammathur/setup-php to be installed or disabled |
+| `COMPOSER_ARGS`  | `'--prefer-dist'`   | Set of arguments passed to Composer                                            |
+| `PHPUNIT_ARGS`   | `'--coverage-text'` | Set of arguments passed to PHPUnit                                             |
 
 #### Secrets
 
@@ -196,12 +199,13 @@ jobs:
 
 #### Inputs
 
-| Name                    | Default                                 | Description                                                    |
-|-------------------------|-----------------------------------------|----------------------------------------------------------------|
-| `PHP_VERSION`           | `'8.2'`                                 | PHP version with which the scripts are executed                |
-| `COMPOSER_ARGS`         | `'--prefer-dist'`                       | Set of arguments passed to Composer                            |
-| `LINT_ARGS`             | `'-e php --colors --show-deprecated .'` | Set of arguments passed to PHP Parallel Lint                   |
-| `COMPOSER_DEPS_INSTALL` | `false`                                 | Whether or not to install Composer dependencies before linting |
+| Name                    | Default                                 | Description                                                                    |
+|-------------------------|-----------------------------------------|--------------------------------------------------------------------------------|
+| `PHP_VERSION`           | `'8.2'`                                 | PHP version with which the scripts are executed                                |
+| `PHP_EXTENSIONS`        | `''`                                    | PHP extensions supported by shivammathur/setup-php to be installed or disabled |
+| `COMPOSER_ARGS`         | `'--prefer-dist'`                       | Set of arguments passed to Composer                                            |
+| `LINT_ARGS`             | `'-e php --colors --show-deprecated .'` | Set of arguments passed to PHP Parallel Lint                                   |
+| `COMPOSER_DEPS_INSTALL` | `false`                                 | Whether or not to install Composer dependencies before linting                 |
 
 #### Secrets
 

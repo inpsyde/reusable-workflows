@@ -23,6 +23,11 @@ on:
         default: '8.2'
         required: false
         type: string
+      PHP_EXTENSIONS:
+        description: PHP extensions supported by shivammathur/setup-php to be installed or disabled.
+        default: ''
+        required: false
+        type: string
       PHP_TOOLS:
         description: PHP tools supported by shivammathur/setup-php to be installed.
         default: ''
@@ -246,6 +251,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.PHP_VERSION }}
+          extensions: ${{ inputs.PHP_EXTENSIONS }}
           tools: php-scoper, sniccowp/php-scoper-wordpress-excludes, composer/installers, inpsyde/wp-translation-downloader, ${{ inputs.PHP_TOOLS }}
           coverage: none
 
