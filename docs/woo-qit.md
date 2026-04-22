@@ -4,7 +4,7 @@ This workflow runs the [Quality Insights Toolkit](https://qit.woo.com/) tests.
 
 Usually it should be used after the [archive creation workflow](/docs/archive-creation.md).
 
-## Simple usage example:
+## Simple usage example
 
 ```yml
 name: Create release package and run QIT
