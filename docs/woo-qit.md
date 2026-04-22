@@ -33,10 +33,12 @@ jobs:
 
 | Name                 | Default        | Description                                                                                             |
 |----------------------|----------------|---------------------------------------------------------------------------------------------------------|
-| `ARTIFACT_NAME`      |                | The name of the generated artifact, usually the output of the archive creation workflow.                |
-| `PLUGIN_FOLDER_NAME` | `''`           | The name of the plugin folder/slug (falls back to the repository name).                                 |
-| `QIT_TEST`           | `'activation'` | The name of the QIT test to run (activation, security, ...).                                            |
-| `QIT_OPTIONS`        | `''`           | The string with additional QIT options, such as `'--wordpress_version=6.5.1 --optional_features=hpos'`. |
+| Name                 | Default        | Description                                                                                            |
+|----------------------|----------------|--------------------------------------------------------------------------------------------------------|
+| `ARTIFACT_NAME`      |                | The name of the generated artifact, usually the output of the archive creation workflow                |
+| `PLUGIN_FOLDER_NAME` | `''`           | The name of the plugin folder/slug (falls back to the repository name)                                 |
+| `QIT_TEST`           | `'activation'` | The name of the QIT test to run (activation, security, ...)                                            |
+| `QIT_OPTIONS`        | `''`           | The string with additional QIT options, such as `'--wordpress_version=6.5.1 --optional_features=hpos'` |
 
 
 ## Secrets
