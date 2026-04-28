@@ -79,6 +79,52 @@ jobs:
           ref: ${{ inputs.GIT_REF }}
           ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
+      - name: Verify version consistency
+        run: |
+          set -euo pipefail
+
+          PLUGIN_FILE=$(find . -maxdepth 1 -type f -name '*.php' -exec grep -l 'Plugin Name:' {} + | head -1)
+          if [ -z "$PLUGIN_FILE" ]; then
+            echo "❌ No plugin file with 'Plugin Name:' header found"
+            exit 1
+          fi
+
+          EXTRACTION_ERROR=0
+
+          PLUGIN_FILE_VERSION=$(grep -m1 'Version:' "$PLUGIN_FILE" | grep -oP '[\d]+\.[\d]+\.[\d]+')
+          if [ -z "$PLUGIN_FILE_VERSION" ]; then
+            echo "❌ Could not extract version from $PLUGIN_FILE"
+            EXTRACTION_ERROR=1
+          fi
+
+          if [ ! -f readme.txt ]; then
+            echo "❌ readme.txt not found"
+            EXTRACTION_ERROR=1
+          else
+            README_VERSION=$(grep -m1 'Stable tag:' readme.txt | grep -oP '[\d]+\.[\d]+\.[\d]+' || true)
+            if [ -z "$README_VERSION" ]; then
+              echo "❌ Could not extract 'Stable tag:' from readme.txt"
+              EXTRACTION_ERROR=1
+            fi
+          fi
+
+          [ "$EXTRACTION_ERROR" = "1" ] && exit 1
+
+          MISMATCH=0
+
+          if [ "$VALIDATED_PLUGIN_VERSION" != "$PLUGIN_FILE_VERSION" ]; then
+            echo "❌ Input version ($VALIDATED_PLUGIN_VERSION) does not match $PLUGIN_FILE ($PLUGIN_FILE_VERSION)"
+            MISMATCH=1
+          fi
+          if [ "$VALIDATED_PLUGIN_VERSION" != "$README_VERSION" ]; then
+            echo "❌ Input version ($VALIDATED_PLUGIN_VERSION) does not match readme.txt Stable tag ($README_VERSION)"
+            MISMATCH=1
+          fi
+
+          [ "$MISMATCH" = "1" ] && exit 1
+
+          echo "✅ Version $VALIDATED_PLUGIN_VERSION is consistent across inputs, plugin file, and readme.txt"
+
       - name: Checkout SVN repository
         run: |
           set -euo pipefail
