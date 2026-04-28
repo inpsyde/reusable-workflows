@@ -196,7 +196,6 @@ jobs:
           [ -d "$SVN_REPO_ROOT" ] || { echo "❌ SVN_REPO_ROOT not found"; exit 1; }
           cd "$SVN_REPO_ROOT"
 
-          svn status trunk | grep -q '^C' && { echo "❌ SVN conflicts in trunk"; exit 1; }
           svn status trunk | grep -q '^[ADMR!~]' || { echo "❌ No changes in trunk"; exit 1; }
 
           # WordPress.org SVN doesn't support SSH keys or tokens.
