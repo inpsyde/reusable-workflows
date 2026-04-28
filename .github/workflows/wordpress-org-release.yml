@@ -164,18 +164,9 @@ jobs:
           --exclude='.git' \
           --exclude='.svn' \
           --exclude='auth.json' \
+          --exclude='.npmrc' \
           --exclude='.env' \
           --exclude='.env.*' \
-          --exclude='composer.json' \
-          --exclude='composer.lock' \
-          --exclude='package.json' \
-          --exclude='package-lock.json' \
-          --exclude='yarn.lock' \
-          --exclude='node_modules' \
-          --exclude='.github' \
-          --exclude='.ddev' \
-          --exclude='.idea' \
-          --exclude='.vscode' \
           --exclude='.distignore' \
           --exclude-from='.distignore' \
           ./ "$SVN_REPO_ROOT/trunk/"
