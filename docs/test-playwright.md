@@ -5,6 +5,7 @@ This workflow executes Playwright-based tests in a controlled and isolated envir
 The workflow can:
 
 - execute a building step, both for node and PHP environments (if the PHP version is provided and a `composer.json` file is present)
+- compile frontend assets via `npm run build` (skipped gracefully if no `build` script is defined in `package.json`)
 - create an environment variables file named `.env.ci` dedicated to the test step; load this file using `dotenv-ci` directly in your test script, e.g., `./node_modules/.bin/dotenv -e .env.ci -- npm run e2e`. The file is also sourced before `PRE_SCRIPT`, making all variables available as environment variables.
 - execute the tests using Playwright via a custom npm script.
 - upload the artifacts.
