@@ -176,6 +176,9 @@ jobs:
         working-directory: ${{ inputs.WORK_DIR }}
         run: npm ${{ env.NODE_CACHE_MODE == 'npm' && 'ci' || 'install' }}
 
+      - name: Build assets
+        run: npm run build --if-present
+
       - name: Install Playwright dependencies
         working-directory: ${{ inputs.WORK_DIR }}
         run: |
