@@ -152,7 +152,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.PHP_VERSION }}
-          tools: composer
+          tools: composer, php-scoper, sniccowp/php-scoper-wordpress-excludes
           coverage: none
 
       - name: Install Composer dependencies
@@ -178,6 +178,16 @@ jobs:
 
       - name: Build assets
         run: npm run build --if-present
+
+      - name: Run PHP-Scoper
+        if: ${{ inputs.COMPOSER_DEPS_INSTALL && hashFiles('scoper.inc.php') != '' }}
+        # The sed call appends the Git commit SHA to the Composer autoload cache key to ensure unique identification for prefixed files.
+        # This prevents Composer from skipping autoloaded files due to hash collisions based on relative paths.
+        run: |
+          php-scoper add-prefix --force --output-dir=build
+          composer --working-dir=build dump-autoload -o
+          sed -i "s/'__composer_autoload_files'/\'__composer_autoload_files_${{ github.sha }}'/g" "build/vendor/composer/autoload_real.php"
+          rsync -av ./build/ . && rm -rf ./build/
 
       - name: Install Playwright dependencies
         working-directory: ${{ inputs.WORK_DIR }}
