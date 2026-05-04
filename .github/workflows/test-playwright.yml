@@ -3,26 +3,26 @@ name: Playwright test
 on:
   workflow_call:
     inputs:
-      ARTIFACT_INCLUDE_HIDDEN_FILES:
+      PLAYWRIGHT_ARTIFACT_INCLUDE_HIDDEN_FILES:
         description: Whether to include hidden files in the artifact.
         type: boolean
         default: false
         required: false
-      ARTIFACT_NAME:
+      PLAYWRIGHT_ARTIFACT_NAME:
         description: Name for the artifact.
         type: string
         default: 'artifact'
         required: false
-      ARTIFACT_OVERWRITE:
+      PLAYWRIGHT_ARTIFACT_OVERWRITE:
         description: Determine if an artifact with a matching name will be deleted before a new one is uploaded or not.
         type: boolean
         default: false
         required: false
-      ARTIFACT_PATH:
+      PLAYWRIGHT_ARTIFACT_PATH:
         description: A file, directory or wildcard pattern that describes what to upload.
         type: string
         required: true
-      ARTIFACT_RETENTION_DAYS:
+      PLAYWRIGHT_ARTIFACT_RETENTION_DAYS:
         description: Duration after which artifact will expire in day.
         type: number
         default: 30
@@ -289,12 +289,12 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.ARTIFACT_NAME }}
+          name: ${{ inputs.PLAYWRIGHT_ARTIFACT_NAME }}
           path: | 
-            ${{ inputs.ARTIFACT_PATH }}
-          overwrite: ${{ inputs.ARTIFACT_OVERWRITE }}
-          include-hidden-files: ${{ inputs.ARTIFACT_INCLUDE_HIDDEN_FILES }}
-          retention-days: ${{ inputs.ARTIFACT_RETENTION_DAYS }}
+            ${{ inputs.PLAYWRIGHT_ARTIFACT_PATH }}
+          overwrite: ${{ inputs.PLAYWRIGHT_ARTIFACT_OVERWRITE }}
+          include-hidden-files: ${{ inputs.PLAYWRIGHT_ARTIFACT_INCLUDE_HIDDEN_FILES }}
+          retention-days: ${{ inputs.PLAYWRIGHT_ARTIFACT_RETENTION_DAYS }}
 
       - name: Check test results
         if: steps.run-script.outcome == 'failure'
