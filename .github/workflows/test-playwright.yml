@@ -11,7 +11,7 @@ on:
       PLAYWRIGHT_ARTIFACT_NAME:
         description: Name for the artifact.
         type: string
-        default: 'artifact'
+        default: 'playwright-artifact'
         required: false
       PLAYWRIGHT_ARTIFACT_OVERWRITE:
         description: Determine if an artifact with a matching name will be deleted before a new one is uploaded or not.
