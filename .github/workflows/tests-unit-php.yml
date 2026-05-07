@@ -5,7 +5,12 @@ on:
     inputs:
       PHP_VERSION:
         description: PHP version with which the scripts are executed.
-        default: '8.0'
+        default: '8.2'
+        required: false
+        type: string
+      PHP_EXTENSIONS:
+        description: PHP extensions supported by shivammathur/setup-php to be installed or disabled.
+        default: ''
         required: false
         type: string
       COMPOSER_ARGS:
@@ -30,8 +35,6 @@ jobs:
   tests-unit-php:
     timeout-minutes: 5
     runs-on: ubuntu-latest
-    env:
-      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -51,14 +54,17 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.PHP_VERSION }}
+          extensions: ${{ inputs.PHP_EXTENSIONS }}
 
       - name: Set up problem matchers for PHPUnit
         run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
       - name: Install Composer dependencies
         uses: ramsey/composer-install@v3
+        env:
+          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
         with:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
 
       - name: Run PHPUnit
-        run: ./vendor/bin/phpunit ${{ inputs.PHPUNIT_ARGS }}
+        run: ./$(composer config bin-dir)/phpunit ${{ inputs.PHPUNIT_ARGS }}

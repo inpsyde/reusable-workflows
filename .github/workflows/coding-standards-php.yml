@@ -5,7 +5,12 @@ on:
     inputs:
       PHP_VERSION:
         description: PHP version with which the scripts are executed.
-        default: "8.0"
+        default: '8.2'
+        required: false
+        type: string
+      PHP_EXTENSIONS:
+        description: PHP extensions supported by shivammathur/setup-php to be installed or disabled.
+        default: ''
         required: false
         type: string
       COMPOSER_ARGS:
@@ -35,8 +40,6 @@ jobs:
   coding-standards-php:
     timeout-minutes: 5
     runs-on: ubuntu-latest
-    env:
-      COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -56,6 +59,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.PHP_VERSION }}
+          extensions: ${{ inputs.PHP_EXTENSIONS }}
           tools: composer, cs2pr
           coverage: none
 
@@ -64,11 +68,13 @@ jobs:
 
       - name: Install Composer dependencies
         uses: ramsey/composer-install@v3
+        env:
+          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
         with:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
 
       - name: Run PHP_CodeSniffer
-        run: ./vendor/bin/phpcs ${{ inputs.PHPCS_ARGS }}
+        run: ./$(composer config bin-dir)/phpcs ${{ inputs.PHPCS_ARGS }}
 
       - name: Annotate PHP_CodeSniffer report
         if: ${{ always() }}
