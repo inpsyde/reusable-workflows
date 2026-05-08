@@ -23,7 +23,7 @@ jobs:
   e2e-playwright:
     uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@main
     with:
-      ARTIFACT_PATH: './artifacts'
+      PLAYWRIGHT_ARTIFACT_PATH: './artifacts'
       PLAYWRIGHT_SCRIPT: 'ci-test-e2e'
 ```
 
@@ -33,11 +33,11 @@ jobs:
 
 | Name                            | Default                         | Description                                                                                       |
 |---------------------------------|---------------------------------|---------------------------------------------------------------------------------------------------|
-| `ARTIFACT_INCLUDE_HIDDEN_FILES` | `false`                         | Whether to include hidden files in the artifact                                                   |
-| `ARTIFACT_NAME`                 | `'artifact'`                    | Name for the artifact                                                                             |
-| `ARTIFACT_OVERWRITE`            | `false`                         | Determine if an artifact with a matching name will be deleted before a new one is uploaded or not |
-| `ARTIFACT_PATH`                 |                                 | A file, directory or wildcard pattern that describes what to upload                               |
-| `ARTIFACT_RETENTION_DAYS`       | `30`                            | Duration after which artifact will expire in day                                                  |
+| `PLAYWRIGHT_ARTIFACT_INCLUDE_HIDDEN_FILES` | `false`                         | Whether to include hidden files in the artifact                                                   |
+| `PLAYWRIGHT_ARTIFACT_NAME`                 | `'artifact'`                    | Name for the artifact                                                                             |
+| `PLAYWRIGHT_ARTIFACT_OVERWRITE`            | `false`                         | Determine if an artifact with a matching name will be deleted before a new one is uploaded or not |
+| `PLAYWRIGHT_ARTIFACT_PATH`                 |                                 | A file, directory or wildcard pattern that describes what to upload                               |
+| `PLAYWRIGHT_ARTIFACT_RETENTION_DAYS`       | `30`                            | Duration after which artifact will expire in day                                                  |
 | `COMPOSER_DEPS_INSTALL`         | `false`                         | Whether to install Composer dependencies                                                          |
 | `NGROK_DOMAIN`                  | `''`                            | Reserved ngrok domain for the tunnel (paid account). Required when `NGROK_AUTH_TOKEN` is provided  |
 | `NODE_VERSION`                  | `24`                            | Node version with which the node script will be executed                                          |
@@ -100,10 +100,10 @@ jobs:
       matrix:
         php: [ '8.2', '8.3' ]
     with:
-      ARTIFACT_PATH: |
+      PLAYWRIGHT_ARTIFACT_PATH: |
         artifacts/*
         playwright-report/
-      ARTIFACT_INCLUDE_HIDDEN_FILES: true
+      PLAYWRIGHT_ARTIFACT_INCLUDE_HIDDEN_FILES: true
       PLAYWRIGHT_SCRIPT: 'ci-test-e2e'
       COMPOSER_DEPS_INSTALL: true
       PHP_VERSION: ${{ matrix.php }}
@@ -131,7 +131,7 @@ jobs:
   e2e-playwright:
     uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@main
     with:
-      ARTIFACT_PATH: |
+      PLAYWRIGHT_ARTIFACT_PATH: |
         artifacts/*
         playwright-report/
       PLAYWRIGHT_SCRIPT: 'ci-test-e2e'
@@ -173,7 +173,7 @@ jobs:
   e2e-playwright:
     uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@main
     with:
-      ARTIFACT_PATH: |
+      PLAYWRIGHT_ARTIFACT_PATH: |
         artifacts/*
         playwright-report/
       PLAYWRIGHT_SCRIPT: ${{ inputs.TEST_SUITE }}
@@ -207,7 +207,7 @@ jobs:
     uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@main
     with:
       WORK_DIR: 'tests/qa'
-      ARTIFACT_PATH: |
+      PLAYWRIGHT_ARTIFACT_PATH: |
         tests/qa/artifacts/*
         tests/qa/playwright-report/
       PLAYWRIGHT_SCRIPT: ${{ inputs.TEST_SUITE }}
