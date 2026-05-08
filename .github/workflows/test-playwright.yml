@@ -213,6 +213,15 @@ jobs:
         if: ${{ hashFiles('.wp-env.json') != '' }}
         run: |
           set -a && source .env.ci && set +a
+
+          WP_HOME=$(node -e "const c = require('./.wp-env.json'); console.log(c.config?.WP_HOME || '')")
+          if [ -n "$WP_HOME" ]; then
+            DOMAIN=$(echo "$WP_HOME" | sed -E 's|https?://||; s|[:/].*||')
+            if [ -n "$DOMAIN" ] && [ "$DOMAIN" != "localhost" ]; then
+              echo "127.0.0.1 $DOMAIN" | sudo tee -a /etc/hosts
+            fi
+          fi
+
           npm -g i @wordpress/env && wp-env start
 
       - name: Install ngrok
