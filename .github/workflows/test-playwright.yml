@@ -222,7 +222,7 @@ jobs:
             fi
           fi
 
-          npm -g i @wordpress/env && wp-env start
+          npx wp-env start
 
       - name: Install ngrok
         env:
