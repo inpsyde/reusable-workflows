@@ -37,7 +37,7 @@ on:
         required: true
 
 jobs:
-  push_trunk:
+  update_svn_from_git:
     env:
       SVN_REPO_PATH: "${{ github.workspace }}/svn_repository"
       SVN_REPO_ROOT: "${{ github.workspace }}/svn_repository/${{ inputs.SVN_PLUGIN_SLUG }}"
@@ -129,10 +129,10 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$SVN_REPO_PATH" && cd "$SVN_REPO_PATH"
-
+          
           # We only do a full checkout of trunk here, leaving other directories empty.
           # Tags directory can take gigabytes for older plugins, and we don't need them for publishing.
-
+          
           svn checkout "https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}" --depth immediates
           cd "$SVN_REPO_ROOT" && svn update trunk --set-depth infinity
 
@@ -157,7 +157,7 @@ jobs:
           set -euo pipefail
 
           touch .distignore # Ensure file exists so --exclude-from doesn't fail
-
+          
           rsync -rc \
           --delete \
           --delete-excluded \
@@ -174,10 +174,10 @@ jobs:
       - name: Update SVN tracking
         run: |
           set -euo pipefail
-
+          
           cd "${SVN_REPO_ROOT}/trunk"
           svn add . --force
-
+          
           #Only run if there's anything to delete
           if svn status | grep -q '^!'; then
             svn status | grep '^!' | cut -c9- | while IFS= read -r file; do
@@ -185,7 +185,7 @@ jobs:
             done
           fi
 
-      - name: Commit trunk to SVN repository
+      - name: Commit changes to SVN repository
         if: inputs.DRY_RUN != true
         env:
           SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
@@ -200,7 +200,7 @@ jobs:
 
           # WordPress.org SVN doesn't support SSH keys or tokens.
           # Keeping credentials as step-level env vars with --no-auth-cache is the best available option.
-          echo '🚀 Committing trunk...'
+          echo '🚀 Committing...'
 
           svn commit trunk \
             --username "$SVN_USERNAME" \
@@ -209,7 +209,16 @@ jobs:
             --non-interactive \
             -m "Update trunk to version ${VALIDATED_PLUGIN_VERSION}"
 
-          echo "✅ Trunk updated to version ${VALIDATED_PLUGIN_VERSION}"
+          svn copy \
+            "https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}/trunk" \
+            "https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}/tags/${VALIDATED_PLUGIN_VERSION}" \
+            --username "$SVN_USERNAME" \
+            --password "$SVN_PASSWORD" \
+            --no-auth-cache \
+            --non-interactive \
+            -m "Tagging version ${VALIDATED_PLUGIN_VERSION}"
+
+          echo "✅ Version ${VALIDATED_PLUGIN_VERSION} was published to WordPress.org"
 
       - name: Compress and upload trunk contents as an artifact
         if: inputs.DRY_RUN == true
@@ -219,34 +228,3 @@ jobs:
           path: ${{ env.SVN_REPO_ROOT }}/trunk
           include-hidden-files: true
           compression-level: 1 #Minimal compression - we don't want to waste resources for this
-
-  create_tag:
-    needs: push_trunk
-    if: inputs.DRY_RUN != true
-    environment: wordpress-org-release
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install subversion
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y subversion
-
-      - name: Create SVN tag
-        env:
-          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
-          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
-        run: |
-          set -euo pipefail
-
-          echo '🚀 Creating tag...'
-
-          svn copy \
-            "https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}/trunk" \
-            "https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}/tags/${{ inputs.PLUGIN_VERSION }}" \
-            --username "$SVN_USERNAME" \
-            --password "$SVN_PASSWORD" \
-            --no-auth-cache \
-            --non-interactive \
-            -m "Tagging version ${{ inputs.PLUGIN_VERSION }}"
-
-          echo "✅ Version ${{ inputs.PLUGIN_VERSION }} was published to WordPress.org"
