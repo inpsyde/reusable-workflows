@@ -143,6 +143,7 @@ jobs:
           cd "$SVN_REPO_ROOT" && svn update trunk --set-depth infinity
 
       - name: Verify version doesn't exist in SVN
+        if: inputs.UPDATE_TRUNK_ONLY != true
         run: |
           set -euo pipefail
 
