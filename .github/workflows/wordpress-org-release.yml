@@ -26,6 +26,12 @@ on:
         default: false
         required: false
 
+      UPDATE_TRUNK_ONLY:
+        description: "Only update trunk at wordpress.org, but don't create a new tag (version)"
+        type: boolean
+        default: true
+        required: false
+
     secrets:
       SVN_USERNAME:
         required: true
@@ -209,6 +215,17 @@ jobs:
             --non-interactive \
             -m "Update trunk to version ${VALIDATED_PLUGIN_VERSION}"
 
+
+      - name: Create a new tag
+        if: inputs.UPDATE_TRUNK_ONLY == false  && inputs.DRY_RUN != true
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+        run: |
+          set -euo pipefail
+          
+          echo "🚀 Publishing version ${VALIDATED_PLUGIN_VERSION}"
+          
           svn copy \
             "https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}/trunk" \
             "https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}/tags/${VALIDATED_PLUGIN_VERSION}" \
