@@ -67,11 +67,6 @@ on:
         default: ''
         required: false
         type: string
-      WORK_DIR:
-        description: Working directory for npm install, Playwright install, and test execution.
-        default: '.'
-        required: false
-        type: string
       NGROK_DOMAIN:
         description: Reserved ngrok domain for the tunnel (paid account). Required when NGROK_AUTH_TOKEN is provided.
         default: ''
@@ -145,8 +140,7 @@ jobs:
 
       - name: Set up node cache mode
         run: |
-          WORK_DIR="${{ inputs.WORK_DIR }}"
-          if [ -f "${GITHUB_WORKSPACE}/${WORK_DIR}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/${WORK_DIR}/npm-shrinkwrap.json" ]; then
+          if [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ]; then
             echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV
           else
             echo "No lock files found or unknown package manager"
@@ -179,11 +173,9 @@ jobs:
           cache: ${{ env.NODE_CACHE_MODE }}
 
       - name: Install dependencies
-        working-directory: ${{ inputs.WORK_DIR }}
         run: npm ${{ env.NODE_CACHE_MODE == 'npm' && 'ci' || 'install' }}
 
       - name: Build assets
-        working-directory: ${{ inputs.WORK_DIR }}
         run: npm run build --if-present
 
       - name: Run PHP-Scoper
@@ -197,18 +189,15 @@ jobs:
           rsync -av ./build/ . && rm -rf ./build/
 
       - name: Install Playwright dependencies
-        working-directory: ${{ inputs.WORK_DIR }}
         run: |
           npx playwright install ${{ inputs.PLAYWRIGHT_BROWSER_ARGS }}
 
       - name: Create environment file
-        working-directory: ${{ inputs.WORK_DIR }}
         env:
           ENV_FILE_DATA: ${{ secrets.ENV_FILE_DATA }}
         run: printenv ENV_FILE_DATA > .env.ci
 
       - name: Append test reporting variables
-        working-directory: ${{ inputs.WORK_DIR }}
         run: |
           [ -n "${{ inputs.TESTRAIL_PLAN_ID }}" ] && echo "TESTRAIL_PLAN_ID=${{ inputs.TESTRAIL_PLAN_ID }}" >> .env.ci
           [ -n "${{ inputs.TESTRAIL_RUN_ID }}" ] && echo "TESTRAIL_RUN_ID=${{ inputs.TESTRAIL_RUN_ID }}" >> .env.ci
@@ -246,7 +235,6 @@ jobs:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
           NGROK_DOMAIN: ${{ inputs.NGROK_DOMAIN }}
         if: ${{ env.NGROK_AUTH_TOKEN != '' }}
-        working-directory: ${{ inputs.WORK_DIR }}
         run: |
           ngrok config add-authtoken "$NGROK_AUTH_TOKEN"
 
@@ -274,14 +262,12 @@ jobs:
         env:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
         if: ${{ env.NGROK_AUTH_TOKEN != '' }}
-        working-directory: ${{ inputs.WORK_DIR }}
         run: |
           npx wp-env run tests-cli wp config set WP_SITEURL "$NGROK_URL"
           npx wp-env run tests-cli wp config set WP_HOME "$NGROK_URL"
           sed -i "s|WP_BASE_URL=.*|WP_BASE_URL=$NGROK_URL|" .env.ci
 
       - name: Execute custom code before executing the test script
-        working-directory: ${{ inputs.WORK_DIR }}
         env:
           GH_TOKEN: ${{ github.token }}
           COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
@@ -289,11 +275,9 @@ jobs:
           set -a && source .env.ci && set +a
           ${{ inputs.PRE_SCRIPT }}
 
-
       - name: Run script for test
         id: run-script
         continue-on-error: true
-        working-directory: ${{ inputs.WORK_DIR }}
         run: |
           # Ensure .env.ci is deleted on exit
           trap 'rm -f .env.ci' EXIT

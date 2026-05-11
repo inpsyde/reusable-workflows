@@ -50,7 +50,6 @@ jobs:
 | `TESTRAIL_PLAN_ID`              | `''`                            | TestRail plan ID for reporting. When set, appended to `.env.ci`                                   |
 | `TESTRAIL_RUN_ID`               | `''`                            | TestRail run ID for reporting. When set, appended to `.env.ci`                                    |
 | `XRAY_TEST_EXEC_KEY`            | `''`                            | Xray test execution key for reporting. When set, appended to `.env.ci`                            |
-| `WORK_DIR`                      | `'.'`                           | Working directory for npm install, Playwright install, PRE_SCRIPT, and test execution             |
 
 
 ### Secrets
@@ -207,7 +206,6 @@ jobs:
   e2e-playwright:
     uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@main
     with:
-      WORK_DIR: 'tests/qa'
       PLAYWRIGHT_ARTIFACT_PATH: |
         tests/qa/artifacts/*
         tests/qa/playwright-report/
