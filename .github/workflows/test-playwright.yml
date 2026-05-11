@@ -47,6 +47,11 @@ on:
         default: '8.2'
         required: false
         type: string
+      PHP_EXTENSIONS:
+        description: PHP extensions supported by shivammathur/setup-php to be installed or disabled.
+        default: ''
+        required: false
+        type: string
       PLAYWRIGHT_BROWSER_ARGS:
         description: Set of arguments passed to `npx playwright install`.
         default: '--with-deps'
@@ -152,7 +157,8 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.PHP_VERSION }}
-          tools: composer, php-scoper, sniccowp/php-scoper-wordpress-excludes
+          extensions: ${{ inputs.PHP_EXTENSIONS }}
+          tools: composer
           coverage: none
 
       - name: Install Composer dependencies

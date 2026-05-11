@@ -8,6 +8,11 @@ on:
         default: '8.2'
         required: false
         type: string
+      PHP_EXTENSIONS:
+        description: PHP extensions supported by shivammathur/setup-php to be installed or disabled.
+        default: ''
+        required: false
+        type: string
       COMPOSER_ARGS:
         description: Set of arguments passed to Composer.
         default: '--prefer-dist'
@@ -49,6 +54,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.PHP_VERSION }}
+          extensions: ${{ inputs.PHP_EXTENSIONS }}
 
       - name: Set up problem matchers for PHPUnit
         run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
@@ -61,4 +67,4 @@ jobs:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
 
       - name: Run PHPUnit
-        run: ./vendor/bin/phpunit ${{ inputs.PHPUNIT_ARGS }}
+        run: ./$(composer config bin-dir)/phpunit ${{ inputs.PHPUNIT_ARGS }}
