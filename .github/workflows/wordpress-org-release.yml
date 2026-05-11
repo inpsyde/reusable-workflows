@@ -215,7 +215,6 @@ jobs:
             --non-interactive \
             -m "Update trunk to version ${VALIDATED_PLUGIN_VERSION}"
 
-
       - name: Create a new tag
         if: inputs.UPDATE_TRUNK_ONLY == false  && inputs.DRY_RUN != true
         env:
