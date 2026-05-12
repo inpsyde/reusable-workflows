@@ -18,6 +18,8 @@ To achieve that, this workflow:
 
 ## Simple usage example
 
+This workflow cannot be triggered directly. Create a workflow file in your plugin's repository that calls it via `uses:`, as shown below.
+
 ```yml
 name: Publish to WordPress.org
 on:
@@ -46,6 +48,72 @@ jobs:
       SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
       GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
 ```
+
+## Trigger on Git tag push
+
+If your release process creates a Git tag named after the version (e.g. `1.2.3`), the version can be derived directly from the tag — no manual input needed:
+
+```yml
+name: Publish to WordPress.org
+on:
+  push:
+    tags: ['[0-9]+.[0-9]+.[0-9]+']
+jobs:
+  publish:
+    uses: inpsyde/reusable-workflows/.github/workflows/wordpress-org-release.yml@main
+    with:
+      SVN_PLUGIN_SLUG: my-plugin
+      PLUGIN_VERSION: ${{ github.ref_name }}
+      GIT_REF: ${{ github.ref }}
+      UPDATE_TRUNK_ONLY: false
+    secrets:
+      SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+      SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+      GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
+```
+
+> [!NOTE]
+> This pattern requires tags to be named as bare versions (`1.2.3`, not `v1.2.3`). If your project uses `v`-prefixed tags, strip the prefix before passing it: `PLUGIN_VERSION: ${{ github.ref_name }}` would need to become a separate step that outputs `${GITHUB_REF_NAME#v}`.
+
+> [!WARNING]
+> The version derived from the Git tag must match the `Version:` header in the main plugin file and the `Stable tag` in `readme.txt`. The workflow will fail if they don't all agree. Make sure these are updated in the same commit that the tag points to.
+
+## Advanced usage: requiring manual approval before tagging
+
+To require a manual approval step before the SVN tag is created, add an `environment:` key to the calling job and configure protection rules (required reviewers, wait timers, etc.) for that environment in your repository settings under **Settings → Environments**.
+
+```yml
+name: Publish to WordPress.org
+on:
+  workflow_dispatch:
+    inputs:
+      PLUGIN_VERSION:
+        description: 'Version to publish (MAJOR.MINOR.PATCH)'
+        required: true
+      GIT_REF:
+        description: 'Git tag or branch to publish'
+        required: true
+      UPDATE_TRUNK_ONLY:
+        description: 'Only update trunk, skip tag creation'
+        type: boolean
+        default: true
+jobs:
+  publish:
+    environment: wordpress-org-release  # enforces protection rules configured in repository settings
+    uses: inpsyde/reusable-workflows/.github/workflows/wordpress-org-release.yml@main
+    with:
+      SVN_PLUGIN_SLUG: my-plugin
+      PLUGIN_VERSION: ${{ inputs.PLUGIN_VERSION }}
+      GIT_REF: ${{ inputs.GIT_REF }}
+      UPDATE_TRUNK_ONLY: ${{ inputs.UPDATE_TRUNK_ONLY == 'true' }}
+    secrets:
+      SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+      SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+      GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
+```
+
+> [!NOTE]
+> The `environment:` key alone does nothing — protection rules must be explicitly configured in repository settings. An environment with no rules configured provides no approval gate.
 
 ## Staged release (trunk first, tag later)
 
