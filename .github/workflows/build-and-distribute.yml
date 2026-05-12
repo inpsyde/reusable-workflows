@@ -257,7 +257,7 @@ jobs:
 
       - name: Install Composer dependencies
         if: ${{ env.HAS_COMPOSER == 'true' }}
-        uses: ramsey/composer-install@v3
+        uses: ramsey/composer-install@v4
         env:
           COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
         with:
