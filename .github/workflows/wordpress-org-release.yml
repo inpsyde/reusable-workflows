@@ -54,6 +54,20 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y subversion rsync
 
+      - name: Validate plugin slug
+        env:
+          SVN_PLUGIN_SLUG: ${{ inputs.SVN_PLUGIN_SLUG }}
+        run: |
+          set -euo pipefail
+
+          if [[ ! "$SVN_PLUGIN_SLUG" =~ ^[a-z0-9-]+$ ]]; then
+            echo "❌ Invalid plugin slug: $SVN_PLUGIN_SLUG"
+            echo "   WordPress.org slugs may only contain lowercase letters, numbers, and hyphens"
+            exit 1
+          fi
+
+          echo "✅ Valid plugin slug: $SVN_PLUGIN_SLUG"
+
       - name: Validate versions
         env:
           PLUGIN_VERSION: ${{ inputs.PLUGIN_VERSION }}
