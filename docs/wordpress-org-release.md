@@ -57,7 +57,7 @@ If your release process creates a Git tag named after the version (e.g. `1.2.3`)
 name: Publish to WordPress.org
 on:
   push:
-    tags: ['[0-9]+.[0-9]+.[0-9]+']
+    tags: ['[0-9]*.[0-9]*.[0-9]*']
 jobs:
   publish:
     uses: inpsyde/reusable-workflows/.github/workflows/wordpress-org-release.yml@main
@@ -126,13 +126,13 @@ To verify trunk on WordPress.org before publishing, run the workflow twice with 
 
 ### Inputs
 
-| Name | Default | Description |
-|---|---|---|
-| `SVN_PLUGIN_SLUG` | — | WordPress.org plugin slug (e.g. `my-plugin`) |
-| `PLUGIN_VERSION` | — | Version to publish, must be `MAJOR.MINOR.PATCH` |
-| `GIT_REF` | — | Git ref to publish (tag, branch, or commit SHA) |
-| `DRY_RUN` | `false` | Upload trunk as an artifact instead of committing to SVN |
-| `UPDATE_TRUNK_ONLY` | `true` | Sync trunk only; skip tag creation |
+| Name | Required | Default | Description |
+|---|---|---|---|
+| `SVN_PLUGIN_SLUG` | yes | — | WordPress.org plugin slug (e.g. `my-plugin`) |
+| `PLUGIN_VERSION` | yes | — | Version to publish, must be `MAJOR.MINOR.PATCH` |
+| `GIT_REF` | yes | — | Git ref to publish (tag, branch, or commit SHA) |
+| `DRY_RUN` | no | `false` | Upload trunk as an artifact instead of committing to SVN |
+| `UPDATE_TRUNK_ONLY` | no | `true` | Sync trunk only; skip tag creation |
 
 ### Secrets
 
