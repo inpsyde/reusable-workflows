@@ -16,6 +16,9 @@ To achieve that, this workflow:
 > [!NOTE]
 > This workflow intentionally fails if the version already exists as an SVN tag. There is no amendment flow.
 
+> [!IMPORTANT]
+> The plugin's SVN repository must already exist on WordPress.org before running this workflow — including in `DRY_RUN` mode. Initial plugin submission requires a separate manual process via the [WordPress.org plugin submission form](https://wordpress.org/plugins/developers/add/).
+
 ## Simple usage example
 
 This workflow cannot be triggered directly. Create a workflow file in your plugin's repository that calls it via `uses:`, as shown below.
