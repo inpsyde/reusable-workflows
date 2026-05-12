@@ -123,7 +123,10 @@ jobs:
 To verify trunk on WordPress.org before publishing, run the workflow twice with the same inputs — first with `UPDATE_TRUNK_ONLY: true` (the default), then with `UPDATE_TRUNK_ONLY: false` once trunk looks correct.
 
 > [!WARNING]
-> When `UPDATE_TRUNK_ONLY=true`, the `Stable tag` in `readme.txt` must point to an **already-released** version. If it references a version that doesn't exist as an SVN tag yet, WordPress.org may fall back to serving trunk as the stable release.
+> When `UPDATE_TRUNK_ONLY=true`, the version existence check is skipped. Do not leave trunk with a `Stable tag` pointing to a non-existent SVN tag — [WordPress.org will serve the plugin from trunk instead](https://developer.wordpress.org/plugins/wordpress-org/how-your-readme-txt-works/#how-the-readme-is-parsed). Keep `Stable tag` pointing to the latest published version.
+
+> [!NOTE]
+> WordPress.org reads `readme.txt` from the tag that `Stable tag` points to, not from trunk. Updating `readme.txt` in trunk alone will not update the plugin page — a new tag must be created.
 
 ## Configuration parameters
 
