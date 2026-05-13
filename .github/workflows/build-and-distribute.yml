@@ -141,14 +141,6 @@ jobs:
           # Fetch latest public release
           LATEST_RELEASE=$(gh release list --limit 1 --json tagName --jq '.[0].tagName' || echo "")
           
-          # Fallback: Fetch latest version tag (supports 1.2.3 and v1.2.3, ignores tags with slashes)
-          if [[ -z $LATEST_RELEASE ]]; then
-            LATEST_RELEASE=$(git for-each-ref --sort=-creatordate --format='%(refname:short)' refs/tags \
-              | grep -E '^v?[0-9]' \
-              | grep -v '/' \
-              | head -1 || echo "")
-          fi
-          
           if [ -z "$LATEST_RELEASE" ]; then
             echo "No releases found, using default version 0.0.0."
             LATEST_RELEASE="0.0.0"
