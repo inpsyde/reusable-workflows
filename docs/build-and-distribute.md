@@ -42,6 +42,34 @@ If no `PACKAGE_VERSION` is provided, the workflow automatically:
 
 This ensures every build has a unique, meaningful version identifier that traces back to both the base release and the source branch.
 
+### GitHub Release tag format
+
+The latest GitHub Release tag is used as the base for `PACKAGE_VERSION` and is validated by `npm version` against semver. Release tags must therefore exactly match this pattern:
+
+```
+[v]MAJOR.MINOR.PATCH[-IDENTIFIER]
+```
+
+<details>
+<summary>Valid and invalid samples</summary>
+
+**Valid:**
+- `1.2.3`
+- `v1.2.3`
+- `1.2.3-alpha`
+- `1.2.3-feature.1`
+- `1.2.3-2026-05-21`
+
+**Invalid:**
+- `1.2` → missing PATCH
+- `1.2.3.4` → too many segments
+- `1.2.3-` → empty identifier
+- `v.1.2.3` → dot after `v`
+- `a.b.c` → non-numeric segments
+- `release/1.2.3` → contains a slash
+
+</details>
+
 ## Simple usage example
 
 ### WordPress Plugin/Theme or PHP Library
