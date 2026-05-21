@@ -29,10 +29,10 @@ This approach keeps source code separate from build artifacts while maintaining 
 
 If no `PACKAGE_VERSION` is provided, the workflow automatically:
 
-1. Fetches the latest tag from the repository
+1. Fetches the latest GitHub Release from the repository
 2. Strips the `dev/` prefix from the branch name and normalizes it to be semver-compatible
 3. Creates a pre-release version like `1.2.3-main` or `2.0.0-abc-123`
-4. Falls back to `0.0.0-{branch}` if no tags exist
+4. Falls back to `0.0.0-{branch}` if no published release exists
 
 **Examples:**
 
@@ -121,7 +121,7 @@ jobs:
 | `PHP_TOOLS`           | `''`                                             | PHP tools supported by shivammathur/setup-php to be installed                                                    |
 | `COMPOSER_ARGS`       | `'--no-dev --prefer-dist --optimize-autoloader'` | Set of arguments passed to Composer when gathering production dependencies                                       |
 | `PACKAGE_NAME`        | `''`                                             | The name of the package (falls back to the repository name)                                                      |
-| `PACKAGE_VERSION`     | `''`                                             | The new package version. If not provided, will use latest tag version with branch name as pre-release identifier |
+| `PACKAGE_VERSION`     | `''`                                             | The new package version. If not provided, will use the latest GitHub Release version with branch name as pre-release identifier |
 | `PRE_SCRIPT`          | `''`                                             | Run custom shell code before creating the release archive                                                        |
 | `BUILT_BRANCH_NAME`   | `''`                                             | Override the automatic build branch naming (defaults to stripping `dev/` prefix from origin branch)              |
 
