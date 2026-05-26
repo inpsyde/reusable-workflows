@@ -24,7 +24,7 @@ on:
         required: false
         type: string
       CODECOV_COVERAGE_FILE:
-        description: Path to the coverage file to upload to Codecov. Upload is skipped when the file does not exist.
+        description: Path to the coverage file to upload to Codecov.
         default: 'coverage.xml'
         required: false
         type: string
