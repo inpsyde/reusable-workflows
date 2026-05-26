@@ -44,6 +44,9 @@ on:
       ENV_VARS:
         description: Additional environment variables as a JSON formatted object.
         required: false
+      CODECOV_TOKEN:
+        description: Codecov token.
+        required: false
 
 jobs:
   tests-unit-js:
@@ -118,4 +121,18 @@ jobs:
         run: ${{ format('{0} {1}', inputs.PACKAGE_MANAGER, env.ARGS) }}
 
       - name: Run Jest
-        run: ./node_modules/.bin/jest ${{ inputs.JEST_ARGS }}
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: |
+          COVERAGE_ARGS=""
+          [ -n "$CODECOV_TOKEN" ] && COVERAGE_ARGS="--coverage"
+          ./node_modules/.bin/jest $COVERAGE_ARGS ${{ inputs.JEST_ARGS }}
+
+      - name: Upload coverage to Codecov
+        if: ${{ hashFiles('coverage/lcov.info') != '' }}
+        uses: codecov/codecov-action@v6
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          flags: unittests
+          verbose: true

@@ -39,6 +39,7 @@ jobs:
 | `GITHUB_USER_NAME`    | Username for the GitHub user configuration                                   |
 | `GITHUB_USER_SSH_KEY` | Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME` |
 | `ENV_VARS`            | Additional environment variables as a JSON formatted object                  |
+| `CODECOV_TOKEN`       | Codecov token                                                                |
 
 **Example with configuration parameters:**
 
@@ -53,9 +54,10 @@ jobs:
       NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       ENV_VARS: >-
         [{"name":"EXAMPLE_USERNAME", "value":"${{ secrets.USERNAME }}"}]
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     with:
       NODE_VERSION: 14
-      JEST_ARGS: 'my-test --reporters=jest-junit --coverage'
+      JEST_ARGS: 'my-test --reporters=jest-junit'
 ```
 
 ## Static analysis JavaScript
