@@ -23,11 +23,6 @@ on:
         default: '--coverage-text'
         required: false
         type: string
-      CODECOV_COVERAGE_FILE:
-        description: Path to the coverage file to upload to Codecov.
-        default: 'coverage.xml'
-        required: false
-        type: string
     secrets:
       COMPOSER_AUTH_JSON:
         description: Authentication for privately hosted packages and repositories as a JSON formatted object.
@@ -75,13 +70,18 @@ jobs:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
 
       - name: Run PHPUnit
-        run: ./$(composer config bin-dir)/phpunit ${{ inputs.PHPUNIT_ARGS }}
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: |
+          COVERAGE_ARGS=""
+          [ -n "$CODECOV_TOKEN" ] && COVERAGE_ARGS="--coverage-clover coverage.xml"
+          ./$(composer config bin-dir)/phpunit $COVERAGE_ARGS ${{ inputs.PHPUNIT_ARGS }}
 
       - name: Upload coverage to Codecov
-        if: ${{ hashFiles(inputs.CODECOV_COVERAGE_FILE) != '' }}
+        if: ${{ hashFiles('coverage.xml') != '' }}
         uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ${{ inputs.CODECOV_COVERAGE_FILE }}
+          files: ./coverage.xml
           flags: unittests
           verbose: true

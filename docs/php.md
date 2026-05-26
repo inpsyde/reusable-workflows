@@ -153,7 +153,6 @@ jobs:
 | `PHP_EXTENSIONS`        | `''`                | PHP extensions supported by shivammathur/setup-php to be installed or disabled |
 | `COMPOSER_ARGS`         | `'--prefer-dist'`   | Set of arguments passed to Composer                                            |
 | `PHPUNIT_ARGS`          | `'--coverage-text'` | Set of arguments passed to PHPUnit                                             |
-| `CODECOV_COVERAGE_FILE` | `'coverage.xml'`    | Path to the coverage file to upload to Codecov                                 |
 
 #### Secrets
 
@@ -180,7 +179,7 @@ jobs:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     with:
       PHP_VERSION: ${{ matrix.php }}
-      PHPUNIT_ARGS: '--coverage-text --coverage-clover coverage.xml'
+      PHPUNIT_ARGS: '--coverage-text'
 ```
 
 ## Lint PHP
