@@ -147,12 +147,12 @@ jobs:
 
 #### Inputs
 
-| Name                    | Default             | Description                                                                    |
-|-------------------------|---------------------|--------------------------------------------------------------------------------|
-| `PHP_VERSION`           | `'8.2'`             | PHP version with which the scripts are executed                                |
-| `PHP_EXTENSIONS`        | `''`                | PHP extensions supported by shivammathur/setup-php to be installed or disabled |
-| `COMPOSER_ARGS`         | `'--prefer-dist'`   | Set of arguments passed to Composer                                            |
-| `PHPUNIT_ARGS`          | `'--coverage-text'` | Set of arguments passed to PHPUnit                                             |
+| Name             | Default             | Description                                                                    |
+|------------------|---------------------|--------------------------------------------------------------------------------|
+| `PHP_VERSION`    | `'8.2'`             | PHP version with which the scripts are executed                                |
+| `PHP_EXTENSIONS` | `''`                | PHP extensions supported by shivammathur/setup-php to be installed or disabled |
+| `COMPOSER_ARGS`  | `'--prefer-dist'`   | Set of arguments passed to Composer                                            |
+| `PHPUNIT_ARGS`   | `'--coverage-text'` | Set of arguments passed to PHPUnit                                             |
 
 #### Secrets
 
