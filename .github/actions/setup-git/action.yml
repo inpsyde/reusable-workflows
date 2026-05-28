@@ -3,23 +3,23 @@ description: Set up SSH agent, Git identity, and optional commit signing.
 
 inputs:
   ssh-private-key:
-    description: Private SSH key for authentication. Skipped when empty.
+    description: Private SSH key for authentication.
     default: ''
     required: false
   user-email:
-    description: Git user.email. Skipped when empty.
+    description: Git user email.
     default: ''
     required: false
   user-name:
-    description: Git user.name. Skipped when empty.
+    description: Git user name.
     default: ''
     required: false
   ssh-public-key:
-    description: Public SSH key for commit signing. Skipped when empty.
+    description: Public SSH key for commit signing.
     default: ''
     required: false
-  push-auto-setup-remote:
-    description: Set push.autoSetupRemote and disable addIgnoredFile advice ('true' or 'false').
+  automated-commits:
+    description: Enable Git settings for automated commits (auto-tracks remote branches on push, silences ignored-file warnings).
     default: 'false'
     required: false
 
@@ -40,7 +40,7 @@ runs:
         git config --global user.name "${{ inputs.user-name }}"
 
     - name: Set up Git configuration
-      if: ${{ inputs.push-auto-setup-remote == 'true' }}
+      if: ${{ inputs.automated-commits == 'true' }}
       shell: bash
       run: |
         git config --global advice.addIgnoredFile false
