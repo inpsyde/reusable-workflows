@@ -63,7 +63,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      NODE_CACHE_MODE: ''
       COMPOSER_NO_DEV: 1
 
     steps:
@@ -73,18 +72,10 @@ jobs:
           fetch-depth: 0
           ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.9.1
+      - name: Set up Git
+        uses: ./.github/actions/setup-git
         with:
           ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
-
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ inputs.PHP_VERSION }}
-          extensions: ${{ inputs.PHP_EXTENSIONS }}
-          tools: composer, ${{ inputs.PHP_TOOLS }}
-          coverage: none
 
       - name: Set up WireGuard
         uses: inpsyde/actions/setup-wireguard@v1
@@ -94,13 +85,14 @@ jobs:
         with:
           wireguard-configuration: ${{ secrets.WIREGUARD_CONFIGURATION }}
 
-      - name: Validate composer.json and composer.lock
-        run: composer validate
-
-      - name: Install Composer dependencies
-        uses: ramsey/composer-install@v3
-        env:
-          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
+      - name: Set up PHP
+        uses: ./.github/actions/setup-php
+        with:
+          php-version: ${{ inputs.PHP_VERSION }}
+          php-extensions: ${{ inputs.PHP_EXTENSIONS }}
+          php-tools: 'composer, ${{ inputs.PHP_TOOLS }}'
+          composer-options: ''
+          composer-auth-json: ${{ secrets.COMPOSER_AUTH_JSON }}
 
       - name: Detect npm workspaces
         id: npm-workspaces
@@ -111,27 +103,13 @@ jobs:
             echo "enabled=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Set up node cache mode
-        run: |
-          if [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ]; then
-            echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV
-          else
-            echo "No lock files found or unknown package manager"
-          fi
-
-      - name: Set up node
+      - name: Set up Node
         if: steps.npm-workspaces.outputs.enabled == 'true'
-        uses: actions/setup-node@v4
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+        uses: ./.github/actions/setup-node
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
-          cache: ${{ env.NODE_CACHE_MODE }}
-
-      - name: Install npm dependencies
-        if: steps.npm-workspaces.outputs.enabled == 'true'
-        run: npm ${{ env.NODE_CACHE_MODE == 'npm' && 'ci' || 'install' }}
+          node-auth-token: ${{ secrets.NPM_REGISTRY_TOKEN }}
 
       - name: Run the build using workspaces
         if: steps.npm-workspaces.outputs.enabled == 'true'
