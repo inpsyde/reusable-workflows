@@ -129,20 +129,11 @@ jobs:
 
       - name: Set up PHP
         if: ${{ inputs.COMPOSER_DEPS_INSTALL }}
-        uses: shivammathur/setup-php@v2
+        uses: ./.github/actions/setup-php
         with:
           php-version: ${{ inputs.PHP_VERSION }}
-          extensions: ${{ inputs.PHP_EXTENSIONS }}
-          tools: composer
-          coverage: none
-
-      - name: Install Composer dependencies
-        if: ${{ inputs.COMPOSER_DEPS_INSTALL }}
-        uses: ramsey/composer-install@v3
-        env:
-          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
-        with:
-          composer-options: '--prefer-dist'
+          php-extensions: ${{ inputs.PHP_EXTENSIONS }}
+          composer-auth-json: ${{ secrets.COMPOSER_AUTH_JSON }}
 
       - name: Set up Node
         uses: ./.github/actions/setup-node
