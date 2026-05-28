@@ -1,9 +1,9 @@
 name: Setup Node
-description: Set up Node.js with cache detection and dependency installation.
+description: Set up Node with cache detection and dependency installation.
 
 inputs:
   node-version:
-    description: Node.js version to set up.
+    description: Node version to set up.
     default: '18'
     required: false
   node-version-file:
@@ -48,7 +48,7 @@ runs:
         fi
         echo "cache-mode=$CACHE_MODE" >> "$GITHUB_OUTPUT"
 
-    - name: Set up Node.js
+    - name: Set up Node
       uses: actions/setup-node@v4
       env:
         NODE_OPTIONS: ${{ inputs.node-options }}

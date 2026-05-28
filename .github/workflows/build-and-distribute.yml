@@ -251,7 +251,7 @@ jobs:
         with:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
 
-      - name: Set up Node.js
+      - name: Set up Node
         uses: ./.github/actions/setup-node
         with:
           node-version: ${{ inputs.NODE_VERSION }}

@@ -101,7 +101,7 @@ jobs:
           user-email: ${{ secrets.GITHUB_USER_EMAIL }}
           user-name: ${{ secrets.GITHUB_USER_NAME }}
 
-      - name: Set up Node.js
+      - name: Set up Node
         uses: ./.github/actions/setup-node
         with:
           node-version: ${{ inputs.NODE_VERSION }}
