@@ -14,7 +14,7 @@ inputs:
     description: npm registry URL.
     default: 'https://npm.pkg.github.com/'
     required: false
-  npm-auth-token:
+  node-auth-token:
     description: Authentication token for the npm registry.
     default: ''
     required: false
@@ -52,7 +52,7 @@ runs:
       uses: actions/setup-node@v4
       env:
         NODE_OPTIONS: ${{ inputs.node-options }}
-        NODE_AUTH_TOKEN: ${{ inputs.npm-auth-token }}
+        NODE_AUTH_TOKEN: ${{ inputs.node-auth-token }}
       with:
         node-version: ${{ inputs.node-version-file && '' || inputs.node-version }}
         node-version-file: ${{ inputs.node-version-file }}

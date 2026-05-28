@@ -268,7 +268,7 @@ jobs:
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
-          npm-auth-token: ${{ secrets.NPM_REGISTRY_TOKEN }}
+          node-auth-token: ${{ secrets.NPM_REGISTRY_TOKEN }}
           node-options: ${{ inputs.NODE_OPTIONS }}
 
       - name: Determine package type

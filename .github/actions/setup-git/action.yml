@@ -2,7 +2,7 @@ name: Setup Git
 description: Set up SSH agent, Git identity, and optional commit signing.
 
 inputs:
-  ssh-key:
+  ssh-private-key:
     description: Private SSH key for authentication. Skipped when empty.
     default: ''
     required: false
@@ -27,10 +27,10 @@ runs:
   using: composite
   steps:
     - name: Set up SSH
-      if: ${{ inputs.ssh-key != '' }}
+      if: ${{ inputs.ssh-private-key != '' }}
       uses: webfactory/ssh-agent@v0.9.1
       with:
-        ssh-private-key: ${{ inputs.ssh-key }}
+        ssh-private-key: ${{ inputs.ssh-private-key }}
 
     - name: Set up Git identity
       if: ${{ inputs.user-email != '' && inputs.user-name != '' }}

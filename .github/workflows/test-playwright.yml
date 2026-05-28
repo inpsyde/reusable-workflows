@@ -123,7 +123,7 @@ jobs:
       - name: Set up Git
         uses: ./.github/actions/setup-git
         with:
-          ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
+          ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
           user-email: ${{ secrets.GITHUB_USER_EMAIL }}
           user-name: ${{ secrets.GITHUB_USER_NAME }}
 
@@ -149,7 +149,7 @@ jobs:
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
-          npm-auth-token: ${{ secrets.NPM_REGISTRY_TOKEN }}
+          node-auth-token: ${{ secrets.NPM_REGISTRY_TOKEN }}
 
       - name: Build assets
         run: npm run build --if-present
