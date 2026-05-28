@@ -128,10 +128,3 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_USER_TOKEN != '' && secrets.GITHUB_USER_TOKEN || secrets.GITHUB_TOKEN }}
         run: npx semantic-release
 
-      - name: Delete signing key files
-        env:
-          GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.GITHUB_USER_SSH_PUBLIC_KEY }}
-        if: ${{ always() && env.GITHUB_USER_SSH_PUBLIC_KEY != '' }}
-        run: |
-          rm -f "${{ runner.temp }}/signingkey"
-          rm -f "${{ runner.temp }}/signingkey.pub"

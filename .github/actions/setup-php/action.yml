@@ -1,0 +1,56 @@
+name: Setup PHP
+description: Set up PHP with shivammathur/setup-php, validate and install Composer dependencies.
+
+inputs:
+  php-version:
+    description: PHP version to set up.
+    default: '8.2'
+    required: false
+  php-extensions:
+    description: PHP extensions to install or disable.
+    default: ''
+    required: false
+  php-tools:
+    description: PHP tools to install (e.g. composer, cs2pr, parallel-lint).
+    default: 'composer'
+    required: false
+  coverage:
+    description: Code coverage driver (none, xdebug, pcov, or empty for default).
+    default: 'none'
+    required: false
+  composer-install:
+    description: Whether to validate and install Composer dependencies ('true' or 'false').
+    default: 'true'
+    required: false
+  composer-options:
+    description: Arguments passed to Composer install.
+    default: '--prefer-dist'
+    required: false
+  composer-auth-json:
+    description: Authentication for privately hosted packages and repositories as a JSON formatted object.
+    default: ''
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ inputs.php-version }}
+        extensions: ${{ inputs.php-extensions }}
+        tools: ${{ inputs.php-tools }}
+        coverage: ${{ inputs.coverage }}
+
+    - name: Validate composer.json and composer.lock
+      if: ${{ inputs.composer-install == 'true' }}
+      shell: bash
+      run: composer validate
+
+    - name: Install Composer dependencies
+      if: ${{ inputs.composer-install == 'true' }}
+      uses: ramsey/composer-install@v3
+      env:
+        COMPOSER_AUTH: ${{ inputs.composer-auth-json }}
+      with:
+        composer-options: ${{ inputs.composer-options }}
