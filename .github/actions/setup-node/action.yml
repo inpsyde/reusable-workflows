@@ -34,6 +34,12 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Package manager deprecation warning
+      if: ${{ inputs.package-manager != 'npm' }}
+      shell: bash
+      run: |
+        echo "::warning::The package-manager input is deprecated and will be removed soon. Please update your workflow to use npm."
+
     - name: Detect cache mode
       id: cache-detection
       shell: bash
