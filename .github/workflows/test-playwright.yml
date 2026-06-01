@@ -87,6 +87,24 @@ on:
         default: ''
         required: false
         type: string
+      BUILD_WORKFLOW_FILENAME:
+        description: Workflow filename to resolve the build run ID from when triggered outside of a workflow_run event.
+        default: 'build-and-distribute.yml'
+        required: false
+        type: string
+      TESTED_ARTIFACT_DIR:
+        description: Directory to download the tested artifact into.
+        default: 'tests/qa/resources/files'
+        required: false
+        type: string
+      TESTED_ARTIFACT_SLUG:
+        description: >
+          Plugin slug used to download and rename the tested artifact.
+          Downloads the B&D artifact matching `<slug>-*` and renames it to `<slug>.zip`
+          in TESTED_ARTIFACT_DIR, ready for plugin installation.
+        default: ''
+        required: false
+        type: string
     secrets:
       ENV_FILE_DATA:
         description: Additional environment variables for the tests.
@@ -189,8 +207,7 @@ jobs:
           rsync -av ./build/ . && rm -rf ./build/
 
       - name: Install Playwright dependencies
-        run: |
-          npx playwright install ${{ inputs.PLAYWRIGHT_BROWSER_ARGS }}
+        run: npx playwright install ${{ inputs.PLAYWRIGHT_BROWSER_ARGS }}
 
       - name: Create environment file
         env:
@@ -266,6 +283,48 @@ jobs:
           npx wp-env run tests-cli wp config set WP_SITEURL "$NGROK_URL"
           npx wp-env run tests-cli wp config set WP_HOME "$NGROK_URL"
           sed -i "s|WP_BASE_URL=.*|WP_BASE_URL=$NGROK_URL|" .env.ci
+
+      - name: Resolve tested artifact run ID
+        id: resolve-artifact-run-id
+        if: ${{ inputs.TESTED_ARTIFACT_SLUG != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_run" ]; then
+            RUN_ID="${{ github.event.workflow_run.id }}"
+            echo "Using workflow_run event run ID: $RUN_ID"
+          else
+            RUN_ID=$(gh run list \
+              --repo "${{ github.repository }}" \
+              --workflow="${{ inputs.BUILD_WORKFLOW_FILENAME }}" \
+              --branch="${{ github.ref_name }}" \
+              --status=success \
+              --limit=1 \
+              --json databaseId \
+              -q '.[0].databaseId')
+            if [ -z "$RUN_ID" ]; then
+              echo "::error::No successful ${{ inputs.BUILD_WORKFLOW_FILENAME }} run found on branch ${{ github.ref_name }}"
+              exit 1
+            fi
+            echo "Resolved run ID from gh run list: $RUN_ID"
+          fi
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Download tested artifact
+        if: ${{ inputs.TESTED_ARTIFACT_SLUG != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download ${{ steps.resolve-artifact-run-id.outputs.run_id }} \
+            -p "${{ inputs.TESTED_ARTIFACT_SLUG }}-*" \
+            -D "${{ inputs.TESTED_ARTIFACT_DIR }}"
+
+      - name: Rename tested artifact
+        if: ${{ inputs.TESTED_ARTIFACT_SLUG != '' }}
+        working-directory: ${{ inputs.TESTED_ARTIFACT_DIR }}
+        run: |
+          SLUG="${{ inputs.TESTED_ARTIFACT_SLUG }}"
+          mv "${SLUG}-"*.zip "${SLUG}.zip"
 
       - name: Execute custom code before executing the test script
         env:
