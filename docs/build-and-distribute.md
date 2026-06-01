@@ -262,6 +262,27 @@ The workflow produces two outputs:
 1. **Build Branch**: The compiled code pushed to the build branch (e.g., `dev/main` → `main`)
 2. **GitHub Artifact**: A downloadable archive named `{package-name}-{version}` containing the build (without `.git` folder)
 
+### Workflow output
+
+The artifact name is also exposed as a workflow output called `artifact`, so downstream jobs in the calling workflow can reference it without having to reconstruct the name themselves:
+
+```yml
+jobs:
+  build-and-distribute:
+    uses: inpsyde/reusable-workflows/.github/workflows/build-and-distribute.yml@main
+    secrets: inherit
+    with:
+      PACKAGE_VERSION: ${{ inputs.PACKAGE_VERSION }}
+
+  deploy:
+    needs: build-and-distribute
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build-and-distribute.outputs.artifact }}
+```
+
 ## Migration from previous workflows
 
 If you're migrating from a previous build workflow, consider these changes:
