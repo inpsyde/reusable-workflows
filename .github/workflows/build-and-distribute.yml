@@ -82,7 +82,7 @@ on:
         required: false
     outputs:
       artifact:
-        description: The name of the generated release artifact
+        description: The name of the generated release artifact.
         value: ${{ jobs.build-and-distribute.outputs.artifact }}
 
 jobs:
