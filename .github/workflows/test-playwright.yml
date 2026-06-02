@@ -99,9 +99,10 @@ on:
         type: string
       TESTED_ARTIFACT_SLUG:
         description: >
-          Plugin slug used to download and rename the tested artifact.
-          Downloads the B&D artifact matching `<slug>-*` and renames it to `<slug>.zip`
-          in TESTED_ARTIFACT_DIR, ready for plugin installation.
+          Plugin slug used to download and repack the tested artifact as a zip for installation.
+          Expects the B&D artifact structure `<slug>-*/` containing `<slug>/` inside.
+          Produces `<slug>.zip` with `<slug>/` at the zip root and cleans up the downloaded directory.
+          Requires TESTED_ARTIFACT_DIR to also be set.
         default: ''
         required: false
         type: string
@@ -319,12 +320,13 @@ jobs:
             -p "${{ inputs.TESTED_ARTIFACT_SLUG }}-*" \
             -D "${{ inputs.TESTED_ARTIFACT_DIR }}"
 
-      - name: Rename tested artifact
+      - name: Zip tested artifact
         if: ${{ inputs.TESTED_ARTIFACT_SLUG != '' }}
         working-directory: ${{ inputs.TESTED_ARTIFACT_DIR }}
         run: |
           SLUG="${{ inputs.TESTED_ARTIFACT_SLUG }}"
-          mv "${SLUG}-"*.zip "${SLUG}.zip"
+          zip -rq "${SLUG}.zip" "${SLUG}-"*/"${SLUG}"
+          rm -rf "${SLUG}-"*/
 
       - name: Execute custom code before executing the test script
         env:
