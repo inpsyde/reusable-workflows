@@ -330,13 +330,6 @@ jobs:
           cd ..
           rm -rf "${SLUG}-"*/
 
-      - name: Debug zip structure
-        if: ${{ inputs.TESTED_ARTIFACT_SLUG != '' }}
-        working-directory: ${{ inputs.TESTED_ARTIFACT_DIR }}
-        run: |
-          SLUG="${{ inputs.TESTED_ARTIFACT_SLUG }}"
-          unzip -l "${SLUG}.zip" | head -20
-
       - name: Execute custom code before executing the test script
         env:
           GH_TOKEN: ${{ github.token }}
