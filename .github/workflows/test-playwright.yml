@@ -92,17 +92,12 @@ on:
         default: 'build-and-distribute.yml'
         required: false
         type: string
-      TESTED_ARTIFACT_DIR:
-        description: Directory to download the tested artifact into.
-        default: 'tests/qa/resources/files'
-        required: false
-        type: string
-      TESTED_ARTIFACT_SLUG:
+      ARTIFACT_NAME:
         description: >
-          Plugin slug used to download and repack the tested artifact as a zip for installation.
-          Expects the B&D artifact structure `<slug>-*/` containing `<slug>/` inside.
-          Produces `<slug>.zip` with `<slug>/` at the zip root and cleans up the downloaded directory.
-          Requires TESTED_ARTIFACT_DIR to also be set.
+          Name of the artifact produced by the build workflow to download and repack as a zip for plugin installation.
+          Expects the artifact to contain `<name>/` inside, produces `<name>.zip` with `<name>/` at the zip root.
+          When provided, the workflow resolves the producing run ID from the triggering workflow_run event or
+          the latest successful run of BUILD_WORKFLOW_FILENAME on the current branch.
         default: ''
         required: false
         type: string
@@ -285,9 +280,9 @@ jobs:
           npx wp-env run tests-cli wp config set WP_HOME "$NGROK_URL"
           sed -i "s|WP_BASE_URL=.*|WP_BASE_URL=$NGROK_URL|" .env.ci
 
-      - name: Resolve tested artifact run ID
+      - name: Resolve artifact run ID
         id: resolve-artifact-run-id
-        if: ${{ inputs.TESTED_ARTIFACT_SLUG != '' }}
+        if: ${{ inputs.ARTIFACT_NAME != '' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -311,24 +306,23 @@ jobs:
           fi
           echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
 
-      - name: Download tested artifact
-        if: ${{ inputs.TESTED_ARTIFACT_SLUG != '' }}
+      - name: Download artifact
+        if: ${{ inputs.ARTIFACT_NAME != '' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh run download ${{ steps.resolve-artifact-run-id.outputs.run_id }} \
-            -p "${{ inputs.TESTED_ARTIFACT_SLUG }}-*" \
-            -D "${{ inputs.TESTED_ARTIFACT_DIR }}"
+            -p "${{ inputs.ARTIFACT_NAME }}-*" \
+            -D "tests/qa/resources/files"
 
-      - name: Zip tested artifact
-        if: ${{ inputs.TESTED_ARTIFACT_SLUG != '' }}
-        working-directory: ${{ inputs.TESTED_ARTIFACT_DIR }}
+      - name: Zip artifact
+        if: ${{ inputs.ARTIFACT_NAME != '' }}
+        working-directory: tests/qa/resources/files
         run: |
-          SLUG="${{ inputs.TESTED_ARTIFACT_SLUG }}"
-          cd "${SLUG}-"*/
-          zip -rq "../${SLUG}.zip" "${SLUG}"
+          cd "${{ inputs.ARTIFACT_NAME }}-"*/
+          zip -rq "../${{ inputs.ARTIFACT_NAME }}.zip" "${{ inputs.ARTIFACT_NAME }}"
           cd ..
-          rm -rf "${SLUG}-"*/
+          rm -rf "${{ inputs.ARTIFACT_NAME }}-"*/
 
       - name: Execute custom code before executing the test script
         env:
