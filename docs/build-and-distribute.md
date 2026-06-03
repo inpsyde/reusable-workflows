@@ -29,10 +29,10 @@ This approach keeps source code separate from build artifacts while maintaining 
 
 If no `PACKAGE_VERSION` is provided, the workflow automatically:
 
-1. Fetches the latest tag from the repository
+1. Fetches the latest GitHub Release from the repository
 2. Strips the `dev/` prefix from the branch name and normalizes it to be semver-compatible
 3. Creates a pre-release version like `1.2.3-main` or `2.0.0-abc-123`
-4. Falls back to `0.0.0-{branch}` if no tags exist
+4. Falls back to `0.0.0-{branch}` if no published release exists
 
 **Examples:**
 
@@ -41,6 +41,34 @@ If no `PACKAGE_VERSION` is provided, the workflow automatically:
 - `dev/feature/user-auth` with latest tag `2.0.0` → `2.0.0-feature-user-auth`
 
 This ensures every build has a unique, meaningful version identifier that traces back to both the base release and the source branch.
+
+### GitHub Release tag format
+
+The latest GitHub Release tag is used as the base for `PACKAGE_VERSION` and is validated by `npm version` against semver. Release tags must therefore exactly match this pattern:
+
+```text
+[v]MAJOR.MINOR.PATCH[-IDENTIFIER]
+```
+
+#### Valid and invalid samples
+
+**Valid:**
+
+- `1.2.3`
+- `v1.2.3`
+- `1.2.3-alpha`
+- `1.2.3-feature.1`
+- `1.2.3-2026-05-21`
+
+**Invalid:**
+
+- `1.2` → missing PATCH
+- `1.2.3.4` → too many segments
+- `1.2.3-` → empty identifier
+- `v.1.2.3` → dot after `v`
+- `a.b.c` → non-numeric segments
+- `release/1.2.3` → contains a slash
+
 
 ## Simple usage example
 
@@ -111,20 +139,19 @@ jobs:
 
 ### Inputs
 
-| Name                  | Default                                          | Description                                                                                                      |
-|-----------------------|--------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
-| `NODE_OPTIONS`        | `''`                                             | Space-separated list of command-line Node options                                                                |
-| `NODE_VERSION`        | `18`                                             | Node version with which the assets will be compiled                                                              |
-| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'`                  | Domain of the private npm registry                                                                               |
-| `PHP_VERSION`         | `'8.2'`                                          | PHP version with which the PHP tools are to be executed                                                          |
-| `PHP_EXTENSIONS`      | `''`                                             | PHP extensions supported by shivammathur/setup-php to be installed or disabled                                   |
-| `PHP_TOOLS`           | `''`                                             | PHP tools supported by shivammathur/setup-php to be installed                                                    |
-| `COMPOSER_ARGS`       | `'--no-dev --prefer-dist --optimize-autoloader'` | Set of arguments passed to Composer when gathering production dependencies                                       |
-| `PACKAGE_NAME`        | `''`                                             | The name of the package (falls back to the repository name)                                                      |
-| `PACKAGE_VERSION`     | `''`                                             | The new package version. If not provided, will use latest tag version with branch name as pre-release identifier |
-| `PRE_SCRIPT`          | `''`                                             | Run custom shell code before creating the release archive                                                        |
-| `BUILT_BRANCH_NAME`   | `''`                                             | Override the automatic build branch naming (defaults to stripping `dev/` prefix from origin branch)              |
-
+| Name                  | Default                                          | Description                                                                                                                     |
+|-----------------------|--------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
+| `NODE_OPTIONS`        | `''`                                             | Space-separated list of command-line Node options                                                                               |
+| `NODE_VERSION`        | `18`                                             | Node version with which the assets will be compiled                                                                             |
+| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'`                  | Domain of the private npm registry                                                                                              |
+| `PHP_VERSION`         | `'8.2'`                                          | PHP version with which the PHP tools are to be executed                                                                         |
+| `PHP_EXTENSIONS`      | `''`                                             | PHP extensions supported by shivammathur/setup-php to be installed or disabled                                                  |
+| `PHP_TOOLS`           | `''`                                             | PHP tools supported by shivammathur/setup-php to be installed                                                                   |
+| `COMPOSER_ARGS`       | `'--no-dev --prefer-dist --optimize-autoloader'` | Set of arguments passed to Composer when gathering production dependencies                                                      |
+| `PACKAGE_NAME`        | `''`                                             | The name of the package (falls back to the repository name)                                                                     |
+| `PACKAGE_VERSION`     | `''`                                             | The new package version. If not provided, will use the latest GitHub Release version with branch name as pre-release identifier |
+| `PRE_SCRIPT`          | `''`                                             | Run custom shell code before creating the release archive                                                                       |
+| `BUILT_BRANCH_NAME`   | `''`                                             | Override the automatic build branch naming (defaults to stripping `dev/` prefix from origin branch)                             |
 
 #### A note on `BUILT_BRANCH_NAME`
 

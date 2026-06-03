@@ -139,7 +139,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_USER_SSH_KEY }}
         run: |
           # Fetch latest public release
-          LATEST_RELEASE=$(git for-each-ref --sort=-creatordate --count=1 --format='%(refname:short)' refs/tags || echo "")
+          LATEST_RELEASE=$(gh release list --limit 1 --json tagName --jq '.[0].tagName' || echo "")
           
           if [ -z "$LATEST_RELEASE" ]; then
             echo "No releases found, using default version 0.0.0."
