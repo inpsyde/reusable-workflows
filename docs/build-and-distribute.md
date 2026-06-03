@@ -5,14 +5,15 @@ This action can be used to build plugin and theme archives and push them to corr
 To achieve that, the reusable workflow:
 
 1. Inspects the origin branch and determines the correlating build branch (strips `dev/` prefix)
-2. Installs dependencies (including dev-dependencies) defined in `composer.json`
-3. Installs Node.js dependencies and compiles assets via `npm run build`
-4. Updates version information in plugin/theme headers and `package.json`
-5. Executes [WordPress Translation Downloader](https://github.com/inpsyde/wp-translation-downloader) if configured by the package
-6. Executes [PHP-Scoper](https://github.com/humbug/php-scoper) if configured by the package
-7. Applies `.distignore` file filtering if present
-8. Commits and pushes the build artifact to the determined build branch
-9. Uploads the build as a GitHub Actions artifact for download
+2. Checks whether the build branch already contains the current commit SHA — if so, skips steps 3–8 entirely (see [Duplicate run detection](#duplicate-run-detection))
+3. Installs dependencies (including dev-dependencies) defined in `composer.json`
+4. Installs Node.js dependencies and compiles assets via `npm run build`
+5. Updates version and SHA information in plugin/theme headers and `package.json`
+6. Executes [WordPress Translation Downloader](https://github.com/inpsyde/wp-translation-downloader) if configured by the package
+7. Executes [PHP-Scoper](https://github.com/humbug/php-scoper) if configured by the package
+8. Applies `.distignore` file filtering if present
+9. Commits and pushes the build artifact to the determined build branch
+10. Uploads the build as a GitHub Actions artifact for download
 
 ## Branch naming convention
 
@@ -249,7 +250,7 @@ This makes the workflow flexible enough to handle both full-stack WordPress proj
 The workflow handles version information for both plugins and themes:
 
 - Updates `Version:` header in the main plugin file
-- Updates `SHA:` header with the current commit hash
+- Upserts `SHA:` header with the current commit hash — replaces the existing value if the field is present, or inserts a new line after `Version:` if it is absent
 - Updates version in `package.json` and `composer.json`
 
 ### Asset Compilation
@@ -271,6 +272,16 @@ If a `scoper.inc.php` file is present, the workflow will:
 1. Run PHP-Scoper to prefix all PHP dependencies
 2. Rebuild the autoloader for the scoped dependencies
 3. Ensure unique autoload cache keys to prevent conflicts
+
+### Duplicate run detection
+
+The workflow detects when the build branch already contains a build for the current commit SHA and skips the entire compilation pipeline in that case.
+
+After each successful build, the commit SHA is written into the `SHA:` header of `style.css` (themes) or the main plugin PHP file (plugins). On subsequent runs for the same commit, the workflow reads that field from the remote build branch _before_ any toolchain setup. If the SHA matches, all build and compile steps are skipped and the workflow proceeds directly to packaging the existing build branch content and uploading the artifact.
+
+This is transparent to downstream jobs: the `artifact` output is always populated, whether the build was freshly compiled or reused.
+
+**Applies to WordPress plugins and themes only.** Library projects do not embed a `SHA:` field, so they always rebuild.
 
 ### Distignore Support
 
