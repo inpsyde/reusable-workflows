@@ -23,6 +23,11 @@ on:
         default: '--coverage-text'
         required: false
         type: string
+      CODECOV_FLAGS:
+        description: Flags to be passed to Codecov.
+        default: 'unittests'
+        required: false
+        type: string
     secrets:
       COMPOSER_AUTH_JSON:
         description: Authentication for privately hosted packages and repositories as a JSON formatted object.
@@ -83,5 +88,5 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml
-          flags: unittests
+          flags: ${{ inputs.CODECOV_FLAGS }}
           verbose: true

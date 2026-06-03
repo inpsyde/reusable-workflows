@@ -153,6 +153,7 @@ jobs:
 | `PHP_EXTENSIONS` | `''`                | PHP extensions supported by shivammathur/setup-php to be installed or disabled |
 | `COMPOSER_ARGS`  | `'--prefer-dist'`   | Set of arguments passed to Composer                                            |
 | `PHPUNIT_ARGS`   | `'--coverage-text'` | Set of arguments passed to PHPUnit                                             |
+| `CODECOV_FLAGS`  | `'unittests'`       | Flags to be passed to Codecov                                                  |
 
 #### Secrets
 
@@ -180,6 +181,7 @@ jobs:
     with:
       PHP_VERSION: ${{ matrix.php }}
       PHPUNIT_ARGS: '--coverage-text'
+      CODECOV_FLAGS: 'php'
 ```
 
 ## Lint PHP

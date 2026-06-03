@@ -25,9 +25,14 @@ on:
         type: string
       NODE_OPTIONS:
         description: Space-separated list of command-line Node options.
-        type: string
         default: ''
         required: false
+        type: string
+      CODECOV_FLAGS:
+        description: Flags to be passed to Codecov.
+        default: 'unittests'
+        required: false
+        type: string
     secrets:
       NPM_REGISTRY_TOKEN:
         description: Authentication for the private npm registry.
@@ -134,5 +139,5 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/lcov.info
-          flags: unittests
+          flags: ${{ inputs.CODECOV_FLAGS }}
           verbose: true
