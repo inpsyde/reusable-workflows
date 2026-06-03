@@ -25,9 +25,14 @@ on:
         type: string
       NODE_OPTIONS:
         description: Space-separated list of command-line Node options.
-        type: string
         default: ''
         required: false
+        type: string
+      CODECOV_FLAGS:
+        description: Flags to be passed to Codecov.
+        default: 'unittests'
+        required: false
+        type: string
     secrets:
       NPM_REGISTRY_TOKEN:
         description: Authentication for the private npm registry.
@@ -43,6 +48,9 @@ on:
         required: false
       ENV_VARS:
         description: Additional environment variables as a JSON formatted object.
+        required: false
+      CODECOV_TOKEN:
+        description: Codecov token.
         required: false
 
 jobs:
@@ -118,4 +126,18 @@ jobs:
         run: ${{ format('{0} {1}', inputs.PACKAGE_MANAGER, env.ARGS) }}
 
       - name: Run Jest
-        run: ./node_modules/.bin/jest ${{ inputs.JEST_ARGS }}
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: |
+          COVERAGE_ARGS=""
+          [ -n "$CODECOV_TOKEN" ] && COVERAGE_ARGS="--coverage"
+          ./node_modules/.bin/jest $COVERAGE_ARGS ${{ inputs.JEST_ARGS }}
+
+      - name: Upload coverage to Codecov
+        if: ${{ hashFiles('coverage/lcov.info') != '' }}
+        uses: codecov/codecov-action@v6
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          flags: ${{ inputs.CODECOV_FLAGS }}
+          verbose: true
