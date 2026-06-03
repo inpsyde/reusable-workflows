@@ -272,7 +272,7 @@ jobs:
           # Check for WordPress theme (style.css with Theme Name header)
           if [ -f "style.css" ] && grep -q "Theme Name:" style.css; then
             echo "Package type: WordPress Theme"
-            echo "PACKAGE_TYPE=wordpress-theme" >> $GITHUB_ENV
+            echo "PACKAGE_FILE=style.css" >> $GITHUB_ENV
           # Check for WordPress plugin (PHP file with Plugin Name header)
           else
             # Find the first PHP file with "Plugin Name:" header
@@ -280,37 +280,22 @@ jobs:
             if [ -n "$PLUGIN_FILE" ]; then
               echo "Package type: WordPress Plugin"
               echo "Plugin file found: $PLUGIN_FILE"
-              echo "PACKAGE_TYPE=wordpress-plugin" >> $GITHUB_ENV
-              echo "PLUGIN_MAIN_FILE=$PLUGIN_FILE" >> $GITHUB_ENV
-            # Fallback to generic library
+              echo "PACKAGE_FILE=$PLUGIN_FILE" >> $GITHUB_ENV
+            # Nothing to do for generic library
             else
               echo "Package type: Library"
-              echo "PACKAGE_TYPE=library" >> $GITHUB_ENV
             fi
           fi
 
-      - name: Prepare WordPress Plugin
-        if: ${{ env.SKIP_BUILD != 'true' && env.PACKAGE_TYPE == 'wordpress-plugin' }}
+      - name: Prepare package
+        if: ${{ env.SKIP_BUILD != 'true' && env.PACKAGE_FILE != '' }}
         run: |
-          PLUGIN_FILE="${{ env.PLUGIN_MAIN_FILE }}"
-          echo "Updating plugin file: $PLUGIN_FILE"
-          sed -Ei "s/Version: .*/Version: ${{ env.PACKAGE_VERSION }}/g" "$PLUGIN_FILE"
-          if grep -q "SHA:" "$PLUGIN_FILE"; then
-            sed -Ei "s/SHA: .*/SHA: ${{ github.sha }}/g" "$PLUGIN_FILE"
+          echo "Updating ${{ env.PACKAGE_FILE }}..."
+          sed -Ei "s/Version: .*/Version: ${{ env.PACKAGE_VERSION }}/g" "${{ env.PACKAGE_FILE }}"
+          if grep -q "SHA:" "${{ env.PACKAGE_FILE }}"; then
+            sed -Ei "s/SHA: .*/SHA: ${{ github.sha }}/g" "${{ env.PACKAGE_FILE }}"
           else
-            sed -Ei "/Version: /a SHA: ${{ github.sha }}" "$PLUGIN_FILE"
-          fi
-
-      - name: Prepare WordPress Theme
-        if: ${{ env.SKIP_BUILD != 'true' && env.PACKAGE_TYPE == 'wordpress-theme' }}
-        run: |
-          # Update theme style.css file
-          echo "Updating theme style.css."
-          sed -Ei "s/Version: .*/Version: ${{ env.PACKAGE_VERSION }}/g" style.css
-          if grep -q "SHA:" style.css; then
-            sed -Ei "s/SHA: .*/SHA: ${{ github.sha }}/g" style.css
-          else
-            sed -Ei "/Version: /a SHA: ${{ github.sha }}" style.css
+            sed -Ei "/Version: /a SHA: ${{ github.sha }}" "${{ env.PACKAGE_FILE }}"
           fi
 
       - name: Check for composer.json
