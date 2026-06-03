@@ -220,23 +220,41 @@ jobs:
           echo "  Source branch: $ORIGIN_BRANCH"
           echo "  Build branch: ${{ env.BUILT_BRANCH_NAME }}"
 
+      - name: Determine package type
+        run: |
+          # Check for WordPress theme
+          if [ -f "style.css" ] && grep -q "Theme Name:" style.css; then
+            echo "Package type: WordPress Theme"
+            echo "PACKAGE_FILE=style.css" >> $GITHUB_ENV
+          # Check for WordPress plugin
+          else
+            # Find the first PHP file with "Plugin Name" header
+            PLUGIN_FILE=$(grep -rl --include "*.php" "Plugin Name:" . 2>/dev/null | head -n1)
+            if [ -n "$PLUGIN_FILE" ]; then
+              echo "Package type: WordPress Plugin"
+              echo "Plugin file found: $PLUGIN_FILE"
+              echo "PACKAGE_FILE=$PLUGIN_FILE" >> $GITHUB_ENV
+            # Nothing to do for generic library
+            else
+              echo "Package type: Library"
+            fi
+          fi
+
       - name: Check if already built for this SHA
         run: |
           SHA="${{ github.sha }}"
           BUILD_BRANCH="${{ env.BUILT_BRANCH_NAME }}"
+          PACKAGE_FILE="${{ env.PACKAGE_FILE }}"
 
-          if git show-ref -q "refs/remotes/origin/$BUILD_BRANCH"; then
-            if git show "origin/$BUILD_BRANCH:style.css" 2>/dev/null | grep -qF "SHA: $SHA"; then
-              echo "Already built (theme): SHA $SHA found in build branch."
-              echo "SKIP_BUILD=true" >> $GITHUB_ENV
-            elif git grep -q "SHA: $SHA" "origin/$BUILD_BRANCH" -- "*.php" 2>/dev/null; then
-              echo "Already built (plugin): SHA $SHA found in build branch."
-              echo "SKIP_BUILD=true" >> $GITHUB_ENV
-            else
-              echo "No existing build found for SHA $SHA — proceeding with build."
-            fi
+          if [ -z "$PACKAGE_FILE" ]; then
+            echo "No package file (library) — proceeding with build..."
+          elif ! git show-ref -q "refs/remotes/origin/$BUILD_BRANCH"; then
+            echo "Build branch does not exist yet — proceeding with build..."
+          elif git show "origin/$BUILD_BRANCH:$PACKAGE_FILE" 2>/dev/null | grep -qF "SHA: $SHA"; then
+            echo "Already built: SHA $SHA found in $PACKAGE_FILE on build branch."
+            echo "SKIP_BUILD=true" >> $GITHUB_ENV
           else
-            echo "Build branch does not exist yet — proceeding with build."
+            echo "No existing build found for SHA $SHA — proceeding with build..."
           fi
 
       - name: Checkout the build branch with clean slate
@@ -264,27 +282,6 @@ jobs:
             # Copy all files from source branch
             git checkout ${{ github.ref_name }} -- .
             echo "✅ Copied source files to build branch"
-          fi
-
-      - name: Determine package type
-        if: ${{ env.SKIP_BUILD != 'true' }}
-        run: |
-          # Check for WordPress theme (style.css with Theme Name header)
-          if [ -f "style.css" ] && grep -q "Theme Name:" style.css; then
-            echo "Package type: WordPress Theme"
-            echo "PACKAGE_FILE=style.css" >> $GITHUB_ENV
-          # Check for WordPress plugin (PHP file with Plugin Name header)
-          else
-            # Find the first PHP file with "Plugin Name:" header
-            PLUGIN_FILE=$(grep -rl --include "*.php" "Plugin Name:" . 2>/dev/null | head -n1)
-            if [ -n "$PLUGIN_FILE" ]; then
-              echo "Package type: WordPress Plugin"
-              echo "Plugin file found: $PLUGIN_FILE"
-              echo "PACKAGE_FILE=$PLUGIN_FILE" >> $GITHUB_ENV
-            # Nothing to do for generic library
-            else
-              echo "Package type: Library"
-            fi
           fi
 
       - name: Prepare package
