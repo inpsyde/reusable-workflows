@@ -46,12 +46,11 @@ This ensures every build has a unique, meaningful version identifier that traces
 
 The latest GitHub Release tag is used as the base for `PACKAGE_VERSION` and is validated by `npm version` against semver. Release tags must therefore exactly match this pattern:
 
-```
+```text
 [v]MAJOR.MINOR.PATCH[-IDENTIFIER]
 ```
 
-<details>
-<summary>Valid and invalid samples</summary>
+#### Valid and invalid samples
 
 **Valid:**
 
@@ -70,7 +69,6 @@ The latest GitHub Release tag is used as the base for `PACKAGE_VERSION` and is v
 - `a.b.c` → non-numeric segments
 - `release/1.2.3` → contains a slash
 
-</details>
 
 ## Simple usage example
 
