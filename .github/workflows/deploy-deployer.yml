@@ -59,12 +59,22 @@ on:
       NPM_REGISTRY_TOKEN:
         description: Authentication for the private npm registry.
         required: false
+    outputs:
+      deploy_exit_code:
+        description: Deployer process exit code (0=success, 1=error, 2=warning).
+        value: ${{ jobs.deploy.outputs.exit_code }}
+      deploy_reason:
+        description: Human-readable deployment result message parsed from Deployer output.
+        value: ${{ jobs.deploy.outputs.reason }}
 jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
       NODE_CACHE_MODE: ''
       COMPOSER_NO_DEV: 1
+    outputs:
+      exit_code: ${{ steps.run-deployer.outputs.exit_code }}
+      reason: ${{ steps.run-deployer.outputs.reason }}
 
     steps:
       - name: Checkout
@@ -154,10 +164,36 @@ jobs:
           ssh-keyscan -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_HOSTNAME }} >> ~/.ssh/known_hosts
 
       - name: Run Deployer
+        id: run-deployer
         env:
           DEPLOY_HOSTNAME: ${{ secrets.DEPLOY_HOSTNAME }}
           DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
         run: |
           cd deployment
-          ./$(composer config bin-dir)/dep deploy ${{ inputs.ENVIRONMENT }} -${{ inputs.VERBOSITY}}
+          set +e
+          output=$(./$(composer config bin-dir)/dep deploy ${{ inputs.ENVIRONMENT }} -${{ inputs.VERBOSITY}} 2>&1)
+          exit_code=$?
+          set -e
+          echo "$output"
+          echo "exit_code=${exit_code}" >> $GITHUB_OUTPUT
+          if [ "$exit_code" -eq 0 ]; then
+            reason="Deployment completed successfully"
+          elif [ "$exit_code" -eq 2 ]; then
+            reason=$(echo "$output" | grep -oE '\[WARNING\][^\n]+' | head -1 | sed 's/\[WARNING\] *//')
+            reason="${reason:-Deployment completed with warnings}"
+          else
+            reason=$(echo "$output" | grep -oE '\[(ERROR|CRITICAL)\][^\n]+' | head -1 | sed 's/\[\(ERROR\|CRITICAL\)\] *//')
+            reason="${reason:-Deployment failed}"
+          fi
+          echo "reason=${reason}" >> $GITHUB_OUTPUT
+
+  assert-result:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail on deployment error or warning
+        if: needs.deploy.outputs.exit_code != '0'
+        run: |
+          echo "::error::Deployer exited with code ${{ needs.deploy.outputs.exit_code }}: ${{ needs.deploy.outputs.reason }}"
+          exit ${{ needs.deploy.outputs.exit_code }}
