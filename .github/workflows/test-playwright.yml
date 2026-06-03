@@ -3,26 +3,26 @@ name: Playwright test
 on:
   workflow_call:
     inputs:
-      ARTIFACT_INCLUDE_HIDDEN_FILES:
+      PLAYWRIGHT_ARTIFACT_INCLUDE_HIDDEN_FILES:
         description: Whether to include hidden files in the artifact.
         type: boolean
         default: false
         required: false
-      ARTIFACT_NAME:
+      PLAYWRIGHT_ARTIFACT_NAME:
         description: Name for the artifact.
         type: string
-        default: 'artifact'
+        default: 'playwright-artifact'
         required: false
-      ARTIFACT_OVERWRITE:
+      PLAYWRIGHT_ARTIFACT_OVERWRITE:
         description: Determine if an artifact with a matching name will be deleted before a new one is uploaded or not.
         type: boolean
         default: false
         required: false
-      ARTIFACT_PATH:
+      PLAYWRIGHT_ARTIFACT_PATH:
         description: A file, directory or wildcard pattern that describes what to upload.
         type: string
         required: true
-      ARTIFACT_RETENTION_DAYS:
+      PLAYWRIGHT_ARTIFACT_RETENTION_DAYS:
         description: Duration after which artifact will expire in day.
         type: number
         default: 30
@@ -34,7 +34,7 @@ on:
         required: false
       NODE_VERSION:
         description: Node version with which the node script will be executed.
-        default: 18
+        default: '24'
         required: false
         type: string
       NPM_REGISTRY_DOMAIN:
@@ -62,9 +62,30 @@ on:
         default: ''
         required: false
         type: string
-      SCRIPT_NAME:
-        description: The name of a custom script to run the tests.
-        required: true
+      PLAYWRIGHT_SCRIPT:
+        description: The name of a custom npm script to run the tests.
+        default: ''
+        required: false
+        type: string
+      NGROK_DOMAIN:
+        description: Reserved ngrok domain for the tunnel (paid account). Required when NGROK_AUTH_TOKEN is provided.
+        default: ''
+        required: false
+        type: string
+      TESTRAIL_PLAN_ID:
+        description: TestRail plan ID for reporting.
+        default: ''
+        required: false
+        type: string
+      TESTRAIL_RUN_ID:
+        description: TestRail run ID for reporting.
+        default: ''
+        required: false
+        type: string
+      XRAY_TEST_EXEC_KEY:
+        description: Xray test execution key for reporting.
+        default: ''
+        required: false
         type: string
     secrets:
       ENV_FILE_DATA:
@@ -85,10 +106,13 @@ on:
       COMPOSER_AUTH_JSON:
         description: Authentication for privately hosted packages and repositories as a JSON formatted object.
         required: false
+      NGROK_AUTH_TOKEN:
+        description: Ngrok auth token for tunneling. When set, ngrok is installed and a tunnel is started.
+        required: false
 
 jobs:
   run-playwright-test:
-    timeout-minutes: 60
+    timeout-minutes: 120
     runs-on: ubuntu-latest
     env:
       PHP_CHECK: false
@@ -151,35 +175,125 @@ jobs:
       - name: Install dependencies
         run: npm ${{ env.NODE_CACHE_MODE == 'npm' && 'ci' || 'install' }}
 
+      - name: Build assets
+        run: npm run build --if-present
+
+      - name: Run PHP-Scoper
+        if: ${{ inputs.COMPOSER_DEPS_INSTALL && hashFiles('scoper.inc.php') != '' }}
+        # The sed call appends the Git commit SHA to the Composer autoload cache key to ensure unique identification for prefixed files.
+        # This prevents Composer from skipping autoloaded files due to hash collisions based on relative paths.
+        run: |
+          php-scoper add-prefix --force --output-dir=build
+          composer --working-dir=build dump-autoload -o
+          sed -i "s/'__composer_autoload_files'/\'__composer_autoload_files_${{ github.sha }}'/g" "build/vendor/composer/autoload_real.php"
+          rsync -av ./build/ . && rm -rf ./build/
+
       - name: Install Playwright dependencies
         run: |
           npx playwright install ${{ inputs.PLAYWRIGHT_BROWSER_ARGS }}
 
-      - name: Execute custom code before executing the test script
+      - name: Create environment file
+        env:
+          ENV_FILE_DATA: ${{ secrets.ENV_FILE_DATA }}
+        run: printenv ENV_FILE_DATA > .env.ci
+
+      - name: Append test reporting variables
         run: |
+          [ -n "${{ inputs.TESTRAIL_PLAN_ID }}" ] && echo "TESTRAIL_PLAN_ID=${{ inputs.TESTRAIL_PLAN_ID }}" >> .env.ci
+          [ -n "${{ inputs.TESTRAIL_RUN_ID }}" ] && echo "TESTRAIL_RUN_ID=${{ inputs.TESTRAIL_RUN_ID }}" >> .env.ci
+          [ -n "${{ inputs.XRAY_TEST_EXEC_KEY }}" ] && echo "XRAY_TEST_EXEC_KEY=${{ inputs.XRAY_TEST_EXEC_KEY }}" >> .env.ci
+          echo "Test reporting vars appended to .env.ci"
+
+      - name: Boot wp-env
+        if: ${{ hashFiles('.wp-env.json') != '' }}
+        run: |
+          set -a && source .env.ci && set +a
+
+          WP_HOME=$(node -e "const c = require('./.wp-env.json'); console.log(c.config?.WP_HOME || '')")
+          if [ -n "$WP_HOME" ]; then
+            DOMAIN=$(echo "$WP_HOME" | sed -E 's|https?://||; s|[:/].*||')
+            if [ -n "$DOMAIN" ] && [ "$DOMAIN" != "localhost" ]; then
+              echo "127.0.0.1 $DOMAIN" | sudo tee -a /etc/hosts
+            fi
+          fi
+
+          npx wp-env start
+
+      - name: Install ngrok
+        env:
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+        if: ${{ env.NGROK_AUTH_TOKEN != '' }}
+        run: |
+          curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
+            | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
+          echo "deb https://ngrok-agent.s3.amazonaws.com buster main" \
+            | sudo tee /etc/apt/sources.list.d/ngrok.list
+          sudo apt-get update && sudo apt-get install -y ngrok
+
+      - name: Start ngrok tunnel
+        env:
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+          NGROK_DOMAIN: ${{ inputs.NGROK_DOMAIN }}
+        if: ${{ env.NGROK_AUTH_TOKEN != '' }}
+        run: |
+          ngrok config add-authtoken "$NGROK_AUTH_TOKEN"
+
+          DOMAIN_FLAG=""
+          if [ -n "$NGROK_DOMAIN" ]; then
+            DOMAIN_FLAG="--domain=$NGROK_DOMAIN"
+          fi
+
+          ngrok http 80 $DOMAIN_FLAG --log=stdout --log-level=info > /tmp/ngrok.log 2>&1 &
+          sleep 3
+
+          NGROK_URL=$(curl -s http://127.0.0.1:4040/api/tunnels \
+            | jq -r '.tunnels[] | select(.proto=="https") | .public_url')
+          echo "Ngrok URL: $NGROK_URL"
+
+          if [ -z "$NGROK_URL" ]; then
+            echo "::error::Failed to get ngrok tunnel URL"
+            cat /tmp/ngrok.log
+            exit 1
+          fi
+
+          echo "NGROK_URL=$NGROK_URL" >> "$GITHUB_ENV"
+
+      - name: Update WordPress URLs to ngrok
+        env:
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+        if: ${{ env.NGROK_AUTH_TOKEN != '' }}
+        run: |
+          npx wp-env run tests-cli wp config set WP_SITEURL "$NGROK_URL"
+          npx wp-env run tests-cli wp config set WP_HOME "$NGROK_URL"
+          sed -i "s|WP_BASE_URL=.*|WP_BASE_URL=$NGROK_URL|" .env.ci
+
+      - name: Execute custom code before executing the test script
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
+        run: |
+          set -a && source .env.ci && set +a
           ${{ inputs.PRE_SCRIPT }}
 
       - name: Run script for test
         id: run-script
         continue-on-error: true
         run: |
-          touch .env.ci
-          echo "${{ secrets.ENV_FILE_DATA }}" >> .env.ci
           # Ensure .env.ci is deleted on exit
           trap 'rm -f .env.ci' EXIT
           
-          npm run ${{ inputs.SCRIPT_NAME }}
+          npm run ${{ inputs.PLAYWRIGHT_SCRIPT }}
 
       - name: Upload artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.ARTIFACT_NAME }}
+          name: ${{ inputs.PLAYWRIGHT_ARTIFACT_NAME }}
           path: | 
-            ${{ inputs.ARTIFACT_PATH }}
-          overwrite: ${{ inputs.ARTIFACT_OVERWRITE }}
-          include-hidden-files: ${{ inputs.ARTIFACT_INCLUDE_HIDDEN_FILES }}
-          retention-days: ${{ inputs.ARTIFACT_RETENTION_DAYS }}
+            ${{ inputs.PLAYWRIGHT_ARTIFACT_PATH }}
+          overwrite: ${{ inputs.PLAYWRIGHT_ARTIFACT_OVERWRITE }}
+          include-hidden-files: ${{ inputs.PLAYWRIGHT_ARTIFACT_INCLUDE_HIDDEN_FILES }}
+          retention-days: ${{ inputs.PLAYWRIGHT_ARTIFACT_RETENTION_DAYS }}
 
       - name: Check test results
         if: steps.run-script.outcome == 'failure'
