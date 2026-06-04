@@ -251,7 +251,7 @@ jobs:
           elif ! git show-ref -q "refs/remotes/origin/$BUILD_BRANCH"; then
             echo "Build branch does not exist yet — proceeding with build..."
           elif git show "origin/$BUILD_BRANCH:$PACKAGE_FILE" 2>/dev/null | grep -qF "SHA: $SHA"; then
-            echo "Already built: SHA $SHA found in $PACKAGE_FILE on build branch."
+            echo "Already built: SHA $SHA found in $PACKAGE_FILE on build branch $BUILD_BRANCH."
             echo "SKIP_BUILD=true" >> $GITHUB_ENV
           else
             echo "No existing build found for SHA $SHA — proceeding with build..."
