@@ -87,6 +87,12 @@ on:
 
 jobs:
   build-and-distribute:
+    # Serialize concurrent builds targeting the same SHA + branch.
+    # cancel-in-progress: false queues the second run; it will then detect
+    # the already-built SHA and resolve transparently via artifact generation.
+    concurrency:
+      group: build-and-distribute-${{ github.sha }}-${{ inputs.BUILT_BRANCH_NAME || github.ref_name }}
+      cancel-in-progress: false
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:

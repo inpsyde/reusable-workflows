@@ -178,7 +178,7 @@ By default, the workflow strips the `dev/` prefix from the origin branch to dete
 - Ensure your `package.json` includes a `build` script for asset compilation
 - Use `.distignore` to exclude development files from the final build
 - Consider using [path filters](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#example-including-paths) to avoid unnecessary builds when only documentation changes
-- Use [concurrency settings](https://docs.github.com/en/actions/using-jobs/using-concurrency) to prevent conflicts when multiple pushes occur rapidly
+- Use [concurrency settings](https://docs.github.com/en/actions/using-jobs/using-concurrency) to prevent conflicts when multiple pushes occur rapidly — the workflow serializes concurrent builds for the same SHA internally, so a queued second run will skip the actual build and resolve via the pre-built artifact
 
 ```yml
 name: Build and push assets
@@ -202,7 +202,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build-and-distribute:
