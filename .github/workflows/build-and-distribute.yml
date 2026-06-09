@@ -80,11 +80,17 @@ on:
       ENV_VARS:
         description: Additional environment variables as a JSON formatted object.
         required: false
+    outputs:
+      artifact:
+        description: The name of the generated release artifact.
+        value: ${{ jobs.build-and-distribute.outputs.artifact }}
 
 jobs:
   build-and-distribute:
     timeout-minutes: 10
     runs-on: ubuntu-latest
+    outputs:
+      artifact: ${{ steps.set-artifact-name.outputs.artifact }}
     # Used to check whether there are changes to commit
     env:
       HAS_GIT_CHANGES: ''
@@ -139,7 +145,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_USER_SSH_KEY }}
         run: |
           # Fetch latest public release
-          LATEST_RELEASE=$(git for-each-ref --sort=-creatordate --count=1 --format='%(refname:short)' refs/tags || echo "")
+          LATEST_RELEASE=$(gh release list --limit 1 --json tagName --jq '.[0].tagName' || echo "")
           
           if [ -z "$LATEST_RELEASE" ]; then
             echo "No releases found, using default version 0.0.0."
@@ -378,10 +384,17 @@ jobs:
           echo "  Package name: ${{ env.PACKAGE_NAME }}"
           echo "  Artifact structure: artifact-staging/${{ env.PACKAGE_NAME }}/"
 
+      - name: Set artifact name
+        id: set-artifact-name
+        run: |
+          ARTIFACT_NAME="${{ env.PACKAGE_NAME }}-${{ env.PACKAGE_VERSION }}"
+          echo "ARTIFACT_NAME=$ARTIFACT_NAME" >> $GITHUB_ENV
+          echo "artifact=$ARTIFACT_NAME" >> $GITHUB_OUTPUT
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.PACKAGE_NAME }}-${{ env.PACKAGE_VERSION }}
+          name: ${{ env.ARTIFACT_NAME }}
           path: ./artifact-staging/
           include-hidden-files: true
           compression-level: 9
