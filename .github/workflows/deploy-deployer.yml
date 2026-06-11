@@ -133,6 +133,7 @@ jobs:
 
       - name: Run Deployer
         env:
+          ENVIRONMENT: ${{ inputs.ENVIRONMENT }}
           DEPLOY_HOSTNAME: ${{ secrets.DEPLOY_HOSTNAME }}
           DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
