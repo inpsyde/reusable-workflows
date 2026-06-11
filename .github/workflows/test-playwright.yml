@@ -116,64 +116,31 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PHP_CHECK: false
-      NODE_CACHE_MODE: ''
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up SSH
-        env:
-          GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
-        if: ${{ env.GITHUB_USER_SSH_KEY != '' }}
-        uses: webfactory/ssh-agent@v0.9.1
-        with:
-          ssh-private-key: ${{ env.GITHUB_USER_SSH_KEY }}
-
       - name: Set up Git
-        env:
-          GITHUB_USER_EMAIL: ${{ secrets.GITHUB_USER_EMAIL }}
-          GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
-        if: ${{ env.GITHUB_USER_EMAIL != '' && env.GITHUB_USER_NAME != '' }}
-        run: |
-          git config --global user.email "${{ env.GITHUB_USER_EMAIL }}"
-          git config --global user.name "${{ env.GITHUB_USER_NAME }}"
-
-      - name: Set up node cache mode
-        run: |
-          if [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ]; then
-            echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV
-          else
-            echo "No lock files found or unknown package manager"
-          fi
+        uses: inpsyde/reusable-workflows/.github/actions/setup-git@fix/247
+        with:
+          ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
+          user-email: ${{ secrets.GITHUB_USER_EMAIL }}
+          user-name: ${{ secrets.GITHUB_USER_NAME }}
 
       - name: Set up PHP
         if: ${{ inputs.COMPOSER_DEPS_INSTALL }}
-        uses: shivammathur/setup-php@v2
+        uses: inpsyde/reusable-workflows/.github/actions/setup-php@fix/247
         with:
           php-version: ${{ inputs.PHP_VERSION }}
-          extensions: ${{ inputs.PHP_EXTENSIONS }}
-          tools: composer
-          coverage: none
+          php-extensions: ${{ inputs.PHP_EXTENSIONS }}
+          composer-auth-json: ${{ secrets.COMPOSER_AUTH_JSON }}
 
-      - name: Install Composer dependencies
-        if: ${{ inputs.COMPOSER_DEPS_INSTALL }}
-        uses: ramsey/composer-install@v3
-        env:
-          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
-        with:
-          composer-options: '--prefer-dist'
-
-      - name: Set up node
-        uses: actions/setup-node@v4
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      - name: Set up Node
+        uses: inpsyde/reusable-workflows/.github/actions/setup-node@fix/247
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
-          cache: ${{ env.NODE_CACHE_MODE }}
-
-      - name: Install dependencies
-        run: npm ${{ env.NODE_CACHE_MODE == 'npm' && 'ci' || 'install' }}
+          node-auth-token: ${{ secrets.NPM_REGISTRY_TOKEN }}
 
       - name: Build assets
         run: npm run build --if-present

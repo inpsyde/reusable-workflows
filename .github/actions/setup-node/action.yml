@@ -1,0 +1,85 @@
+name: Setup Node
+description: Set up Node with cache detection and dependency installation.
+
+inputs:
+  node-version:
+    description: Node version to set up.
+    default: '18'
+    required: false
+  node-version-file:
+    description: Path to a file containing the Node version (takes precedence over node-version).
+    default: ''
+    required: false
+  registry-url:
+    description: npm registry URL.
+    default: 'https://npm.pkg.github.com/'
+    required: false
+  node-auth-token:
+    description: Authentication token for the npm registry.
+    default: ''
+    required: false
+  node-options:
+    description: Space-separated list of command-line Node options.
+    default: ''
+    required: false
+  package-manager:
+    description: "Package manager to use (npm or yarn). Deprecated: yarn support will be removed in a future version."
+    default: 'npm'
+    required: false
+  install-dependencies:
+    description: Whether to install dependencies ('true' or 'false').
+    default: 'true'
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Package manager deprecation warning
+      if: ${{ inputs.package-manager != 'npm' }}
+      shell: bash
+      run: |
+        echo "::warning::The package-manager input is deprecated and will be removed soon. Please update your workflow to use npm."
+
+    - name: Detect cache mode
+      id: cache-detection
+      shell: bash
+      run: |
+        CACHE_MODE=""
+        if [ "${{ inputs.package-manager }}" == 'npm' ] && { [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ]; }; then
+          CACHE_MODE="npm"
+        elif [ "${{ inputs.package-manager }}" == 'yarn' ] && [ -f "${GITHUB_WORKSPACE}/yarn.lock" ]; then
+          CACHE_MODE="yarn"
+        else
+          echo "No lock files found for ${{ inputs.package-manager }}"
+        fi
+        echo "cache-mode=$CACHE_MODE" >> "$GITHUB_OUTPUT"
+
+    - name: Set up Node
+      uses: actions/setup-node@v4
+      env:
+        NODE_OPTIONS: ${{ inputs.node-options }}
+        NODE_AUTH_TOKEN: ${{ inputs.node-auth-token }}
+      with:
+        node-version: ${{ inputs.node-version-file && '' || inputs.node-version }}
+        node-version-file: ${{ inputs.node-version-file }}
+        registry-url: ${{ inputs.registry-url }}
+        cache: ${{ steps.cache-detection.outputs.cache-mode }}
+
+    - name: Install dependencies
+      if: ${{ inputs.install-dependencies == 'true' }}
+      shell: bash
+      run: |
+        CACHE_MODE="${{ steps.cache-detection.outputs.cache-mode }}"
+        if [ "${{ inputs.package-manager }}" == 'yarn' ]; then
+          if [ "$CACHE_MODE" == 'yarn' ]; then
+            yarn --frozen-lockfile
+          else
+            yarn install
+          fi
+        else
+          if [ "$CACHE_MODE" == 'npm' ]; then
+            npm ci
+          else
+            npm install
+          fi
+        fi

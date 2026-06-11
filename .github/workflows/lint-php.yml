@@ -56,20 +56,14 @@ jobs:
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
       - name: Set up PHP
-        uses: shivammathur/setup-php@v2
+        uses: inpsyde/reusable-workflows/.github/actions/setup-php@fix/247
         with:
           php-version: ${{ inputs.PHP_VERSION }}
-          extensions: ${{ inputs.PHP_EXTENSIONS }}
-          tools: cs2pr, parallel-lint
-          coverage: none
-
-      - name: Install Composer dependencies
-        if: ${{ inputs.COMPOSER_DEPS_INSTALL }}
-        uses: ramsey/composer-install@v3
-        env:
-          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
-        with:
+          php-extensions: ${{ inputs.PHP_EXTENSIONS }}
+          php-tools: 'cs2pr, parallel-lint'
+          composer-install: ${{ inputs.COMPOSER_DEPS_INSTALL }}
           composer-options: ${{ inputs.COMPOSER_ARGS }}
+          composer-auth-json: ${{ secrets.COMPOSER_AUTH_JSON }}
 
       - name: Run PHP lint check
         run: parallel-lint ${{ inputs.LINT_ARGS }} --checkstyle | cs2pr
