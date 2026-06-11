@@ -65,14 +65,14 @@ jobs:
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
       - name: Set up Git
-        uses: ./.github/actions/setup-git
+        uses: inpsyde/reusable-workflows/.github/actions/setup-git@fix/247
         with:
           ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
           user-email: ${{ secrets.GITHUB_USER_EMAIL }}
           user-name: ${{ secrets.GITHUB_USER_NAME }}
 
       - name: Set up Node
-        uses: ./.github/actions/setup-node
+        uses: inpsyde/reusable-workflows/.github/actions/setup-node@fix/247
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
