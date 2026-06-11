@@ -73,7 +73,7 @@ jobs:
           ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
       - name: Set up Git
-        uses: ./.github/actions/setup-git
+        uses: inpsyde/reusable-workflows/.github/actions/setup-git@fix/247
         with:
           ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
@@ -86,7 +86,7 @@ jobs:
           wireguard-configuration: ${{ secrets.WIREGUARD_CONFIGURATION }}
 
       - name: Set up PHP
-        uses: ./.github/actions/setup-php
+        uses: inpsyde/reusable-workflows/.github/actions/setup-php@fix/247
         with:
           php-version: ${{ inputs.PHP_VERSION }}
           php-extensions: ${{ inputs.PHP_EXTENSIONS }}
@@ -105,7 +105,7 @@ jobs:
 
       - name: Set up Node
         if: steps.npm-workspaces.outputs.enabled == 'true'
-        uses: ./.github/actions/setup-node
+        uses: inpsyde/reusable-workflows/.github/actions/setup-node@fix/247
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
