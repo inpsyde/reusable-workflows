@@ -1,4 +1,4 @@
-name: Setup Git
+name: Set up Git
 description: Set up SSH agent, Git identity, and optional commit signing.
 
 inputs:
