@@ -1,4 +1,4 @@
-# Setup Git
+# Set up Git
 
 This composite action configures SSH authentication, Git user identity, and optional commit signing using [webfactory/ssh-agent](https://github.com/webfactory/ssh-agent).
 
