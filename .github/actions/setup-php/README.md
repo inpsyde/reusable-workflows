@@ -17,7 +17,7 @@ steps:
 | Name                 | Default           | Description                                                                               |
 |----------------------|-------------------|-------------------------------------------------------------------------------------------|
 | `php-version`        | `'8.2'`           | PHP version to set up.                                                                    |
-| `php-extensions`     | `''`              | PHP extensions to install or disable.                                                     |
+| `php-extensions`     | `''`              | PHP extensions to install.                                                                |
 | `php-tools`          | `'composer'`      | PHP tools to install (e.g. `composer`, `cs2pr`, `parallel-lint`).                         |
 | `coverage`           | `'none'`          | Code coverage driver (`none`, `xdebug`, `pcov`, or empty for default).                    |
 | `composer-install`   | `'true'`          | Whether to validate and install Composer dependencies (`'true'` or `'false'`).            |
