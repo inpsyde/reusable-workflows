@@ -98,7 +98,7 @@ jobs:
         run: composer validate
 
       - name: Install Composer dependencies
-        uses: ramsey/composer-install@v3
+        uses: ramsey/composer-install@v4
         env:
           COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
 
@@ -138,7 +138,7 @@ jobs:
         run: npm run build -ws --if-present
 
       - name: Install Deployer
-        uses: ramsey/composer-install@v3
+        uses: ramsey/composer-install@v4
         env:
           COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
         with:
