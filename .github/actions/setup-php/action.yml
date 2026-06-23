@@ -35,7 +35,7 @@ runs:
   using: composite
   steps:
     - name: Set up PHP
-      uses: shivammathur/setup-php@v2
+      uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
       with:
         php-version: ${{ inputs.php-version }}
         extensions: ${{ inputs.php-extensions }}
@@ -49,7 +49,7 @@ runs:
 
     - name: Install Composer dependencies
       if: ${{ inputs.composer-install == 'true' }}
-      uses: ramsey/composer-install@v3
+      uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
       env:
         COMPOSER_AUTH: ${{ inputs.composer-auth-json }}
       with:
