@@ -7,7 +7,7 @@ inputs:
     default: '8.2'
     required: false
   php-extensions:
-    description: PHP extensions to install or disable.
+    description: PHP extensions to install.
     default: ''
     required: false
   php-tools:
