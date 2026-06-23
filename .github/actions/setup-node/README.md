@@ -1,6 +1,6 @@
 # Set up Node
 
-This composite action sets up Node.js using [actions/setup-node](https://github.com/actions/setup-node), automatically detects lock files for dependency caching, and installs project dependencies.
+This composite action sets up Node.js, automatically detects lock files for dependency caching, and installs project dependencies.
 
 ## Simple usage example
 
