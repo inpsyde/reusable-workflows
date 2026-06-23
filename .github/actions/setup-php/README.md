@@ -1,6 +1,6 @@
 # Set up PHP
 
-This composite action sets up PHP using [shivammathur/setup-php](https://github.com/shivammathur/setup-php), validates `composer.json`/`composer.lock`, and installs Composer dependencies via [ramsey/composer-install](https://github.com/ramsey/composer-install).
+This composite action sets up PHP, validates `composer.json`/`composer.lock`, and installs Composer dependencies.
 
 ## Simple usage example
 
