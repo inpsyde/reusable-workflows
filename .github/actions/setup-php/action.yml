@@ -1,5 +1,5 @@
 name: Set up PHP
-description: Set up PHP with shivammathur/setup-php, validate and install Composer dependencies.
+description: Set up PHP, validate and install Composer dependencies.
 
 inputs:
   php-version:
