@@ -24,6 +24,3 @@ steps:
 | `composer-options`   | `'--prefer-dist'` | Arguments passed to Composer install.                                                     |
 | `composer-auth-json` | `''`              | Authentication for privately hosted packages and repositories as a JSON formatted object. |
 
-## Notes
-
-- When `composer-install` is `'true'`, `composer validate` runs automatically before installing dependencies. This ensures that `composer.json` and `composer.lock` are consistent.
