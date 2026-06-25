@@ -121,7 +121,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Git
-        uses: inpsyde/reusable-workflows/.github/actions/setup-git@fix/247
+        uses: inpsyde/reusable-workflows/.github/actions/setup-git@main
         with:
           ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
           user-email: ${{ secrets.GITHUB_USER_EMAIL }}
@@ -129,14 +129,14 @@ jobs:
 
       - name: Set up PHP
         if: ${{ inputs.COMPOSER_DEPS_INSTALL }}
-        uses: inpsyde/reusable-workflows/.github/actions/setup-php@fix/247
+        uses: inpsyde/reusable-workflows/.github/actions/setup-php@main
         with:
           php-version: ${{ inputs.PHP_VERSION }}
           php-extensions: ${{ inputs.PHP_EXTENSIONS }}
           composer-auth-json: ${{ secrets.COMPOSER_AUTH_JSON }}
 
       - name: Set up Node
-        uses: inpsyde/reusable-workflows/.github/actions/setup-node@fix/247
+        uses: inpsyde/reusable-workflows/.github/actions/setup-node@main
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}

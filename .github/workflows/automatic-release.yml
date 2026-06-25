@@ -45,7 +45,7 @@ jobs:
           path: semantic-release-repo
 
       - name: Set up Node
-        uses: inpsyde/reusable-workflows/.github/actions/setup-node@fix/247
+        uses: inpsyde/reusable-workflows/.github/actions/setup-node@main
         with:
           node-version-file: semantic-release-repo/package.json
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
@@ -69,7 +69,7 @@ jobs:
           ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
       - name: Set up Git
-        uses: inpsyde/reusable-workflows/.github/actions/setup-git@fix/247
+        uses: inpsyde/reusable-workflows/.github/actions/setup-git@main
         with:
           ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
           ssh-public-key: ${{ secrets.GITHUB_USER_SSH_PUBLIC_KEY }}

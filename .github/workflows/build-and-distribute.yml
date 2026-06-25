@@ -108,7 +108,7 @@ jobs:
           ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
       - name: Set up Git
-        uses: inpsyde/reusable-workflows/.github/actions/setup-git@fix/247
+        uses: inpsyde/reusable-workflows/.github/actions/setup-git@main
         with:
           ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
           user-email: ${{ secrets.GITHUB_USER_EMAIL }}
@@ -258,7 +258,7 @@ jobs:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
 
       - name: Set up Node
-        uses: inpsyde/reusable-workflows/.github/actions/setup-node@fix/247
+        uses: inpsyde/reusable-workflows/.github/actions/setup-node@main
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
