@@ -56,22 +56,13 @@ jobs:
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
       - name: Set up PHP
-        uses: shivammathur/setup-php@v2
+        uses: inpsyde/reusable-workflows/.github/actions/setup-php@main
         with:
           php-version: ${{ inputs.PHP_VERSION }}
-          extensions: ${{ inputs.PHP_EXTENSIONS }}
-          tools: composer, cs2pr
-          coverage: none
-
-      - name: Validate composer.json and composer.lock
-        run: composer validate
-
-      - name: Install Composer dependencies
-        uses: ramsey/composer-install@v3
-        env:
-          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
-        with:
+          php-extensions: ${{ inputs.PHP_EXTENSIONS }}
+          php-tools: 'composer, cs2pr'
           composer-options: ${{ inputs.COMPOSER_ARGS }}
+          composer-auth-json: ${{ secrets.COMPOSER_AUTH_JSON }}
 
       - name: Run PHP_CodeSniffer
         run: ./$(composer config bin-dir)/phpcs ${{ inputs.PHPCS_ARGS }}

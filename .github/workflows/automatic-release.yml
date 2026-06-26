@@ -44,13 +44,13 @@ jobs:
           sparse-checkout-cone-mode: false
           path: semantic-release-repo
 
-      - name: Set up node
-        uses: actions/setup-node@v4
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      - name: Set up Node
+        uses: inpsyde/reusable-workflows/.github/actions/setup-node@main
         with:
           node-version-file: semantic-release-repo/package.json
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
+          node-auth-token: ${{ secrets.NPM_REGISTRY_TOKEN }}
+          install-dependencies: 'false'
 
       - name: Install dependencies
         run: |
@@ -68,25 +68,13 @@ jobs:
           persist-credentials: false
           ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
-      - name: Set up SSH
-        env:
-          GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
-        if: ${{ env.GITHUB_USER_SSH_KEY != '' }}
-        uses: webfactory/ssh-agent@v0.9.1
+      - name: Set up Git
+        uses: inpsyde/reusable-workflows/.github/actions/setup-git@main
         with:
-          ssh-private-key: ${{ env.GITHUB_USER_SSH_KEY }}
-
-      - name: Set up signing commits
-        env:
-          GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.GITHUB_USER_SSH_PUBLIC_KEY }}
-        if: ${{ env.GITHUB_USER_SSH_PUBLIC_KEY != '' }}
-        run: |
-          : # Create empty SSH private key file so Git does not complain.
-          touch "${{ runner.temp }}/signingkey"
-          echo "${{ env.GITHUB_USER_SSH_PUBLIC_KEY }}" > "${{ runner.temp }}/signingkey.pub"
-          git config --global commit.gpgsign true
-          git config --global gpg.format ssh
-          git config --global user.signingkey "${{ runner.temp }}/signingkey.pub"
+          ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
+          ssh-public-key: ${{ secrets.GITHUB_USER_SSH_PUBLIC_KEY }}
+          user-email: ${{ secrets.GITHUB_USER_EMAIL }}
+          user-name: ${{ secrets.GITHUB_USER_NAME }}
 
       - name: Check presence of release.config.js
         run: |
@@ -113,25 +101,8 @@ jobs:
         run: |
           rm -rf workflow-repo
 
-      - name: Set up release environment variables
-        env:
-          GITHUB_USER_EMAIL: ${{ secrets.GITHUB_USER_EMAIL }}
-          GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
-        run: |
-          ${{ env.GITHUB_USER_EMAIL != '' }} && echo "GIT_AUTHOR_EMAIL=${{ env.GITHUB_USER_EMAIL }}" >> $GITHUB_ENV || true
-          ${{ env.GITHUB_USER_NAME != '' }} && echo "GIT_AUTHOR_NAME=${{ env.GITHUB_USER_NAME }}" >> $GITHUB_ENV || true
-          ${{ env.GITHUB_USER_EMAIL != '' }} && echo "GIT_COMMITTER_EMAIL=${{ env.GITHUB_USER_EMAIL }}" >> $GITHUB_ENV || true
-          ${{ env.GITHUB_USER_NAME != '' }} && echo "GIT_COMMITTER_NAME=${{ env.GITHUB_USER_NAME }}" >> $GITHUB_ENV || true
-
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_USER_TOKEN != '' && secrets.GITHUB_USER_TOKEN || secrets.GITHUB_TOKEN }}
         run: npx semantic-release
 
-      - name: Delete signing key files
-        env:
-          GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.GITHUB_USER_SSH_PUBLIC_KEY }}
-        if: ${{ always() && env.GITHUB_USER_SSH_PUBLIC_KEY != '' }}
-        run: |
-          rm -f "${{ runner.temp }}/signingkey"
-          rm -f "${{ runner.temp }}/signingkey.pub"
