@@ -113,26 +113,14 @@ jobs:
           fetch-depth: 0
           ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.9.0
+      - name: Set up Git
+        uses: inpsyde/reusable-workflows/.github/actions/setup-git@main
         with:
           ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
-
-      - name: Set up Git
-        run: |
-          git config --global user.email "${{ secrets.GITHUB_USER_EMAIL }}"
-          git config --global user.name "${{ secrets.GITHUB_USER_NAME }}"
-          git config --global advice.addIgnoredFile false
-          git config --global push.autoSetupRemote true
-
-      - name: Set up signing commits
-        run: |
-          : # Create empty SSH private key file so Git does not complain.
-          touch "${{ runner.temp }}/signingkey"
-          echo "${{ secrets.GITHUB_USER_SSH_PUBLIC_KEY }}" > "${{ runner.temp }}/signingkey.pub"
-          git config --global commit.gpgsign true
-          git config --global gpg.format ssh
-          git config --global user.signingkey "${{ runner.temp }}/signingkey.pub"
+          user-email: ${{ secrets.GITHUB_USER_EMAIL }}
+          user-name: ${{ secrets.GITHUB_USER_NAME }}
+          ssh-public-key: ${{ secrets.GITHUB_USER_SSH_PUBLIC_KEY }}
+          automated-commits: 'true'
 
       - name: Set up custom environment variables
         env:
@@ -330,20 +318,14 @@ jobs:
         with:
           composer-options: ${{ inputs.COMPOSER_ARGS }}
 
-      - name: Set up node
+      - name: Set up Node
         if: ${{ env.SKIP_BUILD != 'true' }}
-        uses: actions/setup-node@v4
-        env:
-          NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+        uses: inpsyde/reusable-workflows/.github/actions/setup-node@main
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
-          cache: npm
-
-      - name: Install dependencies
-        if: ${{ env.SKIP_BUILD != 'true' }}
-        run: npm ci
+          node-auth-token: ${{ secrets.NPM_REGISTRY_TOKEN }}
+          node-options: ${{ inputs.NODE_OPTIONS }}
 
       - name: Update version in package.json
         if: ${{ env.SKIP_BUILD != 'true' }}
@@ -428,8 +410,3 @@ jobs:
           include-hidden-files: true
           compression-level: 9
 
-      - name: Delete signing key files
-        if: ${{ always() }}
-        run: |
-          rm -f "${{ runner.temp }}/signingkey"
-          rm -f "${{ runner.temp }}/signingkey.pub"
