@@ -77,6 +77,9 @@ on:
       GITHUB_USER_SSH_PUBLIC_KEY:
         description: Public SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`.
         required: true
+      GITHUB_USER_TOKEN:
+        description: Authentication token with read permission needed by the release bot (falls back to `GITHUB_TOKEN`).
+        required: false
       ENV_VARS:
         description: Additional environment variables as a JSON formatted object.
         required: false
@@ -136,7 +139,7 @@ jobs:
       - name: Determine package version
         if: ${{ !inputs.PACKAGE_VERSION }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_USER_SSH_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_USER_TOKEN != '' && secrets.GITHUB_USER_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
           # Fetch latest public release
           LATEST_RELEASE=$(gh release list --limit 1 --json tagName --jq '.[0].tagName' || echo "")
@@ -244,11 +247,15 @@ jobs:
             echo "No package file (library) — proceeding with build..."
           elif ! git show-ref -q "refs/remotes/origin/$BUILD_BRANCH"; then
             echo "Build branch does not exist yet — proceeding with build..."
-          elif git show "origin/$BUILD_BRANCH:$PACKAGE_FILE" 2>/dev/null | grep -qF "SHA: $SHA"; then
-            echo "Already built: SHA $SHA found in $PACKAGE_FILE on build branch $BUILD_BRANCH."
-            echo "SKIP_BUILD=true" >> $GITHUB_ENV
           else
-            echo "No existing build found for SHA $SHA — proceeding with build..."
+            COMMITTED="$(git show "origin/$BUILD_BRANCH:$PACKAGE_FILE" 2>/dev/null || echo "")"
+            if echo "$COMMITTED" | grep -qF "SHA: $SHA" \
+               && echo "$COMMITTED" | grep -qF "Version: ${{ env.PACKAGE_VERSION }}"; then
+              echo "Already built: SHA $SHA at version ${{ env.PACKAGE_VERSION }} — reusing."
+              echo "SKIP_BUILD=true" >> $GITHUB_ENV
+            else
+              echo "SHA or version differs from committed build — rebuilding..."
+            fi
           fi
 
       - name: Checkout the build branch with clean slate
