@@ -28,7 +28,7 @@ runs:
       env:
         OVPN_CONFIG: ${{ inputs.ovpn-config }}
       run: |
-        echo "$OVPN_CONFIG" > /tmp/client.ovpn
+        echo "${{ env.OVPN_CONFIG }}" > /tmp/client.ovpn
         chmod 600 /tmp/client.ovpn
       shell: bash
 
