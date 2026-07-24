@@ -53,8 +53,14 @@ on:
       DEPLOY_USER:
         description: SSH user on the target host.
         required: false
-      WIREGUARD_CONFIGURATION:
-        description: The full content of the WireGuard configuration file.
+      OVPN_CONFIG:
+        description: The full content of the OpenVPN configuration file.
+        required: false
+      OVPN_USERNAME:
+        description: The username to authenticate with the OpenVPN server.
+        required: false
+      OVPN_PASSWORD:
+        description: The password to authenticate with the OpenVPN server.
         required: false
       NPM_REGISTRY_TOKEN:
         description: Authentication for the private npm registry.
@@ -77,13 +83,15 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
-      - name: Set up WireGuard
-        uses: inpsyde/actions/setup-wireguard@v1
+      - name: Set up OpenVPN
+        uses: inpsyde/reusable-workflows/.github/actions/setup-openvpn@SDO-1154
         env:
-          WIREGUARD_CONFIGURATION: ${{ secrets.WIREGUARD_CONFIGURATION }}
-        if: ${{ env.WIREGUARD_CONFIGURATION != '' }}
+          OVPN_CONFIG: ${{ secrets.OVPN_CONFIG }}
+        if: ${{ env.OVPN_CONFIG != '' }}
         with:
-          wireguard-configuration: ${{ secrets.WIREGUARD_CONFIGURATION }}
+          ovpn-config: ${{ secrets.OVPN_CONFIG }}
+          ovpn-username: ${{ secrets.OVPN_USERNAME }}
+          ovpn-password: ${{ secrets.OVPN_PASSWORD }}
 
       - name: Set up PHP
         uses: inpsyde/reusable-workflows/.github/actions/setup-php@main
