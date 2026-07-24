@@ -62,6 +62,9 @@ on:
       OVPN_PASSWORD:
         description: The password to authenticate with the OpenVPN server.
         required: false
+      OVPN_GATEWAY_IP:
+        description: The IP address of the OpenVPN gateway.
+        required: false
       NPM_REGISTRY_TOKEN:
         description: Authentication for the private npm registry.
         required: false
