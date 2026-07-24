@@ -87,11 +87,13 @@ jobs:
         uses: inpsyde/reusable-workflows/.github/actions/setup-openvpn@main
         env:
           OVPN_CONFIG: ${{ secrets.OVPN_CONFIG }}
-        if: ${{ env.OVPN_CONFIG != '' }}
+          OVPN_USERNAME: ${{ secrets.OVPN_USERNAME }}
+          OVPN_PASSWORD: ${{ secrets.OVPN_PASSWORD }}
+        if: ${{ env.OVPN_CONFIG != '' && env.OVPN_USERNAME != '' && env.OVPN_PASSWORD != '' }}
         with:
-          ovpn-config: ${{ secrets.OVPN_CONFIG }}
-          ovpn-username: ${{ secrets.OVPN_USERNAME }}
-          ovpn-password: ${{ secrets.OVPN_PASSWORD }}
+          ovpn-config: ${{ env.OVPN_CONFIG }}
+          ovpn-username: ${{ env.OVPN_USERNAME }}
+          ovpn-password: ${{ env.OVPN_PASSWORD }}
 
       - name: Set up PHP
         uses: inpsyde/reusable-workflows/.github/actions/setup-php@main
