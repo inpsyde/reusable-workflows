@@ -86,8 +86,11 @@ jobs:
 | `DEPLOY_USER`             | Yes      | SSH user on the target server                                                            |
 | `GITHUB_USER_SSH_KEY`     | Yes      | Private SSH key used for repository checkout and remote server access                    |
 | `COMPOSER_AUTH_JSON`      | Yes      | Authentication for privately hosted packages and repositories as a JSON formatted object |
-| `WIREGUARD_CONFIGURATION` | No       | The full content of the WireGuard configuration file for VPN tunnel setup                |
 | `NPM_REGISTRY_TOKEN`      | No       | Authentication for the private npm registry                                              |
+| `OVPN_CONFIG`             | No       | The full content of the OpenVPN configuration file                                       |
+| `OVPN_USERNAME`           | No       | The username to authenticate with the OpenVPN server                                     |
+| `OVPN_PASSWORD`           | No       | The password to authenticate with the OpenVPN server                                     |
+| `OVPN_GATEWAY_IP`         | No       | Authentication for the private npm registry                                              |
 
 **Example with configuration parameters:**
 
@@ -112,7 +115,10 @@ jobs:
       DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
       GITHUB_USER_SSH_KEY: ${{ secrets.DEPLOYBOT_SSH_PRIVATE_KEY }}
       COMPOSER_AUTH_JSON: ${{ secrets.PACKAGIST_AUTH_JSON }}
-      WIREGUARD_CONFIGURATION: ${{ secrets.WIREGUARD_CONFIGURATION }}
+      OVPN_CONFIG: ${{ secrets.OVPN_CONFIG }}
+      OVPN_USERNAME: ${{ secrets.OVPN_USERNAME }}
+      OVPN_PASSWORD: ${{ secrets.OVPN_PASSWORD }}
+      OVPN_GATEWAY_IP: ${{ secrets.OVPN_GATEWAY_IP }}
       NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
     with:
       ENVIRONMENT: ${{ inputs.ENVIRONMENT }}
