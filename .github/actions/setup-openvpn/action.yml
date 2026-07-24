@@ -1,15 +1,15 @@
 name: Set up OpenVPN
-description: Set up OpenVPN.
+description: Install OpenVPN and establish a VPN connection.
 
 inputs:
   ovpn-config:
-    description: OpenVPN configuration file content
+    description: OpenVPN configuration file content.
     required: true
   ovpn-username:
-    description: OpenVPN username
+    description: OpenVPN username for authentication.
     required: true
   ovpn-password:
-    description: OpenVPN password
+    description: OpenVPN password for authentication.
     required: true
 
 runs:
