@@ -11,6 +11,9 @@ inputs:
   ovpn-password:
     description: OpenVPN password for authentication.
     required: true
+  ovpn-gateway-ip:
+    description: Expected IP address of the VPN gateway.
+    required: true
 
 runs:
   using: composite
@@ -38,3 +41,12 @@ runs:
         config_file: /tmp/client.ovpn
         username: ${{ env.OVPN_USERNAME }}
         password: ${{ env.OVPN_PASSWORD }}
+
+    - name: Verify VPN egress IP
+      env:
+        GATEWAY_IP: ${{ inputs.ovpn-gateway-ip }}
+      run: |
+        IP=$(curl -s https://api.ipify.org)
+        echo "Egress IP: $IP"
+        [[ "$IP" == "${{ env.GATEWAY_IP }}" ]] || { echo "Unexpected egress IP: $IP"; exit 1; }
+      shell: bash
