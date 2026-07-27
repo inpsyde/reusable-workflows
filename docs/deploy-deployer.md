@@ -79,18 +79,18 @@ jobs:
 
 ### Secrets
 
-| Name                      | Required | Description                                                                              |
-|---------------------------|----------|------------------------------------------------------------------------------------------|
-| `DEPLOY_HOSTNAME`         | Yes      | Hostname or IP address of the target server                                              |
-| `DEPLOY_PORT`             | Yes      | SSH port on the target server                                                            |
-| `DEPLOY_USER`             | Yes      | SSH user on the target server                                                            |
-| `GITHUB_USER_SSH_KEY`     | Yes      | Private SSH key used for repository checkout and remote server access                    |
-| `COMPOSER_AUTH_JSON`      | Yes      | Authentication for privately hosted packages and repositories as a JSON formatted object |
-| `NPM_REGISTRY_TOKEN`      | No       | Authentication for the private npm registry                                              |
-| `OVPN_CONFIG`             | No       | The full content of the OpenVPN configuration file                                       |
-| `OVPN_USERNAME`           | No       | The username to authenticate with the OpenVPN server                                     |
-| `OVPN_PASSWORD`           | No       | The password to authenticate with the OpenVPN server                                     |
-| `OVPN_GATEWAY_IP`         | No       | Authentication for the private npm registry                                              |
+| Name                  | Required | Description                                                                              |
+|-----------------------|----------|------------------------------------------------------------------------------------------|
+| `DEPLOY_HOSTNAME`     | Yes      | Hostname or IP address of the target server                                              |
+| `DEPLOY_PORT`         | Yes      | SSH port on the target server                                                            |
+| `DEPLOY_USER`         | Yes      | SSH user on the target server                                                            |
+| `GITHUB_USER_SSH_KEY` | Yes      | Private SSH key used for repository checkout and remote server access                    |
+| `COMPOSER_AUTH_JSON`  | Yes      | Authentication for privately hosted packages and repositories as a JSON formatted object |
+| `NPM_REGISTRY_TOKEN`  | No       | Authentication for the private npm registry                                              |
+| `OVPN_CONFIG`         | No       | The full content of the OpenVPN configuration file                                       |
+| `OVPN_USERNAME`       | No       | The username to authenticate with the OpenVPN server                                     |
+| `OVPN_PASSWORD`       | No       | The password to authenticate with the OpenVPN server                                     |
+| `OVPN_GATEWAY_IP`     | No       | The IP address of the OpenVPN gateway                                                    |
 
 **Example with configuration parameters:**
 
