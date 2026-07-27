@@ -95,6 +95,8 @@ jobs:
         env:
           WIREGUARD_CONFIGURATION: ${{ secrets.WIREGUARD_CONFIGURATION }}
         if: ${{ env.WIREGUARD_CONFIGURATION != '' }}
+        with:
+          wireguard-configuration: ${{ secrets.WIREGUARD_CONFIGURATION }}
 
       - name: Set up OpenVPN
         uses: inpsyde/reusable-workflows/.github/actions/setup-openvpn@SDO-1154
