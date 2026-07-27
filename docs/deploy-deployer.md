@@ -7,7 +7,7 @@ To achieve that, the reusable workflow:
 
 1. Checks out the repository
 2. Sets up PHP and installs Composer dependencies (production only)
-3. Optionally establishes a WireGuard VPN tunnel to reach private networks
+3. Optionally establishes a VPN tunnel to reach private networks
 4. Detects and builds npm workspaces if present
 5. Installs Deployer from the `deployment/` directory
 6. Configures SSH access to the target host
