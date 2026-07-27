@@ -28,19 +28,16 @@ runs:
       env:
         OVPN_CONFIG: ${{ inputs.ovpn-config }}
       run: |
-        echo "${{ env.OVPN_CONFIG }}" > /tmp/client.ovpn
+        echo "$OVPN_CONFIG" > /tmp/client.ovpn
         chmod 600 /tmp/client.ovpn
       shell: bash
 
     - name: Connect
       uses: "kota65535/github-openvpn-connect-action@cd2ed8a90cc7b060dc4e001143e811b5f7ea0af5" # v3.1.0
-      env:
-        OVPN_USERNAME: ${{ inputs.ovpn-username }}
-        OVPN_PASSWORD: ${{ inputs.ovpn-password }}
       with:
         config_file: /tmp/client.ovpn
-        username: ${{ env.OVPN_USERNAME }}
-        password: ${{ env.OVPN_PASSWORD }}
+        username: ${{ inputs.ovpn-username }}
+        password: ${{ inputs.ovpn-password }}
 
     - name: Verify VPN egress IP
       env:
@@ -48,5 +45,5 @@ runs:
       run: |
         IP=$(curl -s https://api.ipify.org)
         echo "Egress IP: $IP"
-        [[ "$IP" == "${{ env.GATEWAY_IP }}" ]] || { echo "Unexpected egress IP: $IP"; exit 1; }
+        [[ "$IP" == "$GATEWAY_IP" ]] || { echo "Unexpected egress IP: $IP"; exit 1; }
       shell: bash
