@@ -47,3 +47,8 @@ runs:
         echo "Egress IP: $IP"
         [[ "$IP" == "$GATEWAY_IP" ]] || { echo "Unexpected egress IP: $IP"; exit 1; }
       shell: bash
+
+    - name: Delete OpenVPN config
+      if: always()
+      run: rm -f /tmp/client.ovpn
+      shell: bash
