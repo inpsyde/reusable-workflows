@@ -99,7 +99,7 @@ jobs:
           wireguard-configuration: ${{ secrets.WIREGUARD_CONFIGURATION }}
 
       - name: Set up OpenVPN
-        uses: inpsyde/reusable-workflows/.github/actions/setup-openvpn@SDO-1154
+        uses: inpsyde/reusable-workflows/.github/actions/setup-openvpn@main
         env:
           OVPN_CONFIG: ${{ secrets.OVPN_CONFIG }}
           OVPN_USERNAME: ${{ secrets.OVPN_USERNAME }}
