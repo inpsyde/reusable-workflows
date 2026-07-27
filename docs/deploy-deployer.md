@@ -76,6 +76,7 @@ jobs:
 | `PHP_TOOLS`           | `''`                            | PHP tools supported by [shivammathur/setup-php](https://github.com/shivammathur/setup-php#wrench-tools-support) to be installed |
 | `NODE_VERSION`        | `'22'`                          | Node.js version to use when npm workspaces are detected                                                                         |
 | `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                                                              |
+| `OVPN_GATEWAY_IP`     | `''`                            | The IP address of the OpenVPN gateway                                                                                           |
 
 ### Secrets
 
@@ -90,7 +91,7 @@ jobs:
 | `OVPN_CONFIG`         | No       | The full content of the OpenVPN configuration file                                       |
 | `OVPN_USERNAME`       | No       | The username to authenticate with the OpenVPN server                                     |
 | `OVPN_PASSWORD`       | No       | The password to authenticate with the OpenVPN server                                     |
-| `OVPN_GATEWAY_IP`     | No       | The IP address of the OpenVPN gateway                                                    |
+
 
 **Example with configuration parameters:**
 
@@ -118,11 +119,11 @@ jobs:
       OVPN_CONFIG: ${{ secrets.OVPN_CONFIG }}
       OVPN_USERNAME: ${{ secrets.OVPN_USERNAME }}
       OVPN_PASSWORD: ${{ secrets.OVPN_PASSWORD }}
-      OVPN_GATEWAY_IP: ${{ secrets.OVPN_GATEWAY_IP }}
       NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
     with:
       ENVIRONMENT: ${{ inputs.ENVIRONMENT }}
       PHP_VERSION: '8.3'
       NODE_VERSION: '22'
       VERBOSITY: 'vvv'
+      OVPN_GATEWAY_IP: ${{ vars.OVPN_GATEWAY_IP }}
 ```

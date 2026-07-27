@@ -14,7 +14,7 @@ steps:
       OVPN_CONFIG: ${{ secrets.OVPN_CONFIG }}
       OVPN_USERNAME: ${{ secrets.OVPN_USERNAME }}
       OVPN_PASSWORD: ${{ secrets.OVPN_PASSWORD }}
-      OVPN_GATEWAY_IP: ${{ secrets.OVPN_GATEWAY_IP }}
+      OVPN_GATEWAY_IP: ${{ vars.OVPN_GATEWAY_IP }}
     if: ${{ env.OVPN_CONFIG != '' && env.OVPN_USERNAME != '' && env.OVPN_PASSWORD != '' && env.OVPN_GATEWAY_IP != '' }}
     with:
       ovpn-config: ${{ env.OVPN_CONFIG }}
@@ -45,7 +45,7 @@ steps:
       OVPN_CONFIG: ${{ secrets.OVPN_CONFIG }}
       OVPN_USERNAME: ${{ secrets.OVPN_USERNAME }}
       OVPN_PASSWORD: ${{ secrets.OVPN_PASSWORD }}
-      OVPN_GATEWAY_IP: ${{ secrets.OVPN_GATEWAY_IP }}
+      OVPN_GATEWAY_IP: ${{ vars.OVPN_GATEWAY_IP }}
     if: ${{ env.OVPN_CONFIG != '' && env.OVPN_USERNAME != '' && env.OVPN_PASSWORD != '' && env.OVPN_GATEWAY_IP != '' }}
     with:
       ovpn-config: ${{ env.OVPN_CONFIG }}

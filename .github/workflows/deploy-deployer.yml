@@ -37,6 +37,10 @@ on:
         default: https://npm.pkg.github.com/
         required: false
         type: string
+      OVPN_GATEWAY_IP:
+        description: The IP address of the OpenVPN gateway.
+        required: false
+        type: string
     secrets:
       COMPOSER_AUTH_JSON:
         description: Authentication for privately hosted packages and repositories as a JSON formatted object.
@@ -61,9 +65,6 @@ on:
         required: false
       OVPN_PASSWORD:
         description: The password to authenticate with the OpenVPN server.
-        required: false
-      OVPN_GATEWAY_IP:
-        description: The IP address of the OpenVPN gateway.
         required: false
       NPM_REGISTRY_TOKEN:
         description: Authentication for the private npm registry.
@@ -92,7 +93,7 @@ jobs:
           OVPN_CONFIG: ${{ secrets.OVPN_CONFIG }}
           OVPN_USERNAME: ${{ secrets.OVPN_USERNAME }}
           OVPN_PASSWORD: ${{ secrets.OVPN_PASSWORD }}
-          OVPN_GATEWAY_IP: ${{ secrets.OVPN_GATEWAY_IP }}
+          OVPN_GATEWAY_IP: ${{ vars.OVPN_GATEWAY_IP }}
         if: ${{ env.OVPN_CONFIG != '' && env.OVPN_USERNAME != '' && env.OVPN_PASSWORD != '' && env.OVPN_GATEWAY_IP != '' }}
         with:
           ovpn-config: ${{ env.OVPN_CONFIG }}
