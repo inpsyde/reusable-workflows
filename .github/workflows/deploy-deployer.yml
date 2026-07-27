@@ -37,6 +37,10 @@ on:
         default: https://npm.pkg.github.com/
         required: false
         type: string
+      OVPN_GATEWAY_IP:
+        description: The IP address of the OpenVPN gateway.
+        required: false
+        type: string
     secrets:
       COMPOSER_AUTH_JSON:
         description: Authentication for privately hosted packages and repositories as a JSON formatted object.
@@ -54,7 +58,16 @@ on:
         description: SSH user on the target host.
         required: false
       WIREGUARD_CONFIGURATION:
-        description: The full content of the WireGuard configuration file.
+        description: "The full content of the WireGuard configuration file. Deprecated: the support for WireGuard will be removed in the future in favour of OpenVPN."
+        required: false
+      OVPN_CONFIG:
+        description: The full content of the OpenVPN configuration file.
+        required: false
+      OVPN_USERNAME:
+        description: The username to authenticate with the OpenVPN server.
+        required: false
+      OVPN_PASSWORD:
+        description: The password to authenticate with the OpenVPN server.
         required: false
       NPM_REGISTRY_TOKEN:
         description: Authentication for the private npm registry.
@@ -84,6 +97,21 @@ jobs:
         if: ${{ env.WIREGUARD_CONFIGURATION != '' }}
         with:
           wireguard-configuration: ${{ secrets.WIREGUARD_CONFIGURATION }}
+
+      - name: Set up OpenVPN
+        uses: inpsyde/reusable-workflows/.github/actions/setup-openvpn@main
+        env:
+          OVPN_CONFIG: ${{ secrets.OVPN_CONFIG }}
+          OVPN_USERNAME: ${{ secrets.OVPN_USERNAME }}
+          OVPN_PASSWORD: ${{ secrets.OVPN_PASSWORD }}
+          OVPN_GATEWAY_IP: ${{ inputs.OVPN_GATEWAY_IP }}
+          WIREGUARD_CONFIGURATION: ${{ secrets.WIREGUARD_CONFIGURATION }}
+        if: ${{ env.WIREGUARD_CONFIGURATION == '' && env.OVPN_CONFIG != '' && env.OVPN_USERNAME != '' && env.OVPN_PASSWORD != '' && env.OVPN_GATEWAY_IP != '' }}
+        with:
+          ovpn-config: ${{ env.OVPN_CONFIG }}
+          ovpn-username: ${{ env.OVPN_USERNAME }}
+          ovpn-password: ${{ env.OVPN_PASSWORD }}
+          ovpn-gateway-ip: ${{ env.OVPN_GATEWAY_IP }}
 
       - name: Set up PHP
         uses: inpsyde/reusable-workflows/.github/actions/setup-php@main
