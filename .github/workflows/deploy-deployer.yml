@@ -57,6 +57,9 @@ on:
       DEPLOY_USER:
         description: SSH user on the target host.
         required: false
+      WIREGUARD_CONFIGURATION:
+        description: "The full content of the WireGuard configuration file. Deprecated: the support for WireGuard will be removed in the future in favour of OpenVPN."
+        required: false
       OVPN_CONFIG:
         description: The full content of the OpenVPN configuration file.
         required: false
@@ -87,6 +90,12 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
+      - name: Set up WireGuard
+        uses: inpsyde/actions/setup-wireguard@v1
+        env:
+          WIREGUARD_CONFIGURATION: ${{ secrets.WIREGUARD_CONFIGURATION }}
+        if: ${{ env.WIREGUARD_CONFIGURATION != '' }}
+
       - name: Set up OpenVPN
         uses: inpsyde/reusable-workflows/.github/actions/setup-openvpn@main
         env:
@@ -94,7 +103,8 @@ jobs:
           OVPN_USERNAME: ${{ secrets.OVPN_USERNAME }}
           OVPN_PASSWORD: ${{ secrets.OVPN_PASSWORD }}
           OVPN_GATEWAY_IP: ${{ inputs.OVPN_GATEWAY_IP }}
-        if: ${{ env.OVPN_CONFIG != '' && env.OVPN_USERNAME != '' && env.OVPN_PASSWORD != '' && env.OVPN_GATEWAY_IP != '' }}
+          WIREGUARD_CONFIGURATION: ${{ secrets.WIREGUARD_CONFIGURATION }}
+        if: ${{ env.WIREGUARD_CONFIGURATION == '' && env.OVPN_CONFIG != '' && env.OVPN_USERNAME != '' && env.OVPN_PASSWORD != '' && env.OVPN_GATEWAY_IP != '' }}
         with:
           ovpn-config: ${{ env.OVPN_CONFIG }}
           ovpn-username: ${{ env.OVPN_USERNAME }}
