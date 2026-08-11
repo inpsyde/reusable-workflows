@@ -155,9 +155,26 @@ jobs:
           sed -i "s/'__composer_autoload_files'/\'__composer_autoload_files_${{ github.sha }}'/g" "build/vendor/composer/autoload_real.php"
           rsync -av ./build/ . && rm -rf ./build/
 
+      # Key = lockfile hash (Playwright version proxy) + browser args.
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json', 'npm-shrinkwrap.json') }}-${{ inputs.PLAYWRIGHT_BROWSER_ARGS }}
+
+      # Miss: download browsers + libs.
       - name: Install Playwright dependencies
+        if: ${{ steps.playwright-cache.outputs.cache-hit != 'true' }}
         run: |
           npx playwright install ${{ inputs.PLAYWRIGHT_BROWSER_ARGS }}
+
+      # Hit: binaries restored; apt libs aren't cached, so reinstall libs only.
+      - name: Install OS dependencies for Playwright browsers
+        if: ${{ steps.playwright-cache.outputs.cache-hit == 'true' }}
+        run: |
+          DEPS_ARGS=$(echo '${{ inputs.PLAYWRIGHT_BROWSER_ARGS }}' | sed 's/--with-deps//g' | xargs)
+          npx playwright install-deps $DEPS_ARGS
 
       - name: Create environment file
         env:
@@ -267,3 +284,4 @@ jobs:
         run: |
           echo "Tests failed! Check the artifacts for details."
           exit 1
+          
