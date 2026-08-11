@@ -1,0 +1,54 @@
+name: Set up OpenVPN
+description: Install OpenVPN and establish a VPN connection.
+
+inputs:
+  ovpn-config:
+    description: OpenVPN configuration file content.
+    required: true
+  ovpn-username:
+    description: OpenVPN username for authentication.
+    required: true
+  ovpn-password:
+    description: OpenVPN password for authentication.
+    required: true
+  ovpn-gateway-ip:
+    description: Expected IP address of the VPN gateway.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Install OpenVPN
+      run: |
+        sudo apt update
+        sudo apt install -y openvpn openvpn-systemd-resolved
+      shell: bash
+
+    - name: Write OpenVPN config
+      env:
+        OVPN_CONFIG: ${{ inputs.ovpn-config }}
+      run: |
+        echo "$OVPN_CONFIG" > /tmp/client.ovpn
+        chmod 600 /tmp/client.ovpn
+      shell: bash
+
+    - name: Connect
+      uses: "kota65535/github-openvpn-connect-action@cd2ed8a90cc7b060dc4e001143e811b5f7ea0af5" # v3.1.0
+      with:
+        config_file: /tmp/client.ovpn
+        username: ${{ inputs.ovpn-username }}
+        password: ${{ inputs.ovpn-password }}
+
+    - name: Verify VPN egress IP
+      env:
+        GATEWAY_IP: ${{ inputs.ovpn-gateway-ip }}
+      run: |
+        IP=$(curl -s https://api.ipify.org)
+        echo "Egress IP: $IP"
+        [[ "$IP" == "$GATEWAY_IP" ]] || { echo "Unexpected egress IP: $IP"; exit 1; }
+      shell: bash
+
+    - name: Delete OpenVPN config
+      if: always()
+      run: rm -f /tmp/client.ovpn
+      shell: bash

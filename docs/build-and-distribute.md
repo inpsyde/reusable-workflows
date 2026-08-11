@@ -5,14 +5,15 @@ This action can be used to build plugin and theme archives and push them to corr
 To achieve that, the reusable workflow:
 
 1. Inspects the origin branch and determines the correlating build branch (strips `dev/` prefix)
-2. Installs dependencies (including dev-dependencies) defined in `composer.json`
-3. Installs Node.js dependencies and compiles assets via `npm run build`
-4. Updates version information in plugin/theme headers and `package.json`
-5. Executes [WordPress Translation Downloader](https://github.com/inpsyde/wp-translation-downloader) if configured by the package
-6. Executes [PHP-Scoper](https://github.com/humbug/php-scoper) if configured by the package
-7. Applies `.distignore` file filtering if present
-8. Commits and pushes the build artifact to the determined build branch
-9. Uploads the build as a GitHub Actions artifact for download
+2. Checks whether the build branch already contains the current commit SHA — if so, skips steps 3–8 entirely (see [Duplicate run detection](#duplicate-run-detection))
+3. Installs dependencies (including dev-dependencies) defined in `composer.json`
+4. Installs Node.js dependencies and compiles assets via `npm run build`
+5. Updates version and SHA information in plugin/theme headers and `package.json`
+6. Executes [WordPress Translation Downloader](https://github.com/inpsyde/wp-translation-downloader) if configured by the package
+7. Executes [PHP-Scoper](https://github.com/humbug/php-scoper) if configured by the package
+8. Applies `.distignore` file filtering if present
+9. Commits and pushes the build artifact to the determined build branch
+10. Uploads the build as a GitHub Actions artifact for download
 
 ## Branch naming convention
 
@@ -29,10 +30,10 @@ This approach keeps source code separate from build artifacts while maintaining 
 
 If no `PACKAGE_VERSION` is provided, the workflow automatically:
 
-1. Fetches the latest tag from the repository
+1. Fetches the latest GitHub Release from the repository
 2. Strips the `dev/` prefix from the branch name and normalizes it to be semver-compatible
 3. Creates a pre-release version like `1.2.3-main` or `2.0.0-abc-123`
-4. Falls back to `0.0.0-{branch}` if no tags exist
+4. Falls back to `0.0.0-{branch}` if no published release exists
 
 **Examples:**
 
@@ -41,6 +42,34 @@ If no `PACKAGE_VERSION` is provided, the workflow automatically:
 - `dev/feature/user-auth` with latest tag `2.0.0` → `2.0.0-feature-user-auth`
 
 This ensures every build has a unique, meaningful version identifier that traces back to both the base release and the source branch.
+
+### GitHub Release tag format
+
+The latest GitHub Release tag is used as the base for `PACKAGE_VERSION` and is validated by `npm version` against semver. Release tags must therefore exactly match this pattern:
+
+```text
+[v]MAJOR.MINOR.PATCH[-IDENTIFIER]
+```
+
+#### Valid and invalid samples
+
+**Valid:**
+
+- `1.2.3`
+- `v1.2.3`
+- `1.2.3-alpha`
+- `1.2.3-feature.1`
+- `1.2.3-2026-05-21`
+
+**Invalid:**
+
+- `1.2` → missing PATCH
+- `1.2.3.4` → too many segments
+- `1.2.3-` → empty identifier
+- `v.1.2.3` → dot after `v`
+- `a.b.c` → non-numeric segments
+- `release/1.2.3` → contains a slash
+
 
 ## Simple usage example
 
@@ -111,20 +140,19 @@ jobs:
 
 ### Inputs
 
-| Name                  | Default                                          | Description                                                                                                      |
-|-----------------------|--------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
-| `NODE_OPTIONS`        | `''`                                             | Space-separated list of command-line Node options                                                                |
-| `NODE_VERSION`        | `18`                                             | Node version with which the assets will be compiled                                                              |
-| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'`                  | Domain of the private npm registry                                                                               |
-| `PHP_VERSION`         | `'8.2'`                                          | PHP version with which the PHP tools are to be executed                                                          |
-| `PHP_EXTENSIONS`      | `''`                                             | PHP extensions supported by shivammathur/setup-php to be installed or disabled                                   |
-| `PHP_TOOLS`           | `''`                                             | PHP tools supported by shivammathur/setup-php to be installed                                                    |
-| `COMPOSER_ARGS`       | `'--no-dev --prefer-dist --optimize-autoloader'` | Set of arguments passed to Composer when gathering production dependencies                                       |
-| `PACKAGE_NAME`        | `''`                                             | The name of the package (falls back to the repository name)                                                      |
-| `PACKAGE_VERSION`     | `''`                                             | The new package version. If not provided, will use latest tag version with branch name as pre-release identifier |
-| `PRE_SCRIPT`          | `''`                                             | Run custom shell code before creating the release archive                                                        |
-| `BUILT_BRANCH_NAME`   | `''`                                             | Override the automatic build branch naming (defaults to stripping `dev/` prefix from origin branch)              |
-
+| Name                  | Default                                          | Description                                                                                                                     |
+|-----------------------|--------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
+| `NODE_OPTIONS`        | `''`                                             | Space-separated list of command-line Node options                                                                               |
+| `NODE_VERSION`        | `18`                                             | Node version with which the assets will be compiled                                                                             |
+| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'`                  | Domain of the private npm registry                                                                                              |
+| `PHP_VERSION`         | `'8.2'`                                          | PHP version with which the PHP tools are to be executed                                                                         |
+| `PHP_EXTENSIONS`      | `''`                                             | PHP extensions supported by shivammathur/setup-php to be installed or disabled                                                  |
+| `PHP_TOOLS`           | `''`                                             | PHP tools supported by shivammathur/setup-php to be installed                                                                   |
+| `COMPOSER_ARGS`       | `'--no-dev --prefer-dist --optimize-autoloader'` | Set of arguments passed to Composer when gathering production dependencies                                                      |
+| `PACKAGE_NAME`        | `''`                                             | The name of the package (falls back to the repository name)                                                                     |
+| `PACKAGE_VERSION`     | `''`                                             | The new package version. If not provided, will use the latest GitHub Release version with branch name as pre-release identifier |
+| `PRE_SCRIPT`          | `''`                                             | Run custom shell code before creating the release archive                                                                       |
+| `BUILT_BRANCH_NAME`   | `''`                                             | Override the automatic build branch naming (defaults to stripping `dev/` prefix from origin branch)                             |
 
 #### A note on `BUILT_BRANCH_NAME`
 
@@ -150,7 +178,7 @@ By default, the workflow strips the `dev/` prefix from the origin branch to dete
 - Ensure your `package.json` includes a `build` script for asset compilation
 - Use `.distignore` to exclude development files from the final build
 - Consider using [path filters](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#example-including-paths) to avoid unnecessary builds when only documentation changes
-- Use [concurrency settings](https://docs.github.com/en/actions/using-jobs/using-concurrency) to prevent conflicts when multiple pushes occur rapidly
+- Use [concurrency settings](https://docs.github.com/en/actions/using-jobs/using-concurrency) to prevent conflicts when multiple pushes occur rapidly — the workflow serializes concurrent builds for the same SHA internally, so a queued second run will skip the actual build and resolve via the pre-built artifact
 
 ```yml
 name: Build and push assets
@@ -174,7 +202,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build-and-distribute:
@@ -222,7 +250,7 @@ This makes the workflow flexible enough to handle both full-stack WordPress proj
 The workflow handles version information for both plugins and themes:
 
 - Updates `Version:` header in the main plugin file
-- Updates `SHA:` header with the current commit hash
+- Upserts `SHA:` header with the current commit hash — replaces the existing value if the field is present, or inserts a new line after `Version:` if it is absent
 - Updates version in `package.json` and `composer.json`
 
 ### Asset Compilation
@@ -245,6 +273,16 @@ If a `scoper.inc.php` file is present, the workflow will:
 2. Rebuild the autoloader for the scoped dependencies
 3. Ensure unique autoload cache keys to prevent conflicts
 
+### Duplicate run detection
+
+The workflow detects when the build branch already contains a build for the current commit SHA and skips the entire compilation pipeline in that case.
+
+After each successful build, the commit SHA is written into the `SHA:` header of `style.css` (themes) or the main plugin PHP file (plugins). On subsequent runs for the same commit, the workflow reads that field from the remote build branch _before_ any toolchain setup. If the SHA matches, all build and compile steps are skipped and the workflow proceeds directly to packaging the existing build branch content and uploading the artifact.
+
+This is transparent to downstream jobs: the `artifact` output is always populated, whether the build was freshly compiled or reused.
+
+**Applies to WordPress plugins and themes only.** Library projects do not embed a `SHA:` field, so they always rebuild.
+
 ### Distignore Support
 
 If a `.distignore` file is present, the workflow will:
@@ -261,6 +299,27 @@ The workflow produces two outputs:
 
 1. **Build Branch**: The compiled code pushed to the build branch (e.g., `dev/main` → `main`)
 2. **GitHub Artifact**: A downloadable archive named `{package-name}-{version}` containing the build (without `.git` folder)
+
+### Workflow output
+
+The artifact name is also exposed as a workflow output called `artifact`, so downstream jobs in the calling workflow can reference it without having to reconstruct the name themselves:
+
+```yml
+jobs:
+  build-and-distribute:
+    uses: inpsyde/reusable-workflows/.github/workflows/build-and-distribute.yml@main
+    secrets: inherit
+    with:
+      PACKAGE_VERSION: ${{ inputs.PACKAGE_VERSION }}
+
+  deploy:
+    needs: build-and-distribute
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build-and-distribute.outputs.artifact }}
+```
 
 ## Migration from previous workflows
 

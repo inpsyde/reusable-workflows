@@ -7,7 +7,7 @@ To achieve that, the reusable workflow:
 
 1. Checks out the repository
 2. Sets up PHP and installs Composer dependencies (production only)
-3. Optionally establishes a WireGuard VPN tunnel to reach private networks
+3. Optionally establishes a VPN tunnel to reach private networks
 4. Detects and builds npm workspaces if present
 5. Installs Deployer from the `deployment/` directory
 6. Configures SSH access to the target host
@@ -76,18 +76,23 @@ jobs:
 | `PHP_TOOLS`           | `''`                            | PHP tools supported by [shivammathur/setup-php](https://github.com/shivammathur/setup-php#wrench-tools-support) to be installed |
 | `NODE_VERSION`        | `'22'`                          | Node.js version to use when npm workspaces are detected                                                                         |
 | `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                                                              |
+| `OVPN_GATEWAY_IP`     | `''`                            | The IP address of the OpenVPN gateway                                                                                           |
 
 ### Secrets
 
-| Name                      | Required | Description                                                                              |
-|---------------------------|----------|------------------------------------------------------------------------------------------|
-| `DEPLOY_HOSTNAME`         | Yes      | Hostname or IP address of the target server                                              |
-| `DEPLOY_PORT`             | Yes      | SSH port on the target server                                                            |
-| `DEPLOY_USER`             | Yes      | SSH user on the target server                                                            |
-| `GITHUB_USER_SSH_KEY`     | Yes      | Private SSH key used for repository checkout and remote server access                    |
-| `COMPOSER_AUTH_JSON`      | Yes      | Authentication for privately hosted packages and repositories as a JSON formatted object |
-| `WIREGUARD_CONFIGURATION` | No       | The full content of the WireGuard configuration file for VPN tunnel setup                |
-| `NPM_REGISTRY_TOKEN`      | No       | Authentication for the private npm registry                                              |
+| Name                      | Required | Description                                                                                                                                                         |
+|---------------------------|----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `DEPLOY_HOSTNAME`         | Yes      | Hostname or IP address of the target server                                                                                                                         |
+| `DEPLOY_PORT`             | Yes      | SSH port on the target server                                                                                                                                       |
+| `DEPLOY_USER`             | Yes      | SSH user on the target server                                                                                                                                       |
+| `GITHUB_USER_SSH_KEY`     | Yes      | Private SSH key used for repository checkout and remote server access                                                                                               |
+| `COMPOSER_AUTH_JSON`      | Yes      | Authentication for privately hosted packages and repositories as a JSON formatted object                                                                            |
+| `WIREGUARD_CONFIGURATION` | No       | The full content of the WireGuard configuration file for VPN tunnel setup. Deprecated: the support for WireGuard will be removed in the future in favour of OpenVPN |
+| `NPM_REGISTRY_TOKEN`      | No       | Authentication for the private npm registry                                                                                                                         |
+| `OVPN_CONFIG`             | No       | The full content of the OpenVPN configuration file                                                                                                                  |
+| `OVPN_USERNAME`           | No       | The username to authenticate with the OpenVPN server                                                                                                                |
+| `OVPN_PASSWORD`           | No       | The password to authenticate with the OpenVPN server                                                                                                                |
+
 
 **Example with configuration parameters:**
 
@@ -112,11 +117,14 @@ jobs:
       DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
       GITHUB_USER_SSH_KEY: ${{ secrets.DEPLOYBOT_SSH_PRIVATE_KEY }}
       COMPOSER_AUTH_JSON: ${{ secrets.PACKAGIST_AUTH_JSON }}
-      WIREGUARD_CONFIGURATION: ${{ secrets.WIREGUARD_CONFIGURATION }}
+      OVPN_CONFIG: ${{ secrets.OVPN_CONFIG }}
+      OVPN_USERNAME: ${{ secrets.OVPN_USERNAME }}
+      OVPN_PASSWORD: ${{ secrets.OVPN_PASSWORD }}
       NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
     with:
       ENVIRONMENT: ${{ inputs.ENVIRONMENT }}
       PHP_VERSION: '8.3'
       NODE_VERSION: '22'
       VERBOSITY: 'vvv'
+      OVPN_GATEWAY_IP: ${{ vars.OVPN_GATEWAY_IP }}
 ```
