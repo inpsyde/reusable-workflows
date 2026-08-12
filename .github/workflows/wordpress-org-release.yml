@@ -214,6 +214,13 @@ jobs:
             done
           fi
 
+      - name: Show SVN status
+        run: |
+          set -euo pipefail
+
+          cd "${SVN_REPO_ROOT}/trunk"
+          svn status
+
       - name: Commit changes to SVN repository
         if: inputs.DRY_RUN != true
         env:
