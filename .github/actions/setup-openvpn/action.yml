@@ -43,7 +43,7 @@ runs:
       env:
         GATEWAY_IP: ${{ inputs.ovpn-gateway-ip }}
       run: |
-        IP=$(curl -s https://api.ipify.org)
+        IP=$(dig +short @1.1.1.1 whoami.cloudflare ch txt | tr -d '"')
         echo "Egress IP: $IP"
         [[ "$IP" == "$GATEWAY_IP" ]] || { echo "Unexpected egress IP: $IP"; exit 1; }
       shell: bash
