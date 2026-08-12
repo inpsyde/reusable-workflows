@@ -155,23 +155,31 @@ jobs:
           sed -i "s/'__composer_autoload_files'/\'__composer_autoload_files_${{ github.sha }}'/g" "build/vendor/composer/autoload_real.php"
           rsync -av ./build/ . && rm -rf ./build/
 
+      # Strip --with-deps from caller-supplied args so it's not duplicated on install
+      # and doesn't get passed to install-deps, which doesn't accept it.
+      - name: Normalize Playwright browser args
+        id: playwright-args
+        run: |
+          ARGS=$(echo '${{ inputs.PLAYWRIGHT_BROWSER_ARGS }}' | sed 's/--with-deps//g' | xargs)
+          echo "args=$ARGS" >> "$GITHUB_OUTPUT"
+
       # Key = lockfile hash (Playwright version proxy) + browser args.
       - name: Cache Playwright browsers
         id: playwright-cache
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json', 'npm-shrinkwrap.json') }}-${{ inputs.PLAYWRIGHT_BROWSER_ARGS }}
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json', 'npm-shrinkwrap.json') }}-${{ steps.playwright-args.outputs.args }}
 
       - name: Cache miss; install Playwright dependencies
         if: ${{ steps.playwright-cache.outputs.cache-hit != 'true' }}
         run: |
-          npx playwright install ${{ inputs.PLAYWRIGHT_BROWSER_ARGS }} --with-deps
+          npx playwright install ${{ steps.playwright-args.outputs.args }} --with-deps
 
       - name: Cache hit; install only OS dependencies for Playwright browsers
         if: ${{ steps.playwright-cache.outputs.cache-hit == 'true' }}
         run: |
-          npx playwright install-deps ${{ inputs.PLAYWRIGHT_BROWSER_ARGS }}
+          npx playwright install-deps ${{ steps.playwright-args.outputs.args }}
 
       - name: Create environment file
         env:
