@@ -65,11 +65,6 @@ jobs:
 
           echo "✅ Valid plugin slug: $SVN_PLUGIN_SLUG"
 
-          # Must stay outside github.workspace: the sync step below rsyncs github.workspace
-          # onto this path, and a nested destination causes rsync "vanished" warnings.
-          echo "SVN_REPO_PATH=${RUNNER_TEMP}/svn_repository" >> "$GITHUB_ENV"
-          echo "SVN_REPO_ROOT=${RUNNER_TEMP}/svn_repository/${SVN_PLUGIN_SLUG}" >> "$GITHUB_ENV"
-
       - name: Validate versions
         env:
           PLUGIN_VERSION: ${{ inputs.PLUGIN_VERSION }}
@@ -148,8 +143,19 @@ jobs:
           echo "✅ Version $VALIDATED_PLUGIN_VERSION is consistent across inputs, plugin file, and readme.txt"
 
       - name: Checkout SVN repository
+        env:
+          SVN_PLUGIN_SLUG: ${{ inputs.SVN_PLUGIN_SLUG }}
         run: |
           set -euo pipefail
+
+          # Must stay outside github.workspace: the sync step below rsyncs github.workspace
+          # onto this path, and a nested destination causes rsync "vanished" warnings.
+          export SVN_REPO_PATH="${RUNNER_TEMP}/svn_repository"
+          export SVN_REPO_ROOT="${RUNNER_TEMP}/svn_repository/${SVN_PLUGIN_SLUG}"
+
+          echo "SVN_REPO_PATH=$SVN_REPO_PATH" >> "$GITHUB_ENV"
+          echo "SVN_REPO_ROOT=$SVN_REPO_ROOT" >> "$GITHUB_ENV"
+
           mkdir -p "$SVN_REPO_PATH" && cd "$SVN_REPO_PATH"
           
           # We only do a full checkout of trunk here, leaving other directories empty.
