@@ -188,6 +188,7 @@ jobs:
           touch .distignore # Ensure file exists so --exclude-from doesn't fail
           
           rsync -rc \
+          --itemize-changes \
           --delete \
           --delete-excluded \
           --exclude='.git' \
