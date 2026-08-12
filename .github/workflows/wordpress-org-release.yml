@@ -63,7 +63,6 @@ jobs:
             exit 1
           fi
 
-          echo "VALIDATED_SVN_PLUGIN_SLUG=$SVN_PLUGIN_SLUG" >> "$GITHUB_ENV"
           echo "✅ Valid plugin slug: $SVN_PLUGIN_SLUG"
 
       - name: Validate versions
@@ -144,23 +143,25 @@ jobs:
           echo "✅ Version $VALIDATED_PLUGIN_VERSION is consistent across inputs, plugin file, and readme.txt"
 
       - name: Checkout SVN repository
+        env:
+          SVN_PLUGIN_SLUG: ${{ inputs.SVN_PLUGIN_SLUG }}
         run: |
           set -euo pipefail
 
           # Must stay outside github.workspace: the sync step below rsyncs github.workspace
           # onto this path, and a nested destination causes rsync "vanished" warnings.
           export SVN_REPO_PATH="${RUNNER_TEMP}/svn_repository"
-          export SVN_REPO_ROOT="${RUNNER_TEMP}/svn_repository/${VALIDATED_SVN_PLUGIN_SLUG}"
+          export SVN_REPO_ROOT="${RUNNER_TEMP}/svn_repository/${SVN_PLUGIN_SLUG}"
 
           echo "SVN_REPO_PATH=$SVN_REPO_PATH" >> "$GITHUB_ENV"
           echo "SVN_REPO_ROOT=$SVN_REPO_ROOT" >> "$GITHUB_ENV"
 
           mkdir -p "$SVN_REPO_PATH" && cd "$SVN_REPO_PATH"
-
+          
           # We only do a full checkout of trunk here, leaving other directories empty.
           # Tags directory can take gigabytes for older plugins, and we don't need them for publishing.
-
-          svn checkout "https://plugins.svn.wordpress.org/${VALIDATED_SVN_PLUGIN_SLUG}" --depth immediates
+          
+          svn checkout "https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}" --depth immediates
           cd "$SVN_REPO_ROOT" && svn update trunk --set-depth infinity
 
       - name: Verify version doesn't exist in SVN
@@ -173,7 +174,7 @@ jobs:
 
           if [ -d "$VALIDATED_PLUGIN_VERSION" ]; then
             echo "❌ Version $VALIDATED_PLUGIN_VERSION already exists in WordPress.org!"
-            echo "   Check: https://plugins.svn.wordpress.org/${VALIDATED_SVN_PLUGIN_SLUG}/tags/"
+            echo "   Check: https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}/tags/"
             exit 1
           fi
 
@@ -248,8 +249,8 @@ jobs:
           echo "🚀 Publishing version ${VALIDATED_PLUGIN_VERSION}"
           
           svn copy \
-            "https://plugins.svn.wordpress.org/${VALIDATED_SVN_PLUGIN_SLUG}/trunk" \
-            "https://plugins.svn.wordpress.org/${VALIDATED_SVN_PLUGIN_SLUG}/tags/${VALIDATED_PLUGIN_VERSION}" \
+            "https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}/trunk" \
+            "https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}/tags/${VALIDATED_PLUGIN_VERSION}" \
             --username "$SVN_USERNAME" \
             --password "$SVN_PASSWORD" \
             --no-auth-cache \
@@ -262,7 +263,7 @@ jobs:
         if: inputs.DRY_RUN == true
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.VALIDATED_SVN_PLUGIN_SLUG }}
+          name: ${{ inputs.SVN_PLUGIN_SLUG }}
           path: ${{ env.SVN_REPO_ROOT }}/trunk
           include-hidden-files: true
           compression-level: 1 #Minimal compression - we don't want to waste resources for this
