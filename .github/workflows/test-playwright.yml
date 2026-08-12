@@ -54,7 +54,7 @@ on:
         type: string
       PLAYWRIGHT_BROWSER_ARGS:
         description: Set of arguments passed to `npx playwright install`.
-        default: '--with-deps'
+        default: ''
         required: false
         type: string
       PRE_SCRIPT:
@@ -163,18 +163,15 @@ jobs:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json', 'npm-shrinkwrap.json') }}-${{ inputs.PLAYWRIGHT_BROWSER_ARGS }}
 
-      # Miss: download browsers + libs.
-      - name: Install Playwright dependencies
+      - name: Cache miss; install Playwright dependencies
         if: ${{ steps.playwright-cache.outputs.cache-hit != 'true' }}
         run: |
-          npx playwright install ${{ inputs.PLAYWRIGHT_BROWSER_ARGS }}
+          npx playwright install ${{ inputs.PLAYWRIGHT_BROWSER_ARGS }} --with-deps
 
-      # Hit: binaries restored; apt libs aren't cached, so reinstall libs only.
-      - name: Install OS dependencies for Playwright browsers
+      - name: Cache hit; install only OS dependencies for Playwright browsers
         if: ${{ steps.playwright-cache.outputs.cache-hit == 'true' }}
         run: |
-          DEPS_ARGS=$(echo '${{ inputs.PLAYWRIGHT_BROWSER_ARGS }}' | sed 's/--with-deps//g' | xargs)
-          npx playwright install-deps $DEPS_ARGS
+          npx playwright install-deps ${{ inputs.PLAYWRIGHT_BROWSER_ARGS }}
 
       - name: Create environment file
         env:
