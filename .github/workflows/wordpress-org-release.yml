@@ -44,9 +44,6 @@ on:
 
 jobs:
   update_svn_from_git:
-    env:
-      SVN_REPO_PATH: "${{ github.workspace }}/svn_repository"
-      SVN_REPO_ROOT: "${{ github.workspace }}/svn_repository/${{ inputs.SVN_PLUGIN_SLUG }}"
     runs-on: ubuntu-latest
     steps:
       - name: Install required tools
@@ -67,6 +64,11 @@ jobs:
           fi
 
           echo "✅ Valid plugin slug: $SVN_PLUGIN_SLUG"
+
+          # Must stay outside github.workspace: the sync step below rsyncs github.workspace
+          # onto this path, and a nested destination causes rsync "vanished" warnings.
+          echo "SVN_REPO_PATH=${RUNNER_TEMP}/svn_repository" >> "$GITHUB_ENV"
+          echo "SVN_REPO_ROOT=${RUNNER_TEMP}/svn_repository/${SVN_PLUGIN_SLUG}" >> "$GITHUB_ENV"
 
       - name: Validate versions
         env:
