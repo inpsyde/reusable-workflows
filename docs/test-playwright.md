@@ -39,7 +39,8 @@ jobs:
 | `PLAYWRIGHT_ARTIFACT_PATH`                  |                                 | A file, directory or wildcard pattern that describes what to upload                                                 |
 | `PLAYWRIGHT_ARTIFACT_RETENTION_DAYS`        | `30`                            | Duration after which artifact will expire in day                                                                    |
 | `COMPOSER_DEPS_INSTALL`                     | `false`                         | Whether to install Composer dependencies                                                                            |
-| `NGROK_DOMAIN`                              | `''`                            | Reserved ngrok domain for the tunnel (paid account). Required when `NGROK_AUTH_TOKEN` is provided                   |
+| `NGROK_DOMAIN`                              | `''`                            | Reserved ngrok domain (paid account); omit for a random ngrok URL                                                   |
+| `NGROK_ENABLED`                             | `true`                          | Enable/disable the ngrok tunnel                                                                                     |
 | `NODE_VERSION`                              | `24`                            | Node version with which the node script will be executed                                                            |
 | `NPM_REGISTRY_DOMAIN`                       | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                                                  |
 | `PHP_VERSION`                               | `'8.2'`                         | PHP version with which the dependencies are installed                                                               |
@@ -69,12 +70,13 @@ jobs:
 When `NGROK_AUTH_TOKEN` is provided, the workflow automatically:
 
 1. Installs ngrok on the runner.
-2. Starts an HTTPS tunnel to port 80 using the reserved domain from `NGROK_DOMAIN`.
-3. Updates `WP_SITEURL`, `WP_HOME` (via `wp-env`) and `WP_BASE_URL` (in `.env.ci`) to the tunnel URL.
+2. Starts an HTTPS tunnel to port 80, using `NGROK_DOMAIN` if set, otherwise a random ngrok URL.
+3. Adds a must-use plugin trusting the forwarded HTTPS scheme.
+4. Updates `WP_SITEURL`, `WP_HOME` (via `wp-env`) and `WP_BASE_URL` (in `.env.ci`) to the tunnel URL.
 
 This runs **after** `wp-env` boots and **before** `PRE_SCRIPT`, so webhooks from external services (e.g. payment gateways) can reach the test environment.
 
-Requires a [paid ngrok account](https://ngrok.com/pricing) with a reserved domain.
+Set `NGROK_ENABLED: false` to skip the tunnel even when `NGROK_AUTH_TOKEN` is set (e.g. non-transaction tests).
 
 ## Test reporting
 
