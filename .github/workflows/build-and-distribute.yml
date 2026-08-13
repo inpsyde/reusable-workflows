@@ -289,11 +289,16 @@ jobs:
         if: ${{ env.SKIP_BUILD != 'true' && env.PACKAGE_FILE != '' }}
         run: |
           echo "Updating ${{ env.PACKAGE_FILE }}..."
-          sed -Ei "s/Version: .*/Version: ${{ env.PACKAGE_VERSION }}/g" "${{ env.PACKAGE_FILE }}"
           if grep -q "SHA:" "${{ env.PACKAGE_FILE }}"; then
+            sed -Ei "s/Version: .*/Version: ${{ env.PACKAGE_VERSION }}/g" "${{ env.PACKAGE_FILE }}"
             sed -Ei "s/SHA: .*/SHA: ${{ github.sha }}/g" "${{ env.PACKAGE_FILE }}"
           else
-            sed -Ei "/Version: /a SHA: ${{ github.sha }}" "${{ env.PACKAGE_FILE }}"
+            # Insert the SHA line right after Version in one pass, reusing its
+            # exact prefix (e.g. " * " in a PHPDoc block) via a capture group so
+            # the new line matches the surrounding header format. Using sed's `a`
+            # command here would strip that leading whitespace, so the line is
+            # built with a `\n` in the replacement instead.
+            sed -Ei "s/^(.*)Version: .*/\1Version: ${{ env.PACKAGE_VERSION }}\n\1SHA: ${{ github.sha }}/" "${{ env.PACKAGE_FILE }}"
           fi
 
       - name: Check for composer.json
