@@ -188,6 +188,7 @@ jobs:
           touch .distignore # Ensure file exists so --exclude-from doesn't fail
           
           rsync -rc \
+          --itemize-changes \
           --delete \
           --delete-excluded \
           --exclude='.git' \
@@ -213,6 +214,13 @@ jobs:
               svn delete "$file@"  # @ suffix handles files with @ in name
             done
           fi
+
+      - name: Show SVN status
+        run: |
+          set -euo pipefail
+
+          cd "${SVN_REPO_ROOT}/trunk"
+          svn status
 
       - name: Commit changes to SVN repository
         if: inputs.DRY_RUN != true
