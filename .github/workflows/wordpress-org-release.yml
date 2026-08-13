@@ -133,6 +133,7 @@ jobs:
           echo "README_VERSION=$README_VERSION" >> "$GITHUB_OUTPUT"
 
           MISMATCH=0
+          CHECKED_AGAINST="$PLUGIN_FILE"
 
           if [ "$VALIDATED_PLUGIN_VERSION" != "$PLUGIN_FILE_VERSION" ]; then
             echo "❌ Input version ($VALIDATED_PLUGIN_VERSION) does not match $PLUGIN_FILE ($PLUGIN_FILE_VERSION)"
@@ -143,6 +144,7 @@ jobs:
           # published version, not PLUGIN_VERSION - it's checked against SVN's existing tags
           # instead, once the SVN repository is checked out.
           if [ "$UPDATE_TRUNK_ONLY" != "true" ]; then
+            CHECKED_AGAINST="$PLUGIN_FILE and readme.txt"
             if [ "$VALIDATED_PLUGIN_VERSION" != "$README_VERSION" ]; then
               echo "❌ Input version ($VALIDATED_PLUGIN_VERSION) does not match readme.txt Stable tag ($README_VERSION)"
               MISMATCH=1
@@ -151,11 +153,7 @@ jobs:
 
           [ "$MISMATCH" = "1" ] && exit 1
 
-          if [ "$UPDATE_TRUNK_ONLY" != "true" ]; then
-            echo "✅ Version $VALIDATED_PLUGIN_VERSION is consistent with $PLUGIN_FILE and readme.txt"
-          else
-            echo "✅ Version $VALIDATED_PLUGIN_VERSION is consistent with $PLUGIN_FILE"
-          fi
+          echo "✅ Version $VALIDATED_PLUGIN_VERSION is consistent with $CHECKED_AGAINST"
 
       - name: Checkout SVN repository
         env:
