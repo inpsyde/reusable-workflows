@@ -97,6 +97,9 @@ jobs:
           ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
       - name: Verify version consistency
+        id: version_consistency
+        env:
+          UPDATE_TRUNK_ONLY: ${{ inputs.UPDATE_TRUNK_ONLY }}
         run: |
           set -euo pipefail
 
@@ -127,20 +130,32 @@ jobs:
 
           [ "$EXTRACTION_ERROR" = "1" ] && exit 1
 
+          echo "README_VERSION=$README_VERSION" >> "$GITHUB_OUTPUT"
+
           MISMATCH=0
 
           if [ "$VALIDATED_PLUGIN_VERSION" != "$PLUGIN_FILE_VERSION" ]; then
             echo "❌ Input version ($VALIDATED_PLUGIN_VERSION) does not match $PLUGIN_FILE ($PLUGIN_FILE_VERSION)"
             MISMATCH=1
           fi
-          if [ "$VALIDATED_PLUGIN_VERSION" != "$README_VERSION" ]; then
-            echo "❌ Input version ($VALIDATED_PLUGIN_VERSION) does not match readme.txt Stable tag ($README_VERSION)"
-            MISMATCH=1
+
+          # During a trunk-only sync, Stable tag is expected to still point to an already-
+          # published version, not PLUGIN_VERSION - it's checked against SVN's existing tags
+          # instead, once the SVN repository is checked out.
+          if [ "$UPDATE_TRUNK_ONLY" != "true" ]; then
+            if [ "$VALIDATED_PLUGIN_VERSION" != "$README_VERSION" ]; then
+              echo "❌ Input version ($VALIDATED_PLUGIN_VERSION) does not match readme.txt Stable tag ($README_VERSION)"
+              MISMATCH=1
+            fi
           fi
 
           [ "$MISMATCH" = "1" ] && exit 1
 
-          echo "✅ Version $VALIDATED_PLUGIN_VERSION is consistent across inputs, plugin file, and readme.txt"
+          if [ "$UPDATE_TRUNK_ONLY" != "true" ]; then
+            echo "✅ Version $VALIDATED_PLUGIN_VERSION is consistent with $PLUGIN_FILE and readme.txt"
+          else
+            echo "✅ Version $VALIDATED_PLUGIN_VERSION is consistent with $PLUGIN_FILE"
+          fi
 
       - name: Checkout SVN repository
         env:
@@ -161,24 +176,45 @@ jobs:
           # We only do a full checkout of trunk here, leaving other directories empty.
           # Tags directory can take gigabytes for older plugins, and we don't need them for publishing.
           
-          svn checkout "https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}" --depth immediates
+          svn checkout "https://plugins.svn.wordpress.org/${SVN_PLUGIN_SLUG}" --depth immediates
           cd "$SVN_REPO_ROOT" && svn update trunk --set-depth infinity
 
-      - name: Verify version doesn't exist in SVN
-        if: inputs.UPDATE_TRUNK_ONLY != true
+      - name: Verify readme points to an existing tag
+        if: inputs.UPDATE_TRUNK_ONLY == true
+        env:
+          README_VERSION: ${{ steps.version_consistency.outputs.README_VERSION }}
         run: |
           set -euo pipefail
 
           cd "${SVN_REPO_ROOT}/tags"
           svn update --set-depth immediates
 
-          if [ -d "$VALIDATED_PLUGIN_VERSION" ]; then
-            echo "❌ Version $VALIDATED_PLUGIN_VERSION already exists in WordPress.org!"
+          if [ ! -d "$README_VERSION" ]; then
+            echo "❌ readme.txt Stable tag ($README_VERSION) does not exist as a published SVN tag!"
+            echo "   During a trunk-only sync, Stable tag must keep pointing to an already-published version."
             echo "   Check: https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}/tags/"
             exit 1
           fi
 
-          echo "✅ Version $VALIDATED_PLUGIN_VERSION is available"
+          echo "✅ readme.txt Stable tag ($README_VERSION) matches an existing SVN tag"
+
+      - name: Verify readme's tag doesn't exist yet in SVN
+        if: inputs.UPDATE_TRUNK_ONLY != true
+        env:
+          README_VERSION: ${{ steps.version_consistency.outputs.README_VERSION }}
+        run: |
+          set -euo pipefail
+
+          cd "${SVN_REPO_ROOT}/tags"
+          svn update --set-depth immediates
+
+          if [ -d "$README_VERSION" ]; then
+            echo "❌ readme.txt Stable tag ($README_VERSION) already exists in WordPress.org!"
+            echo "   Check: https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}/tags/"
+            exit 1
+          fi
+
+          echo "✅ readme.txt Stable tag ($README_VERSION) is available"
 
       - name: Synchronize SVN repository with Git
         working-directory: ${{ github.workspace }} #Make sure we are in the right place before start sync
