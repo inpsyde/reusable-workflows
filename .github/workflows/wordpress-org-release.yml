@@ -208,11 +208,10 @@ jobs:
           cd "${SVN_REPO_ROOT}/trunk"
           svn add . --force
           
-          # Only run if there's anything to delete.
-          # No -q: it exits on the first match, SIGPIPE-ing svn status mid-write; under
-          # pipefail that non-zero exit wins over grep's, silently hiding real matches.
-          if svn status | grep '^!' >/dev/null; then
-            svn status | grep '^!' | cut -c9- | while IFS= read -r file; do
+          MISSING=$(svn status | grep '^!' | cut -c9- || true)
+
+          if [ -n "$MISSING" ]; then
+            echo "$MISSING" | while IFS= read -r file; do
               svn delete "$file@"  # @ suffix handles files with @ in name
             done
           fi
