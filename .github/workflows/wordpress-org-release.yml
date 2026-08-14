@@ -234,7 +234,9 @@ jobs:
           [ -d "$SVN_REPO_ROOT" ] || { echo "❌ SVN_REPO_ROOT not found"; exit 1; }
           cd "$SVN_REPO_ROOT"
 
-          # No -q here either, same reason as in "Update SVN tracking".
+          # Do not add -q to grep: it exits on the first match, SIGPIPE-ing svn status mid-write;
+          # under pipefail that non-zero exit wins over grep's, which would wrongly report
+          # "No changes in trunk" and abort even when there are real changes to commit.
           svn status trunk | grep '^[ADMR!~]' >/dev/null || { echo "❌ No changes in trunk"; exit 1; }
 
           # WordPress.org SVN doesn't support SSH keys or tokens.
