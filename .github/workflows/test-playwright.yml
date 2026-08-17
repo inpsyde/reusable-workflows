@@ -232,9 +232,9 @@ jobs:
         run: |
           ngrok config add-authtoken "$NGROK_AUTH_TOKEN"
 
-          DOMAIN_FLAG=""
+          DOMAIN_FLAG="--url=https://"
           if [ -n "$NGROK_DOMAIN" ]; then
-            DOMAIN_FLAG="--domain=$NGROK_DOMAIN"
+            DOMAIN_FLAG="--url=https://$NGROK_DOMAIN"
           fi
 
           ngrok http 80 $DOMAIN_FLAG --log=stdout --log-level=info > /tmp/ngrok.log 2>&1 &
