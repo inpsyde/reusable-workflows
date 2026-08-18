@@ -44,9 +44,6 @@ on:
 
 jobs:
   update_svn_from_git:
-    env:
-      SVN_REPO_PATH: "${{ github.workspace }}/svn_repository"
-      SVN_REPO_ROOT: "${{ github.workspace }}/svn_repository/${{ inputs.SVN_PLUGIN_SLUG }}"
     runs-on: ubuntu-latest
     steps:
       - name: Install required tools
@@ -146,8 +143,19 @@ jobs:
           echo "✅ Version $VALIDATED_PLUGIN_VERSION is consistent across inputs, plugin file, and readme.txt"
 
       - name: Checkout SVN repository
+        env:
+          SVN_PLUGIN_SLUG: ${{ inputs.SVN_PLUGIN_SLUG }}
         run: |
           set -euo pipefail
+
+          # Must stay outside github.workspace: the sync step below rsyncs github.workspace
+          # onto this path, and a nested destination causes rsync "vanished" warnings.
+          export SVN_REPO_PATH="${RUNNER_TEMP}/svn_repository"
+          export SVN_REPO_ROOT="${RUNNER_TEMP}/svn_repository/${SVN_PLUGIN_SLUG}"
+
+          echo "SVN_REPO_PATH=$SVN_REPO_PATH" >> "$GITHUB_ENV"
+          echo "SVN_REPO_ROOT=$SVN_REPO_ROOT" >> "$GITHUB_ENV"
+
           mkdir -p "$SVN_REPO_PATH" && cd "$SVN_REPO_PATH"
           
           # We only do a full checkout of trunk here, leaving other directories empty.
@@ -180,6 +188,7 @@ jobs:
           touch .distignore # Ensure file exists so --exclude-from doesn't fail
           
           rsync -rc \
+          --itemize-changes \
           --delete \
           --delete-excluded \
           --exclude='.git' \
@@ -205,6 +214,13 @@ jobs:
               svn delete "$file@"  # @ suffix handles files with @ in name
             done
           fi
+
+      - name: Show SVN status
+        run: |
+          set -euo pipefail
+
+          cd "${SVN_REPO_ROOT}/trunk"
+          svn status
 
       - name: Commit changes to SVN repository
         if: inputs.DRY_RUN != true

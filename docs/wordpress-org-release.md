@@ -9,9 +9,10 @@ To achieve that, this workflow:
 3. Verifies that the version in the plugin file header and `readme.txt` `Stable tag` both match `PLUGIN_VERSION`
 4. Checks out the WordPress.org SVN repository (trunk is fully checked out; tag contents are never fetched — only tag names are listed when needed for the version check)
 5. Verifies the version does not already exist as an SVN tag (skipped when `UPDATE_TRUNK_ONLY=true`)
-6. Synchronizes the Git working directory to SVN trunk via `rsync`, respecting `.distignore` and excluding sensitive files like `auth.json`, `.env`, and `.npmrc`
-7. Commits trunk to SVN (or uploads it as an artifact in `DRY_RUN` mode)
-8. Creates an SVN tag from trunk (skipped when `UPDATE_TRUNK_ONLY=true` or `DRY_RUN=true`)
+6. Synchronizes the Git working directory to SVN trunk via `rsync` (reporting every added, deleted, or changed file via `--itemize-changes`), respecting `.distignore` and excluding sensitive files like `auth.json`, `.env`, and `.npmrc`
+7. Prints the full `svn status` of trunk, so the exact set of additions, deletions, and modifications is visible before anything is committed
+8. Commits trunk to SVN (or uploads it as an artifact in `DRY_RUN` mode)
+9. Creates an SVN tag from trunk (skipped when `UPDATE_TRUNK_ONLY=true` or `DRY_RUN=true`)
 
 > [!NOTE]
 > This workflow intentionally fails if the version already exists as an SVN tag. There is no amendment flow.
