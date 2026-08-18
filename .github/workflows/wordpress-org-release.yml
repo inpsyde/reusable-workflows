@@ -208,9 +208,10 @@ jobs:
           cd "${SVN_REPO_ROOT}/trunk"
           svn add . --force
           
-          #Only run if there's anything to delete
-          if svn status | grep -q '^!'; then
-            svn status | grep '^!' | cut -c9- | while IFS= read -r file; do
+          MISSING=$(svn status | grep '^!' | cut -c9- || true)
+
+          if [ -n "$MISSING" ]; then
+            echo "$MISSING" | while IFS= read -r file; do
               svn delete "$file@"  # @ suffix handles files with @ in name
             done
           fi
@@ -233,7 +234,10 @@ jobs:
           [ -d "$SVN_REPO_ROOT" ] || { echo "❌ SVN_REPO_ROOT not found"; exit 1; }
           cd "$SVN_REPO_ROOT"
 
-          svn status trunk | grep -q '^[ADMR!~]' || { echo "❌ No changes in trunk"; exit 1; }
+          # Do not add -q to grep: it exits on the first match, SIGPIPE-ing svn status mid-write;
+          # under pipefail that non-zero exit wins over grep's, which would wrongly report
+          # "No changes in trunk" and abort even when there are real changes to commit.
+          svn status trunk | grep '^[ADMR!~]' >/dev/null || { echo "❌ No changes in trunk"; exit 1; }
 
           # WordPress.org SVN doesn't support SSH keys or tokens.
           # Keeping credentials as step-level env vars with --no-auth-cache is the best available option.
