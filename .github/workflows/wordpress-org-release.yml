@@ -283,11 +283,6 @@ jobs:
           [ -d "$SVN_REPO_ROOT" ] || { echo "❌ SVN_REPO_ROOT not found"; exit 1; }
           cd "$SVN_REPO_ROOT"
 
-          # Do not add -q to grep: it exits on the first match, SIGPIPE-ing svn status mid-write;
-          # under pipefail that non-zero exit wins over grep's, which would wrongly report
-          # "No changes in trunk" and abort even when there are real changes to commit.
-          svn status trunk | grep '^[ADMR!~]' >/dev/null || { echo "❌ No changes in trunk"; exit 1; }
-
           # Commit trunk and the new tag together (when tagging) so WordPress.org never sees
           # trunk pointing at a Stable tag that doesn't exist yet as a published tag.
           COMMIT_PATHS=(trunk)
@@ -297,6 +292,11 @@ jobs:
             COMMIT_PATHS+=("tags/${PLUGIN_VERSION}")
             COMMIT_MESSAGE="Release version ${PLUGIN_VERSION}"
           fi
+
+          # Do not add -q to grep: it exits on the first match, SIGPIPE-ing svn status mid-write;
+          # under pipefail that non-zero exit wins over grep's, which would wrongly report
+          # "No changes to commit" and abort even when there are real changes to commit.
+          svn status "${COMMIT_PATHS[@]}" | grep '^[ADMR!~]' >/dev/null || { echo "❌ No changes to commit"; exit 1; }
 
           # WordPress.org SVN doesn't support SSH keys or tokens.
           # Keeping credentials as step-level env vars with --no-auth-cache is the best available option.
