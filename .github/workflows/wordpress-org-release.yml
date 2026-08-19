@@ -141,7 +141,7 @@ jobs:
       # version, not PLUGIN_VERSION - that's checked against SVN's existing tags instead, once
       # the SVN repository is checked out (see "Verify readme points to an existing tag" below).
       - name: Verify readme matches plugin version
-        if: inputs.UPDATE_TRUNK_ONLY != true
+        if: inputs.UPDATE_TRUNK_ONLY == false
         env:
           README_VERSION: ${{ steps.plugin_file_version.outputs.README_VERSION }}
         run: |
@@ -196,7 +196,7 @@ jobs:
           echo "✅ readme.txt Stable tag ($README_VERSION) matches an existing SVN tag"
 
       - name: Verify readme's tag doesn't exist yet in SVN
-        if: inputs.UPDATE_TRUNK_ONLY != true
+        if: inputs.UPDATE_TRUNK_ONLY == false
         env:
           README_VERSION: ${{ steps.plugin_file_version.outputs.README_VERSION }}
         run: |
@@ -257,7 +257,7 @@ jobs:
           svn status
 
       - name: Commit changes to SVN repository
-        if: inputs.DRY_RUN != true
+        if: inputs.DRY_RUN == false
         env:
           SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
           SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
@@ -284,7 +284,7 @@ jobs:
             -m "Update trunk to version ${VALIDATED_PLUGIN_VERSION}"
 
       - name: Create a new tag
-        if: inputs.UPDATE_TRUNK_ONLY == false && inputs.DRY_RUN != true
+        if: inputs.UPDATE_TRUNK_ONLY == false && inputs.DRY_RUN == false
         env:
           SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
           SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
