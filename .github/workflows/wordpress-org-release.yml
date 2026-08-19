@@ -44,9 +44,6 @@ on:
 
 jobs:
   update_svn_from_git:
-    env:
-      SVN_REPO_PATH: "${{ github.workspace }}/svn_repository"
-      SVN_REPO_ROOT: "${{ github.workspace }}/svn_repository/${{ inputs.SVN_PLUGIN_SLUG }}"
     runs-on: ubuntu-latest
     steps:
       - name: Install required tools
@@ -146,8 +143,19 @@ jobs:
           echo "✅ Version $VALIDATED_PLUGIN_VERSION is consistent across inputs, plugin file, and readme.txt"
 
       - name: Checkout SVN repository
+        env:
+          SVN_PLUGIN_SLUG: ${{ inputs.SVN_PLUGIN_SLUG }}
         run: |
           set -euo pipefail
+
+          # Must stay outside github.workspace: the sync step below rsyncs github.workspace
+          # onto this path, and a nested destination causes rsync "vanished" warnings.
+          export SVN_REPO_PATH="${RUNNER_TEMP}/svn_repository"
+          export SVN_REPO_ROOT="${RUNNER_TEMP}/svn_repository/${SVN_PLUGIN_SLUG}"
+
+          echo "SVN_REPO_PATH=$SVN_REPO_PATH" >> "$GITHUB_ENV"
+          echo "SVN_REPO_ROOT=$SVN_REPO_ROOT" >> "$GITHUB_ENV"
+
           mkdir -p "$SVN_REPO_PATH" && cd "$SVN_REPO_PATH"
           
           # We only do a full checkout of trunk here, leaving other directories empty.
@@ -180,6 +188,7 @@ jobs:
           touch .distignore # Ensure file exists so --exclude-from doesn't fail
           
           rsync -rc \
+          --itemize-changes \
           --delete \
           --delete-excluded \
           --exclude='.git' \
@@ -199,12 +208,20 @@ jobs:
           cd "${SVN_REPO_ROOT}/trunk"
           svn add . --force
           
-          #Only run if there's anything to delete
-          if svn status | grep -q '^!'; then
-            svn status | grep '^!' | cut -c9- | while IFS= read -r file; do
+          MISSING=$(svn status | grep '^!' | cut -c9- || true)
+
+          if [ -n "$MISSING" ]; then
+            echo "$MISSING" | while IFS= read -r file; do
               svn delete "$file@"  # @ suffix handles files with @ in name
             done
           fi
+
+      - name: Show SVN status
+        run: |
+          set -euo pipefail
+
+          cd "${SVN_REPO_ROOT}/trunk"
+          svn status
 
       - name: Commit changes to SVN repository
         if: inputs.DRY_RUN != true
@@ -217,7 +234,10 @@ jobs:
           [ -d "$SVN_REPO_ROOT" ] || { echo "❌ SVN_REPO_ROOT not found"; exit 1; }
           cd "$SVN_REPO_ROOT"
 
-          svn status trunk | grep -q '^[ADMR!~]' || { echo "❌ No changes in trunk"; exit 1; }
+          # Do not add -q to grep: it exits on the first match, SIGPIPE-ing svn status mid-write;
+          # under pipefail that non-zero exit wins over grep's, which would wrongly report
+          # "No changes in trunk" and abort even when there are real changes to commit.
+          svn status trunk | grep '^[ADMR!~]' >/dev/null || { echo "❌ No changes in trunk"; exit 1; }
 
           # WordPress.org SVN doesn't support SSH keys or tokens.
           # Keeping credentials as step-level env vars with --no-auth-cache is the best available option.
