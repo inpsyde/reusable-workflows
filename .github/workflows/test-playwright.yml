@@ -72,6 +72,16 @@ on:
         default: ''
         required: false
         type: string
+      NGROK_WILDCARD_DOMAIN:
+        description: Wildcard ngrok base domain (e.g. e2e.paypal.syde.wpinfra.cloud). Each job binds a subdomain under it.
+        default: ''
+        required: false
+        type: string
+      NGROK_SUBDOMAIN:
+        description: Subdomain to bind under NGROK_WILDCARD_DOMAIN. Falls back to a run-id-derived value when empty.
+        default: ''
+        required: false
+        type: string
       NGROK_ENABLED:
         description: Whether to enable the ngrok tunnel integration.
         default: true
@@ -228,13 +238,18 @@ jobs:
         env:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
           NGROK_DOMAIN: ${{ inputs.NGROK_DOMAIN }}
+          NGROK_WILDCARD_DOMAIN: ${{ inputs.NGROK_WILDCARD_DOMAIN }}
+          NGROK_SUBDOMAIN: ${{ inputs.NGROK_SUBDOMAIN }}
         if: ${{ inputs.NGROK_ENABLED && env.NGROK_AUTH_TOKEN != '' }}
         run: |
           ngrok config add-authtoken "$NGROK_AUTH_TOKEN"
 
-          DOMAIN_FLAG="--url=https://"
+          DOMAIN_FLAG=""
           if [ -n "$NGROK_DOMAIN" ]; then
             DOMAIN_FLAG="--url=https://$NGROK_DOMAIN"
+          elif [ -n "$NGROK_WILDCARD_DOMAIN" ]; then
+            SUBDOMAIN="${NGROK_SUBDOMAIN:-run-${GITHUB_RUN_ID}}"
+            DOMAIN_FLAG="--url=https://${SUBDOMAIN}.${NGROK_WILDCARD_DOMAIN}"
           fi
 
           ngrok http 80 $DOMAIN_FLAG --log=stdout --log-level=info > /tmp/ngrok.log 2>&1 &
