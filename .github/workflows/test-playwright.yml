@@ -320,7 +320,10 @@ jobs:
         if: always()
         run: |
           mkdir -p artifacts
-          npx wp-env logs tests > artifacts/wp-env-tests.log 2>&1 || true
+          CID=$(docker ps --filter "name=tests-wordpress" --format '{{.ID}}' | head -n1)
+          if [ -n "$CID" ]; then
+            timeout 30 docker logs "$CID" > artifacts/wp-env-tests.log 2>&1 || true
+          fi
 
       - name: Upload artifact
         if: always()
