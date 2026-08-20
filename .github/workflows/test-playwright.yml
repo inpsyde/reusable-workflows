@@ -376,8 +376,12 @@ jobs:
       - name: "[Diagnostic] Dump ngrok webhook diagnostic log lines"
         if: always()
         run: |
-          echo "=== [ngrok-diag] lines from the tests-wordpress container's PHP/Apache log ==="
-          npx wp-env logs tests --no-watch 2>&1 | grep -i 'ngrok-diag' || echo "No [ngrok-diag] lines found — either NGROK_ENABLED was off, connectMerchant never ran, or nothing reached the incoming webhook route."
+          echo "=== wp-content/ngrok-diag.log (written directly by the plugin, not via error_log) ==="
+          npx wp-env run tests-cli -- cat wp-content/ngrok-diag.log \
+            || echo "File not found — either NGROK_ENABLED was off, connectMerchant never ran, or nothing reached the incoming webhook route."
+          echo ""
+          echo "=== Fallback: any [ngrok-diag] lines that did reach the container's stdout/stderr ==="
+          npx wp-env logs tests --no-watch 2>&1 | grep -i 'ngrok-diag' || echo "(none)"
 
       - name: Upload artifact
         if: always()
