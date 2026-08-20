@@ -293,8 +293,6 @@ jobs:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
         if: ${{ inputs.NGROK_ENABLED && env.NGROK_AUTH_TOKEN != '' }}
         run: |
-          npx wp-env run tests-cli wp config set WP_HOME "$NGROK_URL"
-          npx wp-env run tests-cli wp config set WP_SITEURL "$NGROK_URL"
           npx wp-env run tests-cli wp option update home "$NGROK_URL"
           npx wp-env run tests-cli wp option update siteurl "$NGROK_URL"
           sed -i "s|WP_BASE_URL=.*|WP_BASE_URL=$NGROK_URL|" .env.ci
