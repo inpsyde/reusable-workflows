@@ -299,21 +299,6 @@ jobs:
           npx wp-env run tests-cli wp option update siteurl "$NGROK_URL"
           sed -i "s|WP_BASE_URL=.*|WP_BASE_URL=$NGROK_URL|" .env.ci
 
-      - name: Debug WordPress URL diagnostics
-        env:
-          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-        if: ${{ inputs.NGROK_ENABLED && env.NGROK_AUTH_TOKEN != '' }}
-        run: |
-          for c in tests-cli tests-wordpress; do
-            echo "=== $c ==="
-            npx wp-env run $c wp config get WP_HOME 2>/dev/null || true
-            npx wp-env run $c wp config get WP_SITEURL 2>/dev/null || true
-            npx wp-env run $c wp option get home
-            npx wp-env run $c wp option get siteurl
-            npx wp-env run $c wp eval 'echo home_url() . PHP_EOL;'
-            npx wp-env run $c wp eval 'echo rest_url("paypal/v1/incoming") . PHP_EOL;'
-          done
-
       - name: Execute custom code before executing the test script
         env:
           GH_TOKEN: ${{ github.token }}
