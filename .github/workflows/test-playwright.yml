@@ -316,6 +316,12 @@ jobs:
           
           npm run ${{ inputs.PLAYWRIGHT_SCRIPT }}
 
+      - name: Capture wp-env tests container logs
+        if: always()
+        run: |
+          mkdir -p artifacts
+          npx wp-env logs tests > artifacts/wp-env-tests.log 2>&1 || true
+
       - name: Upload artifact
         if: always()
         uses: actions/upload-artifact@v4
