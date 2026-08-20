@@ -323,8 +323,33 @@ jobs:
           echo "--- curl -vI ---"
           curl -vI "https://$NGROK_HOSTNAME/" 2>&1 | head -50
           echo ""
-          echo "--- openssl s_client (cert CN/SAN + handshake result) ---"
+          echo "--- openssl s_client (cert CN/SAN + handshake result), default TLS1.3+SNI baseline ---"
           openssl s_client -connect "$NGROK_HOSTNAME:443" -servername "$NGROK_HOSTNAME" </dev/null 2>&1 | head -30
+          echo ""
+
+          # The default (TLS1.3, SNI present, ALPN h2) handshake above
+          # succeeds cleanly, yet PayPal's Netty-based webhook client gets
+          # NotSslRecordException against the same host. The variants below
+          # each constrain one aspect of the handshake to a profile closer
+          # to what an older/enterprise Java TLS stack might offer, to see
+          # which constraint (if any) reproduces a failure against ngrok's
+          # edge — narrowing down whether this is a TLS-version ceiling, an
+          # ALPN/HTTP2 quirk, missing SNI, or a legacy-cipher issue.
+
+          echo "=== Variant 1: force TLS 1.2 only ==="
+          curl -vI --tlsv1.2 --tls-max 1.2 "https://$NGROK_HOSTNAME/" 2>&1 | head -40
+          echo ""
+
+          echo "=== Variant 2: force HTTP/1.1 (no ALPN/h2) ==="
+          curl -vI --http1.1 "https://$NGROK_HOSTNAME/" 2>&1 | head -40
+          echo ""
+
+          echo "=== Variant 3: omit SNI (no -servername) — most likely cause of NotSslRecordException ==="
+          openssl s_client -connect "$NGROK_HOSTNAME:443" </dev/null 2>&1 | head -20
+          echo ""
+
+          echo "=== Variant 4: TLS 1.2 + deliberately old/legacy cipher profile ==="
+          openssl s_client -connect "$NGROK_HOSTNAME:443" -servername "$NGROK_HOSTNAME" -tls1_2 -cipher 'DEFAULT@SECLEVEL=1' </dev/null 2>&1 | head -20
 
       - name: "[Diagnostic] Confirm the public ngrok URL reaches the test site"
         if: ${{ inputs.NGROK_ENABLED && env.NGROK_AUTH_TOKEN != '' }}
