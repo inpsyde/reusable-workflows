@@ -236,6 +236,23 @@ jobs:
 
           npx wp-env start
 
+      - name: "[Diagnostic] Confirm which port serves the test site"
+        if: ${{ hashFiles('.wp-env.json') != '' }}
+        run: |
+          # PCP itself isn't installed until later, inside the Playwright run
+          # (installAndActivatePcp), so a paypal/v1 REST-namespace check here
+          # would be a false negative on BOTH ports regardless of which is
+          # correct. But wp-env's afterStart lifecycle script (which already
+          # ran as part of `wp-env start` above, via test-env-setup.js) DOES
+          # set the test site's blogname to "WooCommerce PayPal Payments E2E
+          # Test Suite" — and only the test site, never the dev site — so
+          # that's a valid marker at this point in the pipeline.
+          echo "--- localhost:80 (expected: test site, blogname should be the E2E suite name) ---"
+          curl -s http://127.0.0.1:80/wp-json/ | grep -o '"name":"[^"]*"' | head -1
+          echo ""
+          echo "--- localhost:8888 (expected: dev site, should be wp-env's default blogname) ---"
+          curl -s http://127.0.0.1:8888/wp-json/ | grep -o '"name":"[^"]*"' | head -1
+
       - name: Install ngrok
         env:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
@@ -286,6 +303,42 @@ jobs:
           fi
 
           echo "NGROK_URL=$NGROK_URL" >> "$GITHUB_ENV"
+
+      - name: "[Diagnostic] Verify TLS handshake on the wildcard subdomain"
+        if: ${{ inputs.NGROK_ENABLED && env.NGROK_AUTH_TOKEN != '' }}
+        env:
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+        run: |
+          # PayPal's webhook delivery failed with a Netty
+          # NotSslRecordException ("not an SSL/TLS record") against this
+          # exact per-run wildcard subdomain. Before assuming that's a
+          # ngrok-vs-PayPal client incompatibility in general, confirm
+          # whether ngrok's edge actually presents a valid TLS cert for
+          # dynamically-generated subdomains under the *.e2e.paypal.syde.wpinfra.cloud
+          # wildcard, or only for the apex/reserved single domain.
+          NGROK_HOSTNAME="${NGROK_URL#https://}"
+          NGROK_HOSTNAME="${NGROK_HOSTNAME%%/*}"
+          echo "Probing TLS handshake for: $NGROK_HOSTNAME"
+          echo ""
+          echo "--- curl -vI ---"
+          curl -vI "https://$NGROK_HOSTNAME/" 2>&1 | head -50
+          echo ""
+          echo "--- openssl s_client (cert CN/SAN + handshake result) ---"
+          openssl s_client -connect "$NGROK_HOSTNAME:443" -servername "$NGROK_HOSTNAME" </dev/null 2>&1 | head -30
+
+      - name: "[Diagnostic] Confirm the public ngrok URL reaches the test site"
+        if: ${{ inputs.NGROK_ENABLED && env.NGROK_AUTH_TOKEN != '' }}
+        env:
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+        run: |
+          # Same blogname check as above, but through the actual public
+          # tunnel URL — proves end-to-end (DNS + ngrok forwarding + wp-env
+          # port mapping) reaches the test site, not just that the local
+          # port mapping looks correct in isolation.
+          echo "--- \$NGROK_URL/wp-json/ (expected: same blogname as localhost:80) ---"
+          curl -sw '\nHTTP_STATUS:%{http_code}\n' "$NGROK_URL/wp-json/" | tee /tmp/ngrok-rest-index.txt | grep -o '"name":"[^"]*"' | head -1
+          echo "--- HTTP status ---"
+          grep HTTP_STATUS /tmp/ngrok-rest-index.txt
 
       - name: Trust ngrok forwarded HTTPS scheme
         env:
