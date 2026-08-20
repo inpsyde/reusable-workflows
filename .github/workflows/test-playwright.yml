@@ -87,6 +87,19 @@ on:
         default: true
         required: false
         type: boolean
+      NGROK_HOST_FILE:
+        description: >
+          Repo-relative path to write the bare ngrok tunnel host to (no scheme).
+          The caller's own WordPress plugin is expected to read this file and
+          expose it as a real NGROK_HOST env var to PHP (e.g. via a mu-plugin
+          calling putenv()), since wp-env has no built-in way to pass an
+          arbitrary host env var into the tests-wordpress container. When set,
+          WordPress's own home/siteurl are left untouched — only this file is
+          written, so the site keeps using its local URL and just the
+          caller's webhook endpoint gets pointed at the tunnel.
+        default: ''
+        required: false
+        type: string
       TESTRAIL_PLAN_ID:
         description: TestRail plan ID for reporting.
         default: ''
@@ -291,11 +304,57 @@ jobs:
       - name: Update WordPress URLs to ngrok
         env:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-        if: ${{ inputs.NGROK_ENABLED && env.NGROK_AUTH_TOKEN != '' }}
+          NGROK_HOST_FILE: ${{ inputs.NGROK_HOST_FILE }}
+        if: ${{ inputs.NGROK_ENABLED && env.NGROK_AUTH_TOKEN != '' && env.NGROK_HOST_FILE == '' }}
         run: |
           npx wp-env run tests-cli wp config set WP_SITEURL "$NGROK_URL"
           npx wp-env run tests-cli wp config set WP_HOME "$NGROK_URL"
           sed -i "s|WP_BASE_URL=.*|WP_BASE_URL=$NGROK_URL|" .env.ci
+
+      - name: Expose ngrok host to the webhook endpoint only
+        env:
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+          NGROK_HOST_FILE: ${{ inputs.NGROK_HOST_FILE }}
+        if: ${{ inputs.NGROK_ENABLED && env.NGROK_AUTH_TOKEN != '' && env.NGROK_HOST_FILE != '' }}
+        run: |
+          # WordPress's own home/siteurl are intentionally left untouched here —
+          # only the bare tunnel host is written, for the caller's own
+          # NGROK_HOST-reading mu-plugin to expose to PHP's getenv(). The site
+          # itself keeps using its local URL; only the webhook listening URL
+          # is meant to go through the tunnel.
+          NGROK_HOST="${NGROK_URL#https://}"
+          NGROK_HOST="${NGROK_HOST#http://}"
+          echo -n "$NGROK_HOST" > "$NGROK_HOST_FILE"
+          echo "Wrote NGROK_HOST=$NGROK_HOST to $NGROK_HOST_FILE"
+
+      - name: "[Diagnostic] Confirm the webhook host is visible to PHP"
+        if: ${{ inputs.NGROK_ENABLED && env.NGROK_AUTH_TOKEN != '' }}
+        env:
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+          NGROK_HOST_FILE: ${{ inputs.NGROK_HOST_FILE }}
+        run: |
+          echo "Expected NGROK_URL: $NGROK_URL"
+          if [ -n "$NGROK_HOST_FILE" ]; then
+            echo "--- NGROK_HOST_FILE mode (home/siteurl stay local) ---"
+            echo "File contents ($NGROK_HOST_FILE):"
+            cat "$NGROK_HOST_FILE" || echo "(file not found)"
+            echo ""
+            echo "wp option get home (should still be local, unchanged):"
+            npx wp-env run tests-cli -- wp option get home
+            echo "PHP getenv('NGROK_HOST') as seen by the tests-wordpress container:"
+            npx wp-env run tests-cli -- wp eval 'echo getenv("NGROK_HOST") ?: "(empty)";'
+            echo ""
+          else
+            echo "--- wp config set mode (home/siteurl rewritten to the tunnel) ---"
+            echo "wp option get home (DB, what rest_url() actually resolves through):"
+            npx wp-env run tests-cli -- wp option get home
+            echo "wp option get siteurl (DB):"
+            npx wp-env run tests-cli -- wp option get siteurl
+            echo "wp config get WP_HOME (wp-config.php constant, just written above):"
+            npx wp-env run tests-cli -- wp config get WP_HOME
+            echo "wp config get WP_SITEURL (wp-config.php constant, just written above):"
+            npx wp-env run tests-cli -- wp config get WP_SITEURL
+          fi
 
       - name: Execute custom code before executing the test script
         env:
@@ -311,8 +370,14 @@ jobs:
         run: |
           # Ensure .env.ci is deleted on exit
           trap 'rm -f .env.ci' EXIT
-          
+
           npm run ${{ inputs.PLAYWRIGHT_SCRIPT }}
+
+      - name: "[Diagnostic] Dump ngrok webhook diagnostic log lines"
+        if: always()
+        run: |
+          echo "=== [ngrok-diag] lines from the tests-wordpress container's PHP/Apache log ==="
+          npx wp-env logs tests --no-watch 2>&1 | grep -i 'ngrok-diag' || echo "No [ngrok-diag] lines found — either NGROK_ENABLED was off, connectMerchant never ran, or nothing reached the incoming webhook route."
 
       - name: Upload artifact
         if: always()
