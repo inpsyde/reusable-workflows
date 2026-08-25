@@ -258,6 +258,19 @@ jobs:
           cd "${SVN_REPO_ROOT}/trunk"
           svn status
 
+      - name: Copy trunk to new tag
+        if: inputs.UPDATE_TRUNK_ONLY == false
+        env:
+          PLUGIN_VERSION: ${{ inputs.PLUGIN_VERSION }}
+        run: |
+          set -euo pipefail
+
+          cd "$SVN_REPO_ROOT"
+
+          # Copied locally so it commits together with trunk in a single transaction below.
+          # WordPress.org's plugin SVN maintainer has explicitly discouraged splitting release commits
+          svn copy trunk "tags/${PLUGIN_VERSION}"
+
       - name: Commit changes to SVN repository
         if: inputs.DRY_RUN == false
         env:
@@ -270,43 +283,35 @@ jobs:
           [ -d "$SVN_REPO_ROOT" ] || { echo "❌ SVN_REPO_ROOT not found"; exit 1; }
           cd "$SVN_REPO_ROOT"
 
+          # Commit trunk and the new tag together (when tagging) so WordPress.org never sees
+          # trunk pointing at a Stable tag that doesn't exist yet as a published tag.
+          COMMIT_PATHS=(trunk)
+          COMMIT_MESSAGE="Update trunk to version ${PLUGIN_VERSION}"
+
+          if [ "${{ inputs.UPDATE_TRUNK_ONLY }}" == "false" ]; then
+            COMMIT_PATHS+=("tags/${PLUGIN_VERSION}")
+            COMMIT_MESSAGE="Release version ${PLUGIN_VERSION}"
+          fi
+
           # Do not add -q to grep: it exits on the first match, SIGPIPE-ing svn status mid-write;
           # under pipefail that non-zero exit wins over grep's, which would wrongly report
-          # "No changes in trunk" and abort even when there are real changes to commit.
-          svn status trunk | grep '^[ADMR!~]' >/dev/null || { echo "❌ No changes in trunk"; exit 1; }
+          # "No changes to commit" and abort even when there are real changes to commit.
+          svn status "${COMMIT_PATHS[@]}" | grep '^[ADMR!~]' >/dev/null || { echo "❌ No changes to commit"; exit 1; }
 
           # WordPress.org SVN doesn't support SSH keys or tokens.
           # Keeping credentials as step-level env vars with --no-auth-cache is the best available option.
           echo '🚀 Committing...'
 
-          svn commit trunk \
+          svn commit "${COMMIT_PATHS[@]}" \
             --username "$SVN_USERNAME" \
             --password "$SVN_PASSWORD" \
             --no-auth-cache \
             --non-interactive \
-            -m "Update trunk to version ${PLUGIN_VERSION}"
+            -m "$COMMIT_MESSAGE"
 
-      - name: Create a new tag
-        if: inputs.UPDATE_TRUNK_ONLY == false && inputs.DRY_RUN == false
-        env:
-          PLUGIN_VERSION: ${{ inputs.PLUGIN_VERSION }}
-          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
-          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
-        run: |
-          set -euo pipefail
-
-          echo "🚀 Publishing version ${PLUGIN_VERSION}"
-
-          svn copy \
-            "https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}/trunk" \
-            "https://plugins.svn.wordpress.org/${{ inputs.SVN_PLUGIN_SLUG }}/tags/${PLUGIN_VERSION}" \
-            --username "$SVN_USERNAME" \
-            --password "$SVN_PASSWORD" \
-            --no-auth-cache \
-            --non-interactive \
-            -m "Tagging version ${PLUGIN_VERSION}"
-
-          echo "✅ Version ${PLUGIN_VERSION} was published to WordPress.org"
+          if [ "${{ inputs.UPDATE_TRUNK_ONLY }}" == "false" ]; then
+            echo "✅ Version ${PLUGIN_VERSION} was published to WordPress.org"
+          fi
 
       - name: Compress and upload trunk contents as an artifact
         if: inputs.DRY_RUN == true
