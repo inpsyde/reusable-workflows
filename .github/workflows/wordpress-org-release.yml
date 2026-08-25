@@ -259,7 +259,7 @@ jobs:
           svn status
 
       - name: Copy trunk to new tag
-        if: inputs.UPDATE_TRUNK_ONLY == false && inputs.DRY_RUN == false
+        if: inputs.UPDATE_TRUNK_ONLY == false
         env:
           PLUGIN_VERSION: ${{ inputs.PLUGIN_VERSION }}
         run: |
