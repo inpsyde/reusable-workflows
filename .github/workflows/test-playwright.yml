@@ -118,7 +118,7 @@ jobs:
       PHP_CHECK: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Set up Git
         uses: inpsyde/reusable-workflows/.github/actions/setup-git@main
@@ -166,7 +166,7 @@ jobs:
       # Key = lockfile hash (Playwright version proxy) + browser args.
       - name: Cache Playwright browsers
         id: playwright-cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json', 'npm-shrinkwrap.json') }}-${{ steps.playwright-args.outputs.args }}
@@ -275,7 +275,7 @@ jobs:
 
       - name: Upload artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ${{ inputs.PLAYWRIGHT_ARTIFACT_NAME }}
           path: | 

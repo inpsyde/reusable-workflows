@@ -80,7 +80,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           fetch-depth: 0
           ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
@@ -91,7 +91,7 @@ jobs:
           ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
       - name: Set up WireGuard
-        uses: inpsyde/actions/setup-wireguard@v1
+        uses: inpsyde/actions/setup-wireguard@5d30147f89c39e066d3f9bea13ac08f1c5a96da9 # v1
         env:
           WIREGUARD_CONFIGURATION: ${{ secrets.WIREGUARD_CONFIGURATION }}
         if: ${{ env.WIREGUARD_CONFIGURATION != '' }}
@@ -144,7 +144,7 @@ jobs:
         run: npm run build -ws --if-present
 
       - name: Install Deployer
-        uses: ramsey/composer-install@v3
+        uses: ramsey/composer-install@a8d0d959dab41457692a5e2041bd9b757a119e3f # v3
         env:
           COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
         with:
