@@ -51,7 +51,7 @@ jobs:
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
       - name: Set up PHP
-        uses: inpsyde/reusable-workflows/.github/actions/setup-php@main
+        uses: inpsyde/reusable-workflows/.github/actions/setup-php@ce4cfd9ad8176f895d09ae11cb12dd65590cc94e # main
         with:
           php-version: ${{ inputs.PHP_VERSION }}
           php-extensions: ${{ inputs.PHP_EXTENSIONS }}
