@@ -52,7 +52,6 @@ jobs:
     secrets:
       SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
       SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
-      GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
 ```
 
 ## Trigger on Git tag push
@@ -75,7 +74,6 @@ jobs:
     secrets:
       SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
       SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
-      GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
 ```
 
 > [!NOTE]
@@ -115,7 +113,6 @@ jobs:
     secrets:
       SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
       SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
-      GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
 ```
 
 > [!NOTE]
@@ -154,7 +151,6 @@ To preview trunk before publishing, run the workflow twice with the same `PLUGIN
 |---|---|---|
 | `SVN_USERNAME` | yes | WordPress.org SVN username |
 | `SVN_PASSWORD` | yes | WordPress.org SVN password |
-| `GITHUB_USER_SSH_KEY` | yes | SSH key used to check out the Git repository |
 
 > [!NOTE]
 > WordPress.org SVN does not support SSH keys or tokens. The `SVN_USERNAME` and `SVN_PASSWORD` secrets are the only supported authentication method.

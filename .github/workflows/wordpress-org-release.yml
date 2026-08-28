@@ -39,12 +39,11 @@ on:
       SVN_PASSWORD:
         required: true
 
-      GITHUB_USER_SSH_KEY:
-        required: true
-
 jobs:
   update_svn_from_git:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Install required tools
         run: |
@@ -93,7 +92,6 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           ref: ${{ inputs.GIT_REF }}
-          ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
       - name: Verify plugin file matches plugin version
         id: plugin_file_version
