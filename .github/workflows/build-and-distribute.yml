@@ -111,13 +111,13 @@ jobs:
       PACKAGE_NAME: ${{ inputs.PACKAGE_NAME && inputs.PACKAGE_NAME || github.event.repository.name }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
           ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
       - name: Set up Git
-        uses: inpsyde/reusable-workflows/.github/actions/setup-git@main
+        uses: inpsyde/reusable-workflows/.github/actions/setup-git@ce4cfd9ad8176f895d09ae11cb12dd65590cc94e # main
         with:
           ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
           user-email: ${{ secrets.GITHUB_USER_EMAIL }}
@@ -129,7 +129,7 @@ jobs:
         env:
           ENV_VARS: ${{ secrets.ENV_VARS }}
         if: ${{ env.ENV_VARS }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         with:
           script: |
             JSON
@@ -315,7 +315,7 @@ jobs:
 
       - name: Set up PHP
         if: ${{ env.SKIP_BUILD != 'true' && env.HAS_COMPOSER == 'true' }}
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2.37.2
         with:
           php-version: ${{ inputs.PHP_VERSION }}
           extensions: ${{ inputs.PHP_EXTENSIONS }}
@@ -324,7 +324,7 @@ jobs:
 
       - name: Install Composer dependencies
         if: ${{ env.SKIP_BUILD != 'true' && env.HAS_COMPOSER == 'true' }}
-        uses: ramsey/composer-install@v3
+        uses: ramsey/composer-install@a8d0d959dab41457692a5e2041bd9b757a119e3f # v3.2.1
         env:
           COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
         with:
@@ -332,7 +332,7 @@ jobs:
 
       - name: Set up Node
         if: ${{ env.SKIP_BUILD != 'true' }}
-        uses: inpsyde/reusable-workflows/.github/actions/setup-node@main
+        uses: inpsyde/reusable-workflows/.github/actions/setup-node@ce4cfd9ad8176f895d09ae11cb12dd65590cc94e # main
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
@@ -415,7 +415,7 @@ jobs:
           echo "artifact=$ARTIFACT_NAME" >> $GITHUB_OUTPUT
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ${{ env.ARTIFACT_NAME }}
           path: ./artifact-staging/
