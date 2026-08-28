@@ -118,10 +118,10 @@ jobs:
       PHP_CHECK: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Set up Git
-        uses: inpsyde/reusable-workflows/.github/actions/setup-git@main
+        uses: inpsyde/reusable-workflows/.github/actions/setup-git@ce4cfd9ad8176f895d09ae11cb12dd65590cc94e # main
         with:
           ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
           user-email: ${{ secrets.GITHUB_USER_EMAIL }}
@@ -129,14 +129,14 @@ jobs:
 
       - name: Set up PHP
         if: ${{ inputs.COMPOSER_DEPS_INSTALL }}
-        uses: inpsyde/reusable-workflows/.github/actions/setup-php@main
+        uses: inpsyde/reusable-workflows/.github/actions/setup-php@ce4cfd9ad8176f895d09ae11cb12dd65590cc94e # main
         with:
           php-version: ${{ inputs.PHP_VERSION }}
           php-extensions: ${{ inputs.PHP_EXTENSIONS }}
           composer-auth-json: ${{ secrets.COMPOSER_AUTH_JSON }}
 
       - name: Set up Node
-        uses: inpsyde/reusable-workflows/.github/actions/setup-node@main
+        uses: inpsyde/reusable-workflows/.github/actions/setup-node@ce4cfd9ad8176f895d09ae11cb12dd65590cc94e # main
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
@@ -166,7 +166,7 @@ jobs:
       # Key = lockfile hash (Playwright version proxy) + browser args.
       - name: Cache Playwright browsers
         id: playwright-cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json', 'npm-shrinkwrap.json') }}-${{ steps.playwright-args.outputs.args }}
@@ -275,7 +275,7 @@ jobs:
 
       - name: Upload artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ${{ inputs.PLAYWRIGHT_ARTIFACT_NAME }}
           path: | 

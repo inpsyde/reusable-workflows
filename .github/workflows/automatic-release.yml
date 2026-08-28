@@ -36,7 +36,7 @@ jobs:
       HAS_CONFIG: false
     steps:
       - name: Fetch semantic-release Node version
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           repository: semantic-release/semantic-release
           sparse-checkout: |
@@ -45,7 +45,7 @@ jobs:
           path: semantic-release-repo
 
       - name: Set up Node
-        uses: inpsyde/reusable-workflows/.github/actions/setup-node@main
+        uses: inpsyde/reusable-workflows/.github/actions/setup-node@ce4cfd9ad8176f895d09ae11cb12dd65590cc94e # main
         with:
           node-version-file: semantic-release-repo/package.json
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
@@ -62,14 +62,14 @@ jobs:
             conventional-changelog-conventionalcommits
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
           persist-credentials: false
           ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
       - name: Set up Git
-        uses: inpsyde/reusable-workflows/.github/actions/setup-git@main
+        uses: inpsyde/reusable-workflows/.github/actions/setup-git@ce4cfd9ad8176f895d09ae11cb12dd65590cc94e # main
         with:
           ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
           ssh-public-key: ${{ secrets.GITHUB_USER_SSH_PUBLIC_KEY }}
@@ -84,7 +84,7 @@ jobs:
 
       - name: Checkout the workflow repository if release.config.js file is not provided
         if: ${{ env.HAS_CONFIG == 'false' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           repository: inpsyde/reusable-workflows
           path: workflow-repo

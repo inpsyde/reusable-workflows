@@ -80,18 +80,18 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           fetch-depth: 0
           ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
       - name: Set up Git
-        uses: inpsyde/reusable-workflows/.github/actions/setup-git@main
+        uses: inpsyde/reusable-workflows/.github/actions/setup-git@ce4cfd9ad8176f895d09ae11cb12dd65590cc94e # main
         with:
           ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
       - name: Set up WireGuard
-        uses: inpsyde/actions/setup-wireguard@v1
+        uses: inpsyde/actions/setup-wireguard@5d30147f89c39e066d3f9bea13ac08f1c5a96da9 # v1.0.2
         env:
           WIREGUARD_CONFIGURATION: ${{ secrets.WIREGUARD_CONFIGURATION }}
         if: ${{ env.WIREGUARD_CONFIGURATION != '' }}
@@ -99,7 +99,7 @@ jobs:
           wireguard-configuration: ${{ secrets.WIREGUARD_CONFIGURATION }}
 
       - name: Set up OpenVPN
-        uses: inpsyde/reusable-workflows/.github/actions/setup-openvpn@main
+        uses: inpsyde/reusable-workflows/.github/actions/setup-openvpn@ce4cfd9ad8176f895d09ae11cb12dd65590cc94e # main
         env:
           OVPN_CONFIG: ${{ secrets.OVPN_CONFIG }}
           OVPN_USERNAME: ${{ secrets.OVPN_USERNAME }}
@@ -114,7 +114,7 @@ jobs:
           ovpn-gateway-ip: ${{ env.OVPN_GATEWAY_IP }}
 
       - name: Set up PHP
-        uses: inpsyde/reusable-workflows/.github/actions/setup-php@main
+        uses: inpsyde/reusable-workflows/.github/actions/setup-php@ce4cfd9ad8176f895d09ae11cb12dd65590cc94e # main
         with:
           php-version: ${{ inputs.PHP_VERSION }}
           php-extensions: ${{ inputs.PHP_EXTENSIONS }}
@@ -133,7 +133,7 @@ jobs:
 
       - name: Set up Node
         if: steps.npm-workspaces.outputs.enabled == 'true'
-        uses: inpsyde/reusable-workflows/.github/actions/setup-node@main
+        uses: inpsyde/reusable-workflows/.github/actions/setup-node@ce4cfd9ad8176f895d09ae11cb12dd65590cc94e # main
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
@@ -144,7 +144,7 @@ jobs:
         run: npm run build -ws --if-present
 
       - name: Install Deployer
-        uses: ramsey/composer-install@v3
+        uses: ramsey/composer-install@a8d0d959dab41457692a5e2041bd9b757a119e3f # v3.2.1
         env:
           COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
         with:
