@@ -89,7 +89,7 @@ jobs:
         # But since it is validated, it is safe to use it directly from user input.
 
       - name: Checkout git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           ref: ${{ inputs.GIT_REF }}
 
@@ -313,7 +313,7 @@ jobs:
 
       - name: Compress and upload trunk contents as an artifact
         if: inputs.DRY_RUN == true
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ${{ inputs.SVN_PLUGIN_SLUG }}
           path: ${{ env.SVN_REPO_ROOT }}/trunk
