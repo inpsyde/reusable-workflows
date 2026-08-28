@@ -91,7 +91,7 @@ jobs:
           ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
       - name: Set up WireGuard
-        uses: inpsyde/actions/setup-wireguard@5d30147f89c39e066d3f9bea13ac08f1c5a96da9 # v1
+        uses: inpsyde/actions/setup-wireguard@5d30147f89c39e066d3f9bea13ac08f1c5a96da9 # v1.0.2
         env:
           WIREGUARD_CONFIGURATION: ${{ secrets.WIREGUARD_CONFIGURATION }}
         if: ${{ env.WIREGUARD_CONFIGURATION != '' }}
