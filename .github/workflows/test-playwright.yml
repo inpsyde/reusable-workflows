@@ -87,6 +87,19 @@ on:
         default: true
         required: false
         type: boolean
+      NGROK_HOST_FILE:
+        description: >
+          Repo-relative path to write the bare ngrok tunnel host to (no scheme).
+          The caller's own WordPress plugin is expected to read this file and
+          expose it as a real NGROK_HOST env var to PHP (e.g. via a mu-plugin
+          calling putenv()), since wp-env has no built-in way to pass an
+          arbitrary host env var into the tests-wordpress container. When set,
+          WordPress's own home/siteurl are left untouched — only this file is
+          written, so the site keeps using its local URL and just the
+          caller's webhook endpoint gets pointed at the tunnel.
+        default: ''
+        required: false
+        type: string
       TESTRAIL_PLAN_ID:
         description: TestRail plan ID for reporting.
         default: ''
@@ -223,6 +236,23 @@ jobs:
 
           npx wp-env start
 
+      - name: "[Diagnostic] Confirm which port serves the test site"
+        if: ${{ hashFiles('.wp-env.json') != '' }}
+        run: |
+          # PCP itself isn't installed until later, inside the Playwright run
+          # (installAndActivatePcp), so a paypal/v1 REST-namespace check here
+          # would be a false negative on BOTH ports regardless of which is
+          # correct. But wp-env's afterStart lifecycle script (which already
+          # ran as part of `wp-env start` above, via test-env-setup.js) DOES
+          # set the test site's blogname to "WooCommerce PayPal Payments E2E
+          # Test Suite" — and only the test site, never the dev site — so
+          # that's a valid marker at this point in the pipeline.
+          echo "--- localhost:80 (expected: test site, blogname should be the E2E suite name) ---"
+          curl -s http://127.0.0.1:80/wp-json/ | grep -o '"name":"[^"]*"' | head -1
+          echo ""
+          echo "--- localhost:8888 (expected: dev site, should be wp-env's default blogname) ---"
+          curl -s http://127.0.0.1:8888/wp-json/ | grep -o '"name":"[^"]*"' | head -1
+
       - name: Install ngrok
         env:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
@@ -274,6 +304,67 @@ jobs:
 
           echo "NGROK_URL=$NGROK_URL" >> "$GITHUB_ENV"
 
+      - name: "[Diagnostic] Verify TLS handshake on the wildcard subdomain"
+        if: ${{ inputs.NGROK_ENABLED && env.NGROK_AUTH_TOKEN != '' }}
+        env:
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+        run: |
+          # PayPal's webhook delivery failed with a Netty
+          # NotSslRecordException ("not an SSL/TLS record") against this
+          # exact per-run wildcard subdomain. Before assuming that's a
+          # ngrok-vs-PayPal client incompatibility in general, confirm
+          # whether ngrok's edge actually presents a valid TLS cert for
+          # dynamically-generated subdomains under the *.e2e.paypal.syde.wpinfra.cloud
+          # wildcard, or only for the apex/reserved single domain.
+          NGROK_HOSTNAME="${NGROK_URL#https://}"
+          NGROK_HOSTNAME="${NGROK_HOSTNAME%%/*}"
+          echo "Probing TLS handshake for: $NGROK_HOSTNAME"
+          echo ""
+          echo "--- curl -vI ---"
+          curl -vI "https://$NGROK_HOSTNAME/" 2>&1 | head -50
+          echo ""
+          echo "--- openssl s_client (cert CN/SAN + handshake result), default TLS1.3+SNI baseline ---"
+          openssl s_client -connect "$NGROK_HOSTNAME:443" -servername "$NGROK_HOSTNAME" </dev/null 2>&1 | head -30
+          echo ""
+
+          # The default (TLS1.3, SNI present, ALPN h2) handshake above
+          # succeeds cleanly, yet PayPal's Netty-based webhook client gets
+          # NotSslRecordException against the same host. The variants below
+          # each constrain one aspect of the handshake to a profile closer
+          # to what an older/enterprise Java TLS stack might offer, to see
+          # which constraint (if any) reproduces a failure against ngrok's
+          # edge — narrowing down whether this is a TLS-version ceiling, an
+          # ALPN/HTTP2 quirk, missing SNI, or a legacy-cipher issue.
+
+          echo "=== Variant 1: force TLS 1.2 only ==="
+          curl -vI --tlsv1.2 --tls-max 1.2 "https://$NGROK_HOSTNAME/" 2>&1 | head -40
+          echo ""
+
+          echo "=== Variant 2: force HTTP/1.1 (no ALPN/h2) ==="
+          curl -vI --http1.1 "https://$NGROK_HOSTNAME/" 2>&1 | head -40
+          echo ""
+
+          echo "=== Variant 3: omit SNI (no -servername) — most likely cause of NotSslRecordException ==="
+          openssl s_client -connect "$NGROK_HOSTNAME:443" </dev/null 2>&1 | head -20
+          echo ""
+
+          echo "=== Variant 4: TLS 1.2 + deliberately old/legacy cipher profile ==="
+          openssl s_client -connect "$NGROK_HOSTNAME:443" -servername "$NGROK_HOSTNAME" -tls1_2 -cipher 'DEFAULT@SECLEVEL=1' </dev/null 2>&1 | head -20
+
+      - name: "[Diagnostic] Confirm the public ngrok URL reaches the test site"
+        if: ${{ inputs.NGROK_ENABLED && env.NGROK_AUTH_TOKEN != '' }}
+        env:
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+        run: |
+          # Same blogname check as above, but through the actual public
+          # tunnel URL — proves end-to-end (DNS + ngrok forwarding + wp-env
+          # port mapping) reaches the test site, not just that the local
+          # port mapping looks correct in isolation.
+          echo "--- \$NGROK_URL/wp-json/ (expected: same blogname as localhost:80) ---"
+          curl -sw '\nHTTP_STATUS:%{http_code}\n' "$NGROK_URL/wp-json/" | tee /tmp/ngrok-rest-index.txt | grep -o '"name":"[^"]*"' | head -1
+          echo "--- HTTP status ---"
+          grep HTTP_STATUS /tmp/ngrok-rest-index.txt
+
       - name: Trust ngrok forwarded HTTPS scheme
         env:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
@@ -291,11 +382,57 @@ jobs:
       - name: Update WordPress URLs to ngrok
         env:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-        if: ${{ inputs.NGROK_ENABLED && env.NGROK_AUTH_TOKEN != '' }}
+          NGROK_HOST_FILE: ${{ inputs.NGROK_HOST_FILE }}
+        if: ${{ inputs.NGROK_ENABLED && env.NGROK_AUTH_TOKEN != '' && env.NGROK_HOST_FILE == '' }}
         run: |
           npx wp-env run tests-cli wp config set WP_SITEURL "$NGROK_URL"
           npx wp-env run tests-cli wp config set WP_HOME "$NGROK_URL"
           sed -i "s|WP_BASE_URL=.*|WP_BASE_URL=$NGROK_URL|" .env.ci
+
+      - name: Expose ngrok host to the webhook endpoint only
+        env:
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+          NGROK_HOST_FILE: ${{ inputs.NGROK_HOST_FILE }}
+        if: ${{ inputs.NGROK_ENABLED && env.NGROK_AUTH_TOKEN != '' && env.NGROK_HOST_FILE != '' }}
+        run: |
+          # WordPress's own home/siteurl are intentionally left untouched here —
+          # only the bare tunnel host is written, for the caller's own
+          # NGROK_HOST-reading mu-plugin to expose to PHP's getenv(). The site
+          # itself keeps using its local URL; only the webhook listening URL
+          # is meant to go through the tunnel.
+          NGROK_HOST="${NGROK_URL#https://}"
+          NGROK_HOST="${NGROK_HOST#http://}"
+          echo -n "$NGROK_HOST" > "$NGROK_HOST_FILE"
+          echo "Wrote NGROK_HOST=$NGROK_HOST to $NGROK_HOST_FILE"
+
+      - name: "[Diagnostic] Confirm the webhook host is visible to PHP"
+        if: ${{ inputs.NGROK_ENABLED && env.NGROK_AUTH_TOKEN != '' }}
+        env:
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+          NGROK_HOST_FILE: ${{ inputs.NGROK_HOST_FILE }}
+        run: |
+          echo "Expected NGROK_URL: $NGROK_URL"
+          if [ -n "$NGROK_HOST_FILE" ]; then
+            echo "--- NGROK_HOST_FILE mode (home/siteurl stay local) ---"
+            echo "File contents ($NGROK_HOST_FILE):"
+            cat "$NGROK_HOST_FILE" || echo "(file not found)"
+            echo ""
+            echo "wp option get home (should still be local, unchanged):"
+            npx wp-env run tests-cli -- wp option get home
+            echo "PHP getenv('NGROK_HOST') as seen by the tests-wordpress container:"
+            npx wp-env run tests-cli -- wp eval 'echo getenv("NGROK_HOST") ?: "(empty)";'
+            echo ""
+          else
+            echo "--- wp config set mode (home/siteurl rewritten to the tunnel) ---"
+            echo "wp option get home (DB, what rest_url() actually resolves through):"
+            npx wp-env run tests-cli -- wp option get home
+            echo "wp option get siteurl (DB):"
+            npx wp-env run tests-cli -- wp option get siteurl
+            echo "wp config get WP_HOME (wp-config.php constant, just written above):"
+            npx wp-env run tests-cli -- wp config get WP_HOME
+            echo "wp config get WP_SITEURL (wp-config.php constant, just written above):"
+            npx wp-env run tests-cli -- wp config get WP_SITEURL
+          fi
 
       - name: Execute custom code before executing the test script
         env:
@@ -311,8 +448,18 @@ jobs:
         run: |
           # Ensure .env.ci is deleted on exit
           trap 'rm -f .env.ci' EXIT
-          
+
           npm run ${{ inputs.PLAYWRIGHT_SCRIPT }}
+
+      - name: "[Diagnostic] Dump ngrok webhook diagnostic log lines"
+        if: always()
+        run: |
+          echo "=== wp-content/ngrok-diag.log (written directly by the plugin, not via error_log) ==="
+          npx wp-env run tests-cli -- cat wp-content/ngrok-diag.log \
+            || echo "File not found — either NGROK_ENABLED was off, connectMerchant never ran, or nothing reached the incoming webhook route."
+          echo ""
+          echo "=== Fallback: any [ngrok-diag] lines that did reach the container's stdout/stderr ==="
+          npx wp-env logs tests --no-watch 2>&1 | grep -i 'ngrok-diag' || echo "(none)"
 
       - name: Upload artifact
         if: always()
