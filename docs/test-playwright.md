@@ -44,7 +44,7 @@ jobs:
 | `NPM_REGISTRY_DOMAIN`                       | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                                                  |
 | `PHP_VERSION`                               | `'8.2'`                         | PHP version with which the dependencies are installed                                                               |
 | `PHP_EXTENSIONS`                            | `''`                            | PHP extensions supported by shivammathur/setup-php to be installed or disabled                                      |
-| `PLAYWRIGHT_BROWSER_ARGS`                   | `'--with-deps'`                 | Set of arguments passed to `npx playwright install`                                                                 |
+| `PLAYWRIGHT_BROWSER_ARGS`                   | `''`                            | Set of arguments passed to `npx playwright install`                                                                 |
 | `PRE_SCRIPT`                                | `''`                            | Run custom shell code before executing the test script. `GH_TOKEN` and all `ENV_FILE_DATA` variables are available  |
 | `PLAYWRIGHT_SCRIPT`                         | `''`                            | The name of a custom npm script to run the tests                                                                    |
 | `TESTRAIL_PLAN_ID`                          | `''`                            | TestRail plan ID for reporting. When set, appended to `.env.ci`                                                     |
@@ -108,7 +108,7 @@ jobs:
       COMPOSER_DEPS_INSTALL: true
       PHP_VERSION: ${{ matrix.php }}
       NODE_VERSION: 20
-      PLAYWRIGHT_BROWSER_ARGS: 'chromium --with-deps'
+      PLAYWRIGHT_BROWSER_ARGS: 'chromium'
       PRE_SCRIPT: |
         echo "Starting custom logic..."
     secrets:
@@ -136,7 +136,7 @@ jobs:
         playwright-report/
       PLAYWRIGHT_SCRIPT: 'ci-test-e2e'
       NODE_VERSION: 24
-      PLAYWRIGHT_BROWSER_ARGS: 'chromium --with-deps'
+      PLAYWRIGHT_BROWSER_ARGS: 'chromium'
       NGROK_DOMAIN: ${{ secrets.NGROK_DOMAIN }}
       PRE_SCRIPT: |
         gh run download ${{ github.run_id }} -p "my-plugin-*" -D resources/files
@@ -211,7 +211,7 @@ jobs:
         tests/qa/playwright-report/
       PLAYWRIGHT_SCRIPT: ${{ inputs.TEST_SUITE }}
       NODE_VERSION: 22
-      PLAYWRIGHT_BROWSER_ARGS: 'chromium --with-deps'
+      PLAYWRIGHT_BROWSER_ARGS: 'chromium'
       PRE_SCRIPT: |
         gh run download ${{ github.run_id }} -p "my-plugin-*" -D resources/files
         npm run setup:env

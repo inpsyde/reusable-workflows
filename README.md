@@ -7,8 +7,7 @@ software development lifecycle directly in your GitHub repository. These workflo
 different tasks, called actions, that can be executed automatically when certain events occur.
 
 At Syde, we use GitHub Actions for a wide range of tasks. From various quality assurance tests (
-e.g., static analysis checks, PHPUnit tests, etc.), to asset (pre)compilation
-with [Composer Asset Compiler](https://github.com/inpsyde/composer-asset-compiler), release
+e.g., static analysis checks, PHPUnit tests, etc.), to asset compilation and distribution, release
 generation, deployments (CI/CD), and container registry management: all automatable, recurring tasks
 are performed in GitHub Actions.
 
@@ -38,14 +37,13 @@ either as `input`s or `secret`s. To learn more, consult the documentation of the
 groups here:
 
 * Assets linting and formatting with [`@wordpress/scripts`](./docs/wp-scripts.md)
-* Linting, formatting, and testing tools for [PHP](./docs/php.md)
+* Linting, formatting, and testing tools for [PHP](./docs/php.md) and [JavaScript](./docs/js.md)
 * [Linting GitHub Actions workflow files](./docs/lint-workflows.md)
-* Unit tests for [JavaScript](./docs/js.md)
-* Assets compilation with [Composer Asset Compiler](./docs/assets-compilation.md) or
-  the [Build and push](./docs/build-and-push-assets.md) approach
-* [Create plugin archive](./docs/archive-creation.md)
-* [Automatic release](./docs/automatic-release.md)
-* [DDEV Playwright](./docs/ddev-playwright.md)
+* End-to-end tests with [Playwright](./docs/test-playwright.md)
+* [Build and distribute plugin and theme archives](./docs/build-and-distribute.md)
+* [Release to the WordPress.org plugin directory](./docs/wordpress-org-release.md)
+* [Quality Insights Toolkit (QIT) for WooCommerce](./docs/woo-qit.md)
+* [Deployments with Deployer](./docs/deploy-deployer.md)
 
 **Note:**
 
