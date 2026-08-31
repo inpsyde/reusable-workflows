@@ -6,15 +6,18 @@ To achieve that, this workflow:
 
 1. Validates that `PLUGIN_VERSION` is formatted as `MAJOR.MINOR.PATCH`
 2. Checks out the Git repository at `GIT_REF`
-3. Verifies that the version in the plugin file header and `readme.txt` `Stable tag` both match `PLUGIN_VERSION`
-4. Checks out the WordPress.org SVN repository (trunk is fully checked out; tag contents are never fetched — only tag names are listed when needed for the version check)
-5. Verifies the version does not already exist as an SVN tag (skipped when `UPDATE_TRUNK_ONLY=true`)
-6. Synchronizes the Git working directory to SVN trunk via `rsync`, respecting `.distignore` and excluding sensitive files like `auth.json`, `.env`, and `.npmrc`
-7. Commits trunk to SVN (or uploads it as an artifact in `DRY_RUN` mode)
-8. Creates an SVN tag from trunk (skipped when `UPDATE_TRUNK_ONLY=true` or `DRY_RUN=true`)
+3. Verifies that the plugin file header's `Version:` matches `PLUGIN_VERSION`
+4. Checks out the WordPress.org SVN repository (trunk is fully checked out; tag contents are never fetched — only tag names are listed when needed for the checks below)
+5. Verifies `readme.txt`'s `Stable tag`, depending on `UPDATE_TRUNK_ONLY`:
+   - `true` (trunk-only): must already exist as a published SVN tag
+   - `false` (new release): must equal `PLUGIN_VERSION`, and must not already exist as an SVN tag
+6. Synchronizes the Git working directory to SVN trunk via `rsync` (reporting every added, deleted, or changed file via `--itemize-changes`), respecting `.distignore` and excluding sensitive files like `auth.json`, `.env`, and `.npmrc`
+7. Prints the full `svn status` of trunk, so the exact set of additions, deletions, and modifications is visible before anything is committed
+8. Commits trunk to SVN (or uploads it as an artifact in `DRY_RUN` mode)
+9. Creates an SVN tag from trunk (skipped when `UPDATE_TRUNK_ONLY=true` or `DRY_RUN=true`)
 
 > [!NOTE]
-> This workflow intentionally fails if the version already exists as an SVN tag. There is no amendment flow.
+> When creating a new release (`UPDATE_TRUNK_ONLY=false`), this workflow intentionally fails if the version already exists as an SVN tag. There is no amendment flow.
 
 > [!IMPORTANT]
 > The plugin's SVN repository must already exist on WordPress.org before running this workflow — including in `DRY_RUN` mode. Initial plugin submission requires a separate manual process via the [WordPress.org plugin submission form](https://wordpress.org/plugins/developers/add/).
@@ -49,7 +52,6 @@ jobs:
     secrets:
       SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
       SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
-      GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
 ```
 
 ## Trigger on Git tag push
@@ -72,7 +74,6 @@ jobs:
     secrets:
       SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
       SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
-      GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
 ```
 
 > [!NOTE]
@@ -112,18 +113,22 @@ jobs:
     secrets:
       SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
       SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
-      GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
 ```
 
 > [!NOTE]
 > The `environment:` key alone does nothing — protection rules must be explicitly configured in repository settings. An environment with no rules configured provides no approval gate.
 
-## Staged release (trunk first, tag later)
+## Preview trunk before a release
 
-To verify trunk on WordPress.org before publishing, run the workflow twice with the same inputs — first with `UPDATE_TRUNK_ONLY: true` (the default), then with `UPDATE_TRUNK_ONLY: false` once trunk looks correct.
+`UPDATE_TRUNK_ONLY` controls which of two modes the workflow runs in:
 
-> [!WARNING]
-> When `UPDATE_TRUNK_ONLY=true`, the version existence check is skipped. Do not leave trunk with a `Stable tag` pointing to a non-existent SVN tag — [WordPress.org will serve the plugin from trunk instead](https://developer.wordpress.org/plugins/wordpress-org/how-your-readme-txt-works/#how-the-readme-is-parsed). Keep `Stable tag` pointing to the latest published version.
+- **Trunk-only** (`UPDATE_TRUNK_ONLY: true`, the default): syncs trunk, creates no tag, and requires `readme.txt`'s `Stable tag` to already exist as a published SVN tag — not to equal `PLUGIN_VERSION`. This lets testers grab the upcoming release straight from SVN trunk without it being served as the official "stable" version to everyone else.
+- **New release** (`UPDATE_TRUNK_ONLY: false`): syncs trunk and creates a tag, and requires `readme.txt`'s `Stable tag` (along with the plugin file's `Version:` header) to equal `PLUGIN_VERSION`, which must not already exist as an SVN tag.
+
+To preview trunk before publishing, run the workflow twice with the same `PLUGIN_VERSION` and `GIT_REF` — first with `UPDATE_TRUNK_ONLY: true`, then with `UPDATE_TRUNK_ONLY: false` once trunk looks correct. These are two independent, full runs, not two halves of one pipeline: the second run doesn't pick up where the first left off, it re-syncs and re-commits the whole of trunk from scratch and then additionally creates the tag. Keep `readme.txt`'s `Stable tag` pointing at the last published version until that second run; only bump it — together with the plugin file's `Version:` header — when you're ready to actually create the tag.
+
+> [!NOTE]
+> The trunk-only check exists because [WordPress.org serves the plugin from trunk instead of a tag when `Stable tag` points to a tag that doesn't exist](https://developer.wordpress.org/plugins/wordpress-org/how-your-readme-txt-works/#how-the-readme-is-parsed) — without it, a trunk-only sync could accidentally push the in-progress release out as "stable" to regular users.
 
 > [!NOTE]
 > WordPress.org reads `readme.txt` from the tag that `Stable tag` points to, not from trunk. Updating `readme.txt` in trunk alone will not update the plugin page — a new tag must be created.
@@ -146,7 +151,6 @@ To verify trunk on WordPress.org before publishing, run the workflow twice with 
 |---|---|---|
 | `SVN_USERNAME` | yes | WordPress.org SVN username |
 | `SVN_PASSWORD` | yes | WordPress.org SVN password |
-| `GITHUB_USER_SSH_KEY` | yes | SSH key used to check out the Git repository |
 
 > [!NOTE]
 > WordPress.org SVN does not support SSH keys or tokens. The `SVN_USERNAME` and `SVN_PASSWORD` secrets are the only supported authentication method.

@@ -51,13 +51,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Set up custom environment variables
         env:
           ENV_VARS: ${{ secrets.ENV_VARS }}
         if: ${{ env.ENV_VARS }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         with:
           script: |
             JSON
@@ -65,14 +65,14 @@ jobs:
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
       - name: Set up Git
-        uses: inpsyde/reusable-workflows/.github/actions/setup-git@main
+        uses: inpsyde/reusable-workflows/.github/actions/setup-git@ce4cfd9ad8176f895d09ae11cb12dd65590cc94e # main
         with:
           ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
           user-email: ${{ secrets.GITHUB_USER_EMAIL }}
           user-name: ${{ secrets.GITHUB_USER_NAME }}
 
       - name: Set up Node
-        uses: inpsyde/reusable-workflows/.github/actions/setup-node@main
+        uses: inpsyde/reusable-workflows/.github/actions/setup-node@ce4cfd9ad8176f895d09ae11cb12dd65590cc94e # main
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
