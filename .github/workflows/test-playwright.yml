@@ -72,6 +72,11 @@ on:
         default: ''
         required: false
         type: string
+      NGROK_ENABLED:
+        description: Whether to enable the ngrok tunnel integration.
+        default: true
+        required: false
+        type: boolean
       TESTRAIL_PLAN_ID:
         description: TestRail plan ID for reporting.
         default: ''
@@ -211,7 +216,7 @@ jobs:
       - name: Install ngrok
         env:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-        if: ${{ env.NGROK_AUTH_TOKEN != '' }}
+        if: ${{ inputs.NGROK_ENABLED && env.NGROK_AUTH_TOKEN != '' }}
         run: |
           curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
             | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
@@ -223,20 +228,27 @@ jobs:
         env:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
           NGROK_DOMAIN: ${{ inputs.NGROK_DOMAIN }}
-        if: ${{ env.NGROK_AUTH_TOKEN != '' }}
+        if: ${{ inputs.NGROK_ENABLED && env.NGROK_AUTH_TOKEN != '' }}
         run: |
           ngrok config add-authtoken "$NGROK_AUTH_TOKEN"
 
-          DOMAIN_FLAG=""
+          DOMAIN_FLAG="--url=https://"
           if [ -n "$NGROK_DOMAIN" ]; then
-            DOMAIN_FLAG="--domain=$NGROK_DOMAIN"
+            DOMAIN_FLAG="--url=https://$NGROK_DOMAIN"
           fi
 
           ngrok http 80 $DOMAIN_FLAG --log=stdout --log-level=info > /tmp/ngrok.log 2>&1 &
-          sleep 3
 
-          NGROK_URL=$(curl -s http://127.0.0.1:4040/api/tunnels \
-            | jq -r '.tunnels[] | select(.proto=="https") | .public_url')
+          NGROK_URL=""
+          for i in $(seq 1 30); do
+            NGROK_URL=$(curl -s http://127.0.0.1:4040/api/tunnels \
+              | jq -r '.tunnels[] | select(.proto=="https") | .public_url')
+            if [ -n "$NGROK_URL" ]; then
+              break
+            fi
+            sleep 1
+          done
+
           echo "Ngrok URL: $NGROK_URL"
 
           if [ -z "$NGROK_URL" ]; then
@@ -247,10 +259,24 @@ jobs:
 
           echo "NGROK_URL=$NGROK_URL" >> "$GITHUB_ENV"
 
+      - name: Trust ngrok forwarded HTTPS scheme
+        env:
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+        if: ${{ inputs.NGROK_ENABLED && env.NGROK_AUTH_TOKEN != '' }}
+        run: |
+          npx wp-env run tests-cli wp eval '
+          $dir = WPMU_PLUGIN_DIR;
+          if ( ! is_dir( $dir ) ) {
+              mkdir( $dir, 0777, true );
+          }
+          $code = "<?php\nif ( ! empty( \$_SERVER[\"HTTP_X_FORWARDED_PROTO\"] ) && \$_SERVER[\"HTTP_X_FORWARDED_PROTO\"] === \"https\" ) {\n\t\$_SERVER[\"HTTPS\"] = \"on\";\n}\n";
+          file_put_contents( $dir . "/00-ngrok-forwarded-proto.php", $code );
+          '
+
       - name: Update WordPress URLs to ngrok
         env:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-        if: ${{ env.NGROK_AUTH_TOKEN != '' }}
+        if: ${{ inputs.NGROK_ENABLED && env.NGROK_AUTH_TOKEN != '' }}
         run: |
           npx wp-env run tests-cli wp config set WP_SITEURL "$NGROK_URL"
           npx wp-env run tests-cli wp config set WP_HOME "$NGROK_URL"
