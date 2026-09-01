@@ -43,9 +43,9 @@ runs:
       env:
         GATEWAY_IP: ${{ inputs.ovpn-gateway-ip }}
       run: |
-        IP=$(dig +short @1.1.1.1 whoami.cloudflare ch txt | tr -d '"')
-        echo "Egress IP: $IP"
-        [[ "$IP" == "$GATEWAY_IP" ]] || { echo "Unexpected egress IP: $IP"; exit 1; }
+        [[ -f openvpn.log ]] || { echo "openvpn.log not found — cannot verify gateway"; exit 1; }
+        grep -q "Peer Connection Initiated with \[AF_INET\]${GATEWAY_IP}:" openvpn.log || { echo "OpenVPN did not connect to the expected gateway ($GATEWAY_IP)"; cat openvpn.log; exit 1; }
+        echo "Connected to expected gateway: $GATEWAY_IP"
       shell: bash
 
     - name: Delete OpenVPN config
