@@ -68,10 +68,20 @@ on:
         required: false
         type: string
       NGROK_DOMAIN:
-        description: Reserved ngrok domain for the tunnel (paid account). Required when NGROK_AUTH_TOKEN is provided.
+        description: Optional reserved ngrok domain.
         default: ''
         required: false
         type: string
+      TUNNEL_PROVIDER:
+        description: Which tunnel to use for public reachability, 'ngrok' or 'cloudflare'.
+        default: 'ngrok'
+        required: false
+        type: string
+      TUNNEL_ENABLED:
+        description: Whether to enable a public tunnel (ngrok or cloudflare) for this shard.
+        default: false
+        required: false
+        type: boolean
       TESTRAIL_PLAN_ID:
         description: TestRail plan ID for reporting.
         default: ''
@@ -211,7 +221,7 @@ jobs:
       - name: Install ngrok
         env:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-        if: ${{ env.NGROK_AUTH_TOKEN != '' }}
+        if: ${{ inputs.TUNNEL_ENABLED && env.NGROK_AUTH_TOKEN != '' && inputs.TUNNEL_PROVIDER != 'cloudflare' }}
         run: |
           curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
             | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
@@ -223,7 +233,7 @@ jobs:
         env:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
           NGROK_DOMAIN: ${{ inputs.NGROK_DOMAIN }}
-        if: ${{ env.NGROK_AUTH_TOKEN != '' }}
+        if: ${{ inputs.TUNNEL_ENABLED && env.NGROK_AUTH_TOKEN != '' && inputs.TUNNEL_PROVIDER != 'cloudflare' }}
         run: |
           ngrok config add-authtoken "$NGROK_AUTH_TOKEN"
 
@@ -233,10 +243,16 @@ jobs:
           fi
 
           ngrok http 80 $DOMAIN_FLAG --log=stdout --log-level=info > /tmp/ngrok.log 2>&1 &
-          sleep 3
 
-          NGROK_URL=$(curl -s http://127.0.0.1:4040/api/tunnels \
-            | jq -r '.tunnels[] | select(.proto=="https") | .public_url')
+          NGROK_URL=""
+          for i in $(seq 1 30); do
+            NGROK_URL=$(curl -s http://127.0.0.1:4040/api/tunnels \
+              | jq -r '.tunnels[] | select(.proto=="https") | .public_url')
+            if [ -n "$NGROK_URL" ]; then
+              break
+            fi
+            sleep 1
+          done
           echo "Ngrok URL: $NGROK_URL"
 
           if [ -z "$NGROK_URL" ]; then
@@ -246,15 +262,59 @@ jobs:
           fi
 
           echo "NGROK_URL=$NGROK_URL" >> "$GITHUB_ENV"
+          echo "TUNNEL_URL=$NGROK_URL" >> "$GITHUB_ENV"
 
-      - name: Update WordPress URLs to ngrok
-        env:
-          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-        if: ${{ env.NGROK_AUTH_TOKEN != '' }}
+      - name: Start cloudflared quick tunnel
+        if: ${{ inputs.TUNNEL_ENABLED && inputs.TUNNEL_PROVIDER == 'cloudflare' }}
         run: |
-          npx wp-env run tests-cli wp config set WP_SITEURL "$NGROK_URL"
-          npx wp-env run tests-cli wp config set WP_HOME "$NGROK_URL"
-          sed -i "s|WP_BASE_URL=.*|WP_BASE_URL=$NGROK_URL|" .env.ci
+          sudo curl -sSL -o /usr/local/bin/cloudflared \
+            https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
+          sudo chmod +x /usr/local/bin/cloudflared
+
+          PORT=80
+          if [ -f .wp-env.json ]; then
+            PORT=$(node -e "const c = require('./.wp-env.json'); console.log(c.testsPort || '8889')")
+          fi
+
+          nohup cloudflared tunnel --no-autoupdate --url http://127.0.0.1:$PORT > /tmp/cloudflared.log 2>&1 &
+
+          TUNNEL_URL=""
+          for i in $(seq 1 30); do
+            TUNNEL_URL=$(grep -oE 'https://[a-zA-Z0-9.-]+\.trycloudflare\.com' /tmp/cloudflared.log | head -n1)
+            if [ -n "$TUNNEL_URL" ]; then
+              break
+            fi
+            sleep 1
+          done
+
+          echo "Cloudflare tunnel URL: $TUNNEL_URL"
+
+          if [ -z "$TUNNEL_URL" ]; then
+            echo "::error::Failed to get cloudflared tunnel URL"
+            cat /tmp/cloudflared.log
+            exit 1
+          fi
+
+          echo "TUNNEL_URL=$TUNNEL_URL" >> "$GITHUB_ENV"
+
+      - name: Trust forwarded HTTPS scheme
+        if: ${{ env.TUNNEL_URL != '' }}
+        run: |
+          npx wp-env run tests-cli wp eval '
+          $dir = WPMU_PLUGIN_DIR;
+          if ( ! is_dir( $dir ) ) {
+              mkdir( $dir, 0777, true );
+          }
+          $code = "<?php\nif ( ! empty( \$_SERVER[\"HTTP_X_FORWARDED_PROTO\"] ) && \$_SERVER[\"HTTP_X_FORWARDED_PROTO\"] === \"https\" ) {\n\t\$_SERVER[\"HTTPS\"] = \"on\";\n}\n";
+          file_put_contents( $dir . "/00-forwarded-proto.php", $code );
+          '
+
+      - name: Update WordPress URLs to tunnel
+        if: ${{ env.TUNNEL_URL != '' }}
+        run: |
+          npx wp-env run tests-cli wp config set WP_SITEURL "$TUNNEL_URL"
+          npx wp-env run tests-cli wp config set WP_HOME "$TUNNEL_URL"
+          sed -i "s|WP_BASE_URL=.*|WP_BASE_URL=$TUNNEL_URL|" .env.ci
 
       - name: Execute custom code before executing the test script
         env:
