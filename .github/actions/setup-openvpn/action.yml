@@ -44,7 +44,9 @@ runs:
         GATEWAY_IP: ${{ inputs.ovpn-gateway-ip }}
       run: |
         [[ -f openvpn.log ]] || { echo "openvpn.log not found — cannot verify gateway"; exit 1; }
-        grep -q "Peer Connection Initiated with \[AF_INET\]${GATEWAY_IP}:" openvpn.log || { echo "OpenVPN did not connect to the expected gateway ($GATEWAY_IP)"; cat openvpn.log; exit 1; }
+        grep -q "Initialization Sequence Completed" openvpn.log || { echo "OpenVPN did not report a completed connection"; cat openvpn.log; exit 1; }
+        LAST_PEER=$(grep "Peer Connection Initiated with \[AF_INET\]" openvpn.log | tail -1 || true)
+        echo "$LAST_PEER" | grep -q "\[AF_INET\]${GATEWAY_IP}:" || { echo "OpenVPN's last connection attempt was not to the expected gateway ($GATEWAY_IP)"; cat openvpn.log; exit 1; }
         echo "Connected to expected gateway: $GATEWAY_IP"
       shell: bash
 
