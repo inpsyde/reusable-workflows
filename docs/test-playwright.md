@@ -9,7 +9,7 @@ The workflow can:
 - create an environment variables file named `.env.ci` dedicated to the test step; load this file using `dotenv-ci` directly in your test script, e.g., `./node_modules/.bin/dotenv -e .env.ci -- npm run e2e`. The file is also sourced before `PRE_SCRIPT`, making all variables available as environment variables
 - execute the tests using Playwright via a custom npm script
 - upload the artifacts
-- optionally start an [ngrok](https://ngrok.com/) tunnel for webhook delivery to `wp-env` environments (when `NGROK_AUTH_TOKEN` is provided)
+- optionally start a public tunnel ([ngrok](https://ngrok.com/) or a [Cloudflare Quick Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/)) for webhook delivery to `wp-env` environments, via `TUNNEL_ENABLED` and `TUNNEL_PROVIDER`
 - optionally append test reporting variables (`TESTRAIL_PLAN_ID`, `TESTRAIL_RUN_ID`, `XRAY_TEST_EXEC_KEY`) to `.env.ci` for integration with TestRail or Xray
 
 **Simplest possible example:**
@@ -39,8 +39,10 @@ jobs:
 | `PLAYWRIGHT_ARTIFACT_PATH`                  |                                 | A file, directory or wildcard pattern that describes what to upload                                                 |
 | `PLAYWRIGHT_ARTIFACT_RETENTION_DAYS`        | `30`                            | Duration after which artifact will expire in day                                                                    |
 | `COMPOSER_DEPS_INSTALL`                     | `false`                         | Whether to install Composer dependencies                                                                            |
-| `NGROK_DOMAIN`                              | `''`                            | Reserved ngrok domain for the tunnel (paid account). Required when `NGROK_AUTH_TOKEN` is provided                   |
+| `NGROK_DOMAIN`                              | `''`                            | Optional reserved ngrok domain                                                                                      |
 | `NODE_VERSION`                              | `24`                            | Node version with which the node script will be executed                                                            |
+| `TUNNEL_ENABLED`                            | `false`                         | Whether to enable a public tunnel (ngrok or cloudflare) for this shard                                              |
+| `TUNNEL_PROVIDER`                           | `'ngrok'`                       | Which tunnel to use for public reachability, `ngrok` or `cloudflare`                                                |
 | `NPM_REGISTRY_DOMAIN`                       | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                                                  |
 | `PHP_VERSION`                               | `'8.2'`                         | PHP version with which the dependencies are installed                                                               |
 | `PHP_EXTENSIONS`                            | `''`                            | PHP extensions supported by shivammathur/setup-php to be installed or disabled                                      |
@@ -61,20 +63,19 @@ jobs:
 | `GITHUB_USER_EMAIL`   | Email address for the GitHub user configuration                                          |
 | `GITHUB_USER_NAME`    | Username for the GitHub user configuration                                               |
 | `GITHUB_USER_SSH_KEY` | Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`             |
-| `NGROK_AUTH_TOKEN`    | Ngrok auth token. When set, ngrok is installed and a tunnel is started before tests run  |
+| `NGROK_AUTH_TOKEN`    | Ngrok auth token. Required when `TUNNEL_ENABLED: true` and `TUNNEL_PROVIDER` is `ngrok`  |
 | `NPM_REGISTRY_TOKEN`  | Authentication for the private npm registry                                              |
 
-## Ngrok tunnel
+## Tunnel (ngrok / Cloudflare)
 
-When `NGROK_AUTH_TOKEN` is provided, the workflow automatically:
+Set `TUNNEL_ENABLED: true` to expose the `wp-env` site publicly for this shard. `TUNNEL_PROVIDER` picks the mechanism (default `'ngrok'`):
 
-1. Installs ngrok on the runner.
-2. Starts an HTTPS tunnel to port 80 using the reserved domain from `NGROK_DOMAIN`.
-3. Updates `WP_SITEURL`, `WP_HOME` (via `wp-env`) and `WP_BASE_URL` (in `.env.ci`) to the tunnel URL.
+- **`ngrok`** — requires the `NGROK_AUTH_TOKEN` secret. Starts an HTTPS tunnel to port 80, optionally on the reserved domain from `NGROK_DOMAIN`. Requires a [paid ngrok account](https://ngrok.com/pricing) for a reserved domain; without one, ngrok assigns a random URL.
+- **`cloudflare`** — no secret or account needed. Starts a [Quick Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/), which gets a random `*.trycloudflare.com` URL.
+
+Either way, the workflow then makes WordPress recognize the tunnel connection as HTTPS, and updates `WP_SITEURL`, `WP_HOME` (via `wp-env`) and `WP_BASE_URL` (in `.env.ci`) to the tunnel URL.
 
 This runs **after** `wp-env` boots and **before** `PRE_SCRIPT`, so webhooks from external services (e.g. payment gateways) can reach the test environment.
-
-Requires a [paid ngrok account](https://ngrok.com/pricing) with a reserved domain.
 
 ## Test reporting
 
@@ -137,6 +138,7 @@ jobs:
       PLAYWRIGHT_SCRIPT: 'ci-test-e2e'
       NODE_VERSION: 24
       PLAYWRIGHT_BROWSER_ARGS: 'chromium'
+      TUNNEL_ENABLED: true
       NGROK_DOMAIN: ${{ secrets.NGROK_DOMAIN }}
       PRE_SCRIPT: |
         gh run download ${{ github.run_id }} -p "my-plugin-*" -D resources/files
@@ -145,6 +147,33 @@ jobs:
       ENV_FILE_DATA: ${{ secrets.ENV_FILE_DATA }}
       NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_PACKAGES_READ_ACCESS_TOKEN }}
       NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+```
+
+## Example with Cloudflare tunnel
+
+```yml
+name: E2E Testing
+
+on:
+  workflow_dispatch:
+jobs:
+  e2e-playwright:
+    uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@main
+    with:
+      PLAYWRIGHT_ARTIFACT_PATH: |
+        artifacts/*
+        playwright-report/
+      PLAYWRIGHT_SCRIPT: 'ci-test-e2e'
+      NODE_VERSION: 24
+      PLAYWRIGHT_BROWSER_ARGS: 'chromium'
+      TUNNEL_ENABLED: true
+      TUNNEL_PROVIDER: cloudflare
+      PRE_SCRIPT: |
+        gh run download ${{ github.run_id }} -p "my-plugin-*" -D resources/files
+        npm run setup:env
+    secrets:
+      ENV_FILE_DATA: ${{ secrets.ENV_FILE_DATA }}
+      NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_PACKAGES_READ_ACCESS_TOKEN }}
 ```
 
 ## Example with test reporting
