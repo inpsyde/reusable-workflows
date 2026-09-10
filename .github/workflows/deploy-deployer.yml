@@ -10,26 +10,26 @@ on:
       VERBOSITY:
         description: Deployer command verbosity.
         required: false
-        default: "v"
+        default: 'v'
         type: string
       PHP_VERSION:
         description: PHP version with which the scripts are executed.
-        default: "8.2"
+        default: '8.2'
         required: false
         type: string
       PHP_TOOLS:
         description: PHP tools supported by shivammathur/setup-php to be installed.
-        default: ""
+        default: ''
         required: false
         type: string
       PHP_EXTENSIONS:
         description: PHP extensions supported by shivammathur/setup-php to be installed or disabled.
-        default: ""
+        default: ''
         required: false
         type: string
       NODE_VERSION:
         description: Node.js version to use when npm workspaces are detected.
-        default: "22"
+        default: '22'
         required: false
         type: string
       NPM_REGISTRY_DOMAIN:
@@ -106,8 +106,8 @@ jobs:
         with:
           php-version: ${{ inputs.PHP_VERSION }}
           php-extensions: ${{ inputs.PHP_EXTENSIONS }}
-          php-tools: "composer, ${{ inputs.PHP_TOOLS }}"
-          composer-options: ""
+          php-tools: 'composer, ${{ inputs.PHP_TOOLS }}'
+          composer-options: ''
           composer-auth-json: ${{ secrets.COMPOSER_AUTH_JSON }}
 
       - name: Detect npm workspaces
@@ -134,7 +134,7 @@ jobs:
       - name: Install Deployer
         uses: ramsey/composer-install@a8d0d959dab41457692a5e2041bd9b757a119e3f # v3.2.1
         env:
-          COMPOSER_AUTH: "${{ secrets.COMPOSER_AUTH_JSON }}"
+          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
         with:
           working-directory: ./deployment
 
