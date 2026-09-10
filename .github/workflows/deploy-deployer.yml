@@ -10,26 +10,26 @@ on:
       VERBOSITY:
         description: Deployer command verbosity.
         required: false
-        default: 'v'
+        default: "v"
         type: string
       PHP_VERSION:
         description: PHP version with which the scripts are executed.
-        default: '8.2'
+        default: "8.2"
         required: false
         type: string
       PHP_TOOLS:
         description: PHP tools supported by shivammathur/setup-php to be installed.
-        default: ''
+        default: ""
         required: false
         type: string
       PHP_EXTENSIONS:
         description: PHP extensions supported by shivammathur/setup-php to be installed or disabled.
-        default: ''
+        default: ""
         required: false
         type: string
       NODE_VERSION:
         description: Node.js version to use when npm workspaces are detected.
-        default: '22'
+        default: "22"
         required: false
         type: string
       NPM_REGISTRY_DOMAIN:
@@ -56,9 +56,6 @@ on:
         required: false
       DEPLOY_USER:
         description: SSH user on the target host.
-        required: false
-      WIREGUARD_CONFIGURATION:
-        description: "The full content of the WireGuard configuration file. Deprecated: the support for WireGuard will be removed in the future in favour of OpenVPN."
         required: false
       OVPN_CONFIG:
         description: The full content of the OpenVPN configuration file.
@@ -90,14 +87,6 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
 
-      - name: Set up WireGuard
-        uses: inpsyde/actions/setup-wireguard@5d30147f89c39e066d3f9bea13ac08f1c5a96da9 # v1.0.2
-        env:
-          WIREGUARD_CONFIGURATION: ${{ secrets.WIREGUARD_CONFIGURATION }}
-        if: ${{ env.WIREGUARD_CONFIGURATION != '' }}
-        with:
-          wireguard-configuration: ${{ secrets.WIREGUARD_CONFIGURATION }}
-
       - name: Set up OpenVPN
         uses: inpsyde/reusable-workflows/.github/actions/setup-openvpn@fb7d12d355d68ab634a38e339e5bfbae98885ab9 # main
         env:
@@ -105,8 +94,7 @@ jobs:
           OVPN_USERNAME: ${{ secrets.OVPN_USERNAME }}
           OVPN_PASSWORD: ${{ secrets.OVPN_PASSWORD }}
           OVPN_GATEWAY_IP: ${{ inputs.OVPN_GATEWAY_IP }}
-          WIREGUARD_CONFIGURATION: ${{ secrets.WIREGUARD_CONFIGURATION }}
-        if: ${{ env.WIREGUARD_CONFIGURATION == '' && env.OVPN_CONFIG != '' && env.OVPN_USERNAME != '' && env.OVPN_PASSWORD != '' && env.OVPN_GATEWAY_IP != '' }}
+        if: ${{ env.OVPN_CONFIG != '' && env.OVPN_USERNAME != '' && env.OVPN_PASSWORD != '' && env.OVPN_GATEWAY_IP != '' }}
         with:
           ovpn-config: ${{ env.OVPN_CONFIG }}
           ovpn-username: ${{ env.OVPN_USERNAME }}
@@ -118,8 +106,8 @@ jobs:
         with:
           php-version: ${{ inputs.PHP_VERSION }}
           php-extensions: ${{ inputs.PHP_EXTENSIONS }}
-          php-tools: 'composer, ${{ inputs.PHP_TOOLS }}'
-          composer-options: ''
+          php-tools: "composer, ${{ inputs.PHP_TOOLS }}"
+          composer-options: ""
           composer-auth-json: ${{ secrets.COMPOSER_AUTH_JSON }}
 
       - name: Detect npm workspaces
@@ -146,7 +134,7 @@ jobs:
       - name: Install Deployer
         uses: ramsey/composer-install@a8d0d959dab41457692a5e2041bd9b757a119e3f # v3.2.1
         env:
-          COMPOSER_AUTH: '${{ secrets.COMPOSER_AUTH_JSON }}'
+          COMPOSER_AUTH: "${{ secrets.COMPOSER_AUTH_JSON }}"
         with:
           working-directory: ./deployment
 
