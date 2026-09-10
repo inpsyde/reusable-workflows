@@ -225,8 +225,8 @@ jobs:
             echo "PACKAGE_FILE=style.css" >> $GITHUB_ENV
           # Check for WordPress plugin
           else
-            # Find the first PHP file with "Plugin Name" header
-            PLUGIN_FILE=$(grep -rl --include "*.php" "Plugin Name:" . 2>/dev/null | head -n1)
+            # Find the first PHP file in the project root with "Plugin Name" header
+            PLUGIN_FILE=$(find . -maxdepth 1 -name "*.php" -type f -exec grep -l "Plugin Name:" {} \; 2>/dev/null | head -n1)
             if [ -n "$PLUGIN_FILE" ]; then
               echo "Package type: WordPress Plugin"
               echo "Plugin file found: $PLUGIN_FILE"
