@@ -68,7 +68,7 @@ jobs:
 ### Inputs
 
 | Name                  | Default                         | Description                                                                                                                     |
-| --------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+|-----------------------|---------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
 | `ENVIRONMENT`         |                                 | Name of the target environment to load Deployer settings                                                                        |
 | `VERBOSITY`           | `'v'`                           | Deployer command verbosity                                                                                                      |
 | `PHP_VERSION`         | `'8.2'`                         | PHP version with which the scripts are executed                                                                                 |
@@ -81,7 +81,7 @@ jobs:
 ### Secrets
 
 | Name                  | Required | Description                                                                              |
-| --------------------- | -------- | ---------------------------------------------------------------------------------------- |
+|-----------------------|----------|------------------------------------------------------------------------------------------|
 | `DEPLOY_HOSTNAME`     | Yes      | Hostname or IP address of the target server                                              |
 | `DEPLOY_PORT`         | Yes      | SSH port on the target server                                                            |
 | `DEPLOY_USER`         | Yes      | SSH user on the target server                                                            |
