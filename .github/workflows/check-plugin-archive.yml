@@ -1,0 +1,80 @@
+name: Check plugin package
+
+on:
+  workflow_call:
+    inputs:
+      ARTIFACT:
+        description: The name of the generated artifact, usually the output of the archive creation workflow.
+        required: true
+        type: string
+      PLUGIN_FOLDER_NAME:
+        description: The name of the plugin folder (falls back to the repository name).
+        default: ''
+        required: false
+        type: string
+      EXCLUDED_SNIFFS:
+        description: The comma-separated list of excluded sniffs.
+        default: 'WordPress.WP.AlternativeFunctions'
+        required: false
+        type: string
+      ADDITIONAL_WP_SNIFFS:
+        description: The comma-separated list of additional sniffs to run.
+        default: 'WordPress.WP.I18n'
+        required: false
+        type: string
+      COMPOSER_ARGS:
+        description: The arguments passed to Composer when installing dependencies.
+        default: '--no-dev --prefer-dist'
+        required: false
+        type: string
+      PHP_VERSION:
+        description: The PHP version to use.
+        default: '7.4'
+        required: false
+        type: string
+
+jobs:
+  check_archive:
+    name: Check plugin package
+    timeout-minutes: 2
+    runs-on: ubuntu-latest
+    env:
+      PLUGIN_FOLDER_NAME: ${{ inputs.PLUGIN_FOLDER_NAME }}
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.ARTIFACT }}
+
+      - name: Set up plugin folder name
+        id: plugin-folder-name
+        run: echo "plugin-folder-name=${PLUGIN_FOLDER_NAME:-${{ github.event.repository.name }}}" >> $GITHUB_OUTPUT
+
+      - name: Setup PHP with tools
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.PHP_VERSION }}
+          tools: parallel-lint
+
+      - name: Run Parallel Lint
+        run: parallel-lint .
+
+      - name: Checkout Plugin Check repo
+        uses: actions/checkout@v4
+        with:
+          repository: WordPress/plugin-check
+          path: plugin-check
+      - name: Install Plugin Check deps
+        uses: ramsey/composer-install@v3
+        with:
+          working-directory: plugin-check
+          composer-options: ${{ inputs.COMPOSER_ARGS }}
+      - name: Run Plugin Check main rules
+        run: |
+          if [[ -z ${{ inputs.EXCLUDED_SNIFFS }} ]]; then exclude=''; else exclude="--exclude=${{ inputs.EXCLUDED_SNIFFS }}"; fi
+          vendor/bin/phpcs --standard=phpcs-rulesets/plugin-review.xml "${exclude}" --extensions=php "../${{ steps.plugin-folder-name.outputs.plugin-folder-name }}"
+        working-directory: plugin-check
+      - name: Run Plugin Check additional rules
+        if: ${{ inputs.ADDITIONAL_WP_SNIFFS != '' }}
+        run: vendor/bin/phpcs --standard=Wordpress --sniffs=${{ inputs.ADDITIONAL_WP_SNIFFS }} --extensions=php "../${{ steps.plugin-folder-name.outputs.plugin-folder-name }}"
+        working-directory: plugin-check
