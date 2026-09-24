@@ -84,6 +84,8 @@ When `NGROK_AUTH_TOKEN` is provided, the workflow automatically:
 
 This runs **after** `wp-env` boots and **before** `PRE_SCRIPT`, so webhooks from external services (e.g. payment gateways) can reach the test environment.
 
+After the tests, the workflow lists the requests the tunnel received (up to the 100 most recent, with response status) in the log and the job summary. Use it to tell an undelivered webhook apart from one the site rejected.
+
 Reserved and wildcard domains require a [paid ngrok account](https://ngrok.com/pricing).
 
 With `NGROK_WILDCARD_DOMAIN`, `NGROK_SUBDOMAIN` is required and must be a single lowercase DNS label. The workflow cannot derive one, since it does not know the caller's matrix. Choose it so that it is:

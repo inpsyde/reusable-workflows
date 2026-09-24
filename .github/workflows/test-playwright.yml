@@ -348,6 +348,34 @@ jobs:
 
           npm run ${{ inputs.PLAYWRIGHT_SCRIPT }}
 
+      - name: Summarize requests received by ngrok
+        env:
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+        if: ${{ always() && inputs.NGROK_ENABLED && env.NGROK_AUTH_TOKEN != '' }}
+        run: |
+          # Lists what reached the tunnel during the tests (e.g. webhooks), to tell
+          # "never delivered" apart from "delivered but rejected by the site".
+          if ! REQUESTS=$(curl -sf "http://127.0.0.1:4040/api/requests/http?limit=100"); then
+            echo "ngrok agent API not reachable, no request summary available."
+            exit 0
+          fi
+
+          COUNT=$(echo "$REQUESTS" | jq '.requests | length')
+          ROWS=$(echo "$REQUESTS" | jq -r '.requests | reverse | .[]
+            | [.start, "\(.request.method) \(.request.uri)", (.response.status_code // "no response" | tostring)]
+            | @tsv')
+
+          echo "ngrok received $COUNT request(s) (up to the 100 most recent):"
+          echo "$ROWS"
+
+          {
+            echo "### Requests received by ngrok ($COUNT)"
+            echo ""
+            echo "| Time | Request | Status |"
+            echo "|------|---------|--------|"
+            echo "$ROWS" | awk -F'\t' 'NF { printf "| %s | `%s` | %s |\n", $1, $2, $3 }'
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload artifact
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
