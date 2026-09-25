@@ -88,7 +88,7 @@ PRE_SCRIPT: |
 
 This runs **after** `wp-env` boots and **before** `PRE_SCRIPT`, so webhooks from external services (e.g. payment gateways) can reach the test environment.
 
-After the tests, the workflow lists the requests the tunnel received (up to the 100 most recent, with response status) in the log and the job summary. Use it to tell an undelivered webhook apart from one the site rejected.
+After the tests, the workflow lists the requests the tunnel received (up to the 100 most recent, with response status) in the log and the job summary. Use it to tell an undelivered webhook apart from one the site rejected. Only method, path and status are shown; query strings are dropped. The summary is public on public repositories, so avoid secrets in URL paths.
 
 Reserved and wildcard domains require a [paid ngrok account](https://ngrok.com/pricing).
 

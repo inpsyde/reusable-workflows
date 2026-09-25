@@ -331,6 +331,8 @@ jobs:
         run: |
           # Lists what reached the tunnel during the tests (e.g. webhooks), to tell
           # "never delivered" apart from "delivered but rejected by the site".
+          # Only method, path and status are shown: query strings can carry tokens, and the
+          # summary is public on public repos. '|' and '`' are URL-encoded to keep the table intact.
           if ! REQUESTS=$(curl -sf "http://127.0.0.1:4040/api/requests/http?limit=100"); then
             echo "ngrok agent API not reachable, no request summary available."
             exit 0
@@ -338,7 +340,7 @@ jobs:
 
           COUNT=$(echo "$REQUESTS" | jq '.requests | length')
           ROWS=$(echo "$REQUESTS" | jq -r '.requests | reverse | .[]
-            | [.start, "\(.request.method) \(.request.uri)", (.response.status_code // "no response" | tostring)]
+            | [.start, "\(.request.method) \(.request.uri | split("?")[0] | gsub("[|]"; "%7C") | gsub("`"; "%60"))", (.response.status_code // "no response" | tostring)]
             | @tsv')
 
           echo "ngrok received $COUNT request(s) (up to the 100 most recent):"
