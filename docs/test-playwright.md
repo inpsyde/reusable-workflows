@@ -39,11 +39,9 @@ jobs:
 | `PLAYWRIGHT_ARTIFACT_PATH`                  |                                 | A file, directory or wildcard pattern that describes what to upload                                                 |
 | `PLAYWRIGHT_ARTIFACT_RETENTION_DAYS`        | `30`                            | Duration after which artifact will expire in day                                                                    |
 | `COMPOSER_DEPS_INSTALL`                     | `false`                         | Whether to install Composer dependencies                                                                            |
-| `NGROK_DOMAIN`                              | `''`                            | Reserved ngrok domain (paid account). Takes precedence over `NGROK_WILDCARD_DOMAIN`; omit for a random ngrok URL    |
+| `NGROK_DOMAIN`                              | `''`                            | Ngrok domain (paid account): reserved domain or host under a wildcard reservation. Omit for a random ngrok URL      |
 | `NGROK_ENABLED`                             | `true`                          | Enable/disable the ngrok tunnel                                                                                     |
 | `NGROK_HOST_FILE`                           | `''`                            | Repo-relative file to write the bare tunnel host to. When set, WordPress URLs are not rewritten                     |
-| `NGROK_SUBDOMAIN`                           | `''`                            | Single DNS label under `NGROK_WILDCARD_DOMAIN`. Required when it is set, see [Ngrok tunnel](#ngrok-tunnel)          |
-| `NGROK_WILDCARD_DOMAIN`                     | `''`                            | Wildcard ngrok base domain (paid account). Each job binds a subdomain under it                                      |
 | `NODE_VERSION`                              | `24`                            | Node version with which the node script will be executed                                                            |
 | `NPM_REGISTRY_DOMAIN`                       | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                                                  |
 | `PHP_VERSION`                               | `'8.2'`                         | PHP version with which the dependencies are installed                                                               |
@@ -73,10 +71,7 @@ jobs:
 When `NGROK_AUTH_TOKEN` is provided, the workflow automatically:
 
 1. Installs ngrok on the runner.
-2. Starts an HTTPS tunnel to port 80, using the first available of:
-   - `NGROK_DOMAIN` (reserved domain),
-   - `<NGROK_SUBDOMAIN>.<NGROK_WILDCARD_DOMAIN>` (wildcard domain),
-   - a random ngrok URL.
+2. Starts an HTTPS tunnel to port 80 on `NGROK_DOMAIN`, or on a random ngrok URL when it is empty.
 3. Adds a must-use plugin trusting the forwarded HTTPS scheme (`X-Forwarded-Proto`).
 4. Either:
    - updates `WP_SITEURL`, `WP_HOME` (via `wp-env`) and `WP_BASE_URL` (in `.env.ci`) to the tunnel URL (default), or
@@ -88,12 +83,12 @@ After the tests, the workflow lists the requests the tunnel received (up to the 
 
 Reserved and wildcard domains require a [paid ngrok account](https://ngrok.com/pricing).
 
-With `NGROK_WILDCARD_DOMAIN`, `NGROK_SUBDOMAIN` is required and must be a single lowercase DNS label. The workflow cannot derive one, since it does not know the caller's matrix. Choose it so that it is:
+`NGROK_DOMAIN` can be a reserved domain or any host under a wildcard reservation (e.g. `*.e2e.example.com`). The workflow cannot derive a host, since it does not know the caller's matrix. Choose it so that it is:
 
 - **Unique per concurrently running job.** This includes matrix jobs of the same run, other runs of the workflow and other repositories using the same wildcard domain. An endpoint can only be online once; a second job fails with `ERR_NGROK_334`.
 - **Stable across runs, if the external service stores the URL** (e.g. registered webhooks). The next run then replaces the registration instead of leaving a stale one behind.
 
-For example, derive it from the matrix entry: `NGROK_SUBDOMAIN: ${{ matrix.shard }}-${{ matrix.variant }}`. With stable subdomains, concurrent runs of the same workflow compete for the same endpoint, so serialize them with a `concurrency` group, or append `${{ github.run_id }}` if stale URLs at the external service are acceptable.
+For example, derive it from the matrix entry: `NGROK_DOMAIN: ${{ matrix.shard }}-${{ matrix.variant }}.${{ vars.NGROK_WILDCARD_DOMAIN }}`. With stable hosts, concurrent runs of the same workflow compete for the same endpoint, so serialize them with a `concurrency` group, or add `${{ github.run_id }}` to the first label if stale URLs at the external service are acceptable.
 
 Set `NGROK_ENABLED: false` to skip the tunnel even when `NGROK_AUTH_TOKEN` is set (e.g. jobs that need no inbound traffic).
 

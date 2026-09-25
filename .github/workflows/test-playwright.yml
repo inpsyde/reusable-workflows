@@ -68,19 +68,9 @@ on:
         required: false
         type: string
       NGROK_DOMAIN:
-        description: Reserved ngrok domain for the tunnel (paid account). Takes precedence over NGROK_WILDCARD_DOMAIN. Omit for a random ngrok URL.
-        default: ''
-        required: false
-        type: string
-      NGROK_WILDCARD_DOMAIN:
-        description: Wildcard ngrok base domain (e.g. e2e.example.com). Each job binds a subdomain under it.
-        default: ''
-        required: false
-        type: string
-      NGROK_SUBDOMAIN:
         description: >
-          Subdomain to bind under NGROK_WILDCARD_DOMAIN. Required when NGROK_WILDCARD_DOMAIN is set.
-          Must be a single lowercase DNS label, unique per concurrently running job.
+          Ngrok domain for the tunnel (paid account): a reserved domain or a host under a wildcard reservation.
+          Must be unique per concurrently running job. Omit for a random ngrok URL.
         default: ''
         required: false
         type: string
@@ -248,28 +238,22 @@ jobs:
         env:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
           NGROK_DOMAIN: ${{ inputs.NGROK_DOMAIN }}
-          NGROK_WILDCARD_DOMAIN: ${{ inputs.NGROK_WILDCARD_DOMAIN }}
-          NGROK_SUBDOMAIN: ${{ inputs.NGROK_SUBDOMAIN }}
         if: ${{ inputs.NGROK_ENABLED && env.NGROK_AUTH_TOKEN != '' }}
         run: |
           ngrok config add-authtoken "$NGROK_AUTH_TOKEN"
 
-          DOMAIN_FLAG=""
+          URL_FLAG=""
           if [ -n "$NGROK_DOMAIN" ]; then
-            DOMAIN_FLAG="--url=https://$NGROK_DOMAIN"
-          elif [ -n "$NGROK_WILDCARD_DOMAIN" ]; then
-            if [ -z "$NGROK_SUBDOMAIN" ]; then
-              echo "::error::NGROK_SUBDOMAIN is required when NGROK_WILDCARD_DOMAIN is set"
+            # DNS is case-insensitive, and GitHub expressions cannot lowercase matrix values.
+            NGROK_DOMAIN="${NGROK_DOMAIN,,}"
+            if ! [[ "$NGROK_DOMAIN" =~ ^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$ ]]; then
+              echo "::error::NGROK_DOMAIN '$NGROK_DOMAIN' must be a hostname (a-z, 0-9, '-' and '.')"
               exit 1
             fi
-            if ! [[ "$NGROK_SUBDOMAIN" =~ ^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$ ]]; then
-              echo "::error::NGROK_SUBDOMAIN '$NGROK_SUBDOMAIN' must be a single lowercase DNS label (a-z, 0-9 and '-', max. 63 characters)"
-              exit 1
-            fi
-            DOMAIN_FLAG="--url=https://${NGROK_SUBDOMAIN}.${NGROK_WILDCARD_DOMAIN}"
+            URL_FLAG="--url=https://$NGROK_DOMAIN"
           fi
 
-          ngrok http 80 $DOMAIN_FLAG --log=stdout --log-level=info > /tmp/ngrok.log 2>&1 &
+          ngrok http 80 $URL_FLAG --log=stdout --log-level=info > /tmp/ngrok.log 2>&1 &
 
           NGROK_URL=""
           for i in $(seq 1 30); do
@@ -285,7 +269,7 @@ jobs:
 
           if [ -z "$NGROK_URL" ]; then
             if grep -q "ERR_NGROK_334" /tmp/ngrok.log; then
-              echo "::error::The ngrok endpoint is already online in another job or run. Use a unique NGROK_SUBDOMAIN per concurrently running job."
+              echo "::error::The ngrok endpoint is already online in another job or run. Use a unique NGROK_DOMAIN per concurrently running job."
             else
               echo "::error::Failed to get ngrok tunnel URL"
             fi
