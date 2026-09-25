@@ -41,7 +41,7 @@ jobs:
 | `COMPOSER_DEPS_INSTALL`                     | `false`                         | Whether to install Composer dependencies                                                                            |
 | `NGROK_DOMAIN`                              | `''`                            | Ngrok domain (paid account): reserved domain or host under a wildcard reservation. Omit for a random ngrok URL      |
 | `NGROK_ENABLED`                             | `true`                          | Enable/disable the ngrok tunnel                                                                                     |
-| `NGROK_HOST_FILE`                           | `''`                            | Repo-relative file to write the bare tunnel host to. When set, WordPress URLs are not rewritten                     |
+| `NGROK_REWRITE_URLS`                        | `true`                          | Point WordPress URLs and `WP_BASE_URL` to the tunnel. Set `false` to keep the site local and use `NGROK_URL` only   |
 | `NODE_VERSION`                              | `24`                            | Node version with which the node script will be executed                                                            |
 | `NPM_REGISTRY_DOMAIN`                       | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                                                  |
 | `PHP_VERSION`                               | `'8.2'`                         | PHP version with which the dependencies are installed                                                               |
@@ -73,9 +73,18 @@ When `NGROK_AUTH_TOKEN` is provided, the workflow automatically:
 1. Installs ngrok on the runner.
 2. Starts an HTTPS tunnel to port 80 on `NGROK_DOMAIN`, or on a random ngrok URL when it is empty.
 3. Adds a must-use plugin trusting the forwarded HTTPS scheme (`X-Forwarded-Proto`).
-4. Either:
-   - updates `WP_SITEURL`, `WP_HOME` (via `wp-env`) and `WP_BASE_URL` (in `.env.ci`) to the tunnel URL (default), or
-   - when `NGROK_HOST_FILE` is set, writes only the bare tunnel host (no scheme) to that file and leaves the site URLs local, so the caller can route selected traffic (e.g. webhooks) through the tunnel.
+4. Exports the tunnel URL as `NGROK_URL` (e.g. `https://abc.ngrok.app`) to all later steps, including `PRE_SCRIPT`.
+5. Updates `WP_SITEURL`, `WP_HOME` (via `wp-env`) and `WP_BASE_URL` (in `.env.ci`) to the tunnel URL, unless `NGROK_REWRITE_URLS` is `false`.
+
+With `NGROK_REWRITE_URLS: false` the site stays local, and the caller routes only selected traffic (e.g. webhooks) through the tunnel. For example, to pass the bare host to WordPress through a file:
+
+```yaml
+NGROK_REWRITE_URLS: false
+PRE_SCRIPT: |
+  if [ -n "$NGROK_URL" ]; then
+    echo -n "${NGROK_URL#https://}" > path/to/ngrok-host.txt
+  fi
+```
 
 This runs **after** `wp-env` boots and **before** `PRE_SCRIPT`, so webhooks from external services (e.g. payment gateways) can reach the test environment.
 

@@ -79,14 +79,13 @@ on:
         default: true
         required: false
         type: boolean
-      NGROK_HOST_FILE:
+      NGROK_REWRITE_URLS:
         description: >
-          Repo-relative path to write the bare ngrok tunnel host to (no scheme).
-          When set, WordPress URLs and WP_BASE_URL are left untouched and only this file is written,
-          so the caller can route selected traffic (e.g. webhooks) through the tunnel.
-        default: ''
+          Whether to point WordPress URLs and WP_BASE_URL to the ngrok tunnel.
+          Set to false to keep the site local and route only selected traffic (e.g. webhooks) through the tunnel via NGROK_URL.
+        default: true
         required: false
-        type: string
+        type: boolean
       TESTRAIL_PLAN_ID:
         description: TestRail plan ID for reporting.
         default: ''
@@ -296,24 +295,11 @@ jobs:
       - name: Update WordPress URLs to ngrok
         env:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-          NGROK_HOST_FILE: ${{ inputs.NGROK_HOST_FILE }}
-        if: ${{ inputs.NGROK_ENABLED && env.NGROK_AUTH_TOKEN != '' && env.NGROK_HOST_FILE == '' }}
+        if: ${{ inputs.NGROK_ENABLED && inputs.NGROK_REWRITE_URLS && env.NGROK_AUTH_TOKEN != '' }}
         run: |
           npx wp-env run tests-cli wp config set WP_SITEURL "$NGROK_URL"
           npx wp-env run tests-cli wp config set WP_HOME "$NGROK_URL"
           sed -i "s|WP_BASE_URL=.*|WP_BASE_URL=$NGROK_URL|" .env.ci
-
-      - name: Write ngrok host to file
-        env:
-          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-          NGROK_HOST_FILE: ${{ inputs.NGROK_HOST_FILE }}
-        if: ${{ inputs.NGROK_ENABLED && env.NGROK_AUTH_TOKEN != '' && env.NGROK_HOST_FILE != '' }}
-        run: |
-          # WordPress URLs stay local; only the bare tunnel host is written for the caller to consume.
-          NGROK_HOST="${NGROK_URL#https://}"
-          NGROK_HOST="${NGROK_HOST#http://}"
-          echo -n "$NGROK_HOST" > "$NGROK_HOST_FILE"
-          echo "Wrote NGROK_HOST=$NGROK_HOST to $NGROK_HOST_FILE"
 
       - name: Execute custom code before executing the test script
         env:
