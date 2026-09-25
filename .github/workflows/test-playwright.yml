@@ -253,12 +253,18 @@ jobs:
           fi
 
           ngrok http 80 $URL_FLAG --log=stdout --log-level=info > /tmp/ngrok.log 2>&1 &
+          NGROK_PID=$!
 
           NGROK_URL=""
           for i in $(seq 1 30); do
             NGROK_URL=$(curl -s http://127.0.0.1:4040/api/tunnels \
               | jq -r '.tunnels[] | select(.proto=="https") | .public_url')
             if [ -n "$NGROK_URL" ]; then
+              break
+            fi
+            # Stop waiting once ngrok has exited (e.g. invalid token, ERR_NGROK_334).
+            if ! kill -0 "$NGROK_PID" 2>/dev/null; then
+              echo "ngrok exited before the tunnel came up"
               break
             fi
             sleep 1
