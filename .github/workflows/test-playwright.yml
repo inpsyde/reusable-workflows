@@ -245,6 +245,10 @@ jobs:
           if [ -n "$NGROK_DOMAIN" ]; then
             # DNS is case-insensitive, and GitHub expressions cannot lowercase matrix values.
             NGROK_DOMAIN="${NGROK_DOMAIN,,}"
+            if [[ "$NGROK_DOMAIN" != *.* ]]; then
+              echo "::error::NGROK_DOMAIN '$NGROK_DOMAIN' must be a full hostname, e.g. '$NGROK_DOMAIN.e2e.example.com' for a wildcard reservation"
+              exit 1
+            fi
             if ! [[ "$NGROK_DOMAIN" =~ ^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$ ]]; then
               echo "::error::NGROK_DOMAIN '$NGROK_DOMAIN' must be a hostname (a-z, 0-9, '-' and '.')"
               exit 1
