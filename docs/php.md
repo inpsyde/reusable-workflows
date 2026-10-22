@@ -153,6 +153,7 @@ jobs:
 | `PHP_EXTENSIONS` | `''`                | PHP extensions supported by shivammathur/setup-php to be installed or disabled |
 | `COMPOSER_ARGS`  | `'--prefer-dist'`   | Set of arguments passed to Composer                                            |
 | `PHPUNIT_ARGS`   | `'--coverage-text'` | Set of arguments passed to PHPUnit                                             |
+| `CODECOV_FLAGS`  | `'unittests'`       | Flags to be passed to Codecov                                                  |
 
 #### Secrets
 
@@ -160,6 +161,7 @@ jobs:
 |----------------------|------------------------------------------------------------------------------------------|
 | `COMPOSER_AUTH_JSON` | Authentication for privately hosted packages and repositories as a JSON formatted object |
 | `ENV_VARS`           | Additional environment variables as a JSON formatted object                              |
+| `CODECOV_TOKEN`      | Codecov token                                                                            |
 
 **Example with configuration parameters:**
 
@@ -174,9 +176,12 @@ jobs:
       matrix:
         php: [ "8.1", "8.2", "8.3" ]
     uses: inpsyde/reusable-workflows/.github/workflows/tests-unit-php.yml@main
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     with:
       PHP_VERSION: ${{ matrix.php }}
-      PHPUNIT_ARGS: '--coverage-text --debug'
+      PHPUNIT_ARGS: '--coverage-text'
+      CODECOV_FLAGS: 'php'
 ```
 
 ## Lint PHP
