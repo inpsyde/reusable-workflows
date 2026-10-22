@@ -179,6 +179,77 @@ jobs:
       PHPUNIT_ARGS: '--coverage-text --debug'
 ```
 
+## Integration tests PHP
+
+This workflow runs [PHPUnit](https://phpunit.de/) with the integration test configuration. It does
+so by executing the binary resolved via `composer config bin-dir`.
+
+Before the tests, the workflow installs the npm dependencies and runs `npm run build --if-present`.
+This makes the compiled assets (for example, `blocks-manifest.php`) available to the tests. If the
+project has no `build` script, the workflow skips the build.
+
+**Simplest possible example:**
+
+```yml
+name: Integration tests PHP
+on:
+  push:
+  pull_request:
+jobs:
+  tests-integration-php:
+    uses: inpsyde/reusable-workflows/.github/workflows/tests-integration-php.yml@main
+```
+
+### Configuration parameters
+
+#### Inputs
+
+| Name                  | Default                                           | Description                                                                    |
+|-----------------------|---------------------------------------------------|--------------------------------------------------------------------------------|
+| `PHP_VERSION`         | `'8.2'`                                           | PHP version with which the scripts are executed                                |
+| `PHP_EXTENSIONS`      | `''`                                              | PHP extensions supported by shivammathur/setup-php to be installed or disabled |
+| `COMPOSER_ARGS`       | `'--prefer-dist'`                                 | Set of arguments passed to Composer                                            |
+| `PHPUNIT_ARGS`        | `'-c phpunit-integration.xml.dist --no-coverage'` | Set of arguments passed to PHPUnit                                             |
+| `NODE_VERSION`        | `'24'`                                            | Node version with which the assets are built                                   |
+| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'`                   | Domain of the private npm registry                                             |
+
+#### Secrets
+
+| Name                  | Description                                                                              |
+|-----------------------|------------------------------------------------------------------------------------------|
+| `COMPOSER_AUTH_JSON`  | Authentication for privately hosted packages and repositories as a JSON formatted object |
+| `ENV_VARS`            | Additional environment variables as a JSON formatted object                              |
+| `NPM_REGISTRY_TOKEN`  | Authentication for the private npm registry                                              |
+| `GITHUB_USER_EMAIL`   | Email address for the GitHub user configuration                                          |
+| `GITHUB_USER_NAME`    | Username for the GitHub user configuration                                               |
+| `GITHUB_USER_SSH_KEY` | Private SSH key associated with the GitHub user passed as `GITHUB_USER_NAME`             |
+
+**Example with configuration parameters:**
+
+```yml
+name: Integration tests PHP
+on:
+  push:
+  pull_request:
+jobs:
+  tests-integration-php:
+    strategy:
+      fail-fast: false
+      matrix:
+        wp: [ "6.9", "7.1" ]
+    uses: inpsyde/reusable-workflows/.github/workflows/tests-integration-php.yml@main
+    secrets:
+      COMPOSER_AUTH_JSON: ${{ secrets.COMPOSER_AUTH_JSON }}
+      NPM_REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      ENV_VARS: >-
+        [{"name":"WP_CORE_VERSION", "value":"${{ matrix.wp }}"}]
+    with:
+      PHPUNIT_ARGS: '--coverage-text'
+```
+
+**Note**: The environment variables from `ENV_VARS` are set before the asset build, so the build
+and the tests can both use them.
+
 ## Lint PHP
 
 This workflow runs [PHP Parallel Lint](https://github.com/php-parallel-lint/PHP-Parallel-Lint).
