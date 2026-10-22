@@ -62,7 +62,8 @@ versions.
 
 ## Static code analysis
 
-This workflow runs either [Psalm](https://psalm.dev/) or [PHPStan](https://phpstan.org/), or both, based on the existence of a supported configuration file in your repository root folder. 
+This workflow runs either [Psalm](https://psalm.dev/) or [PHPStan](https://phpstan.org/), or both, based on the
+existence of a supported configuration file in your repository root folder.
 
 It does so by executing the binary resolved via `composer config bin-dir`.
 
@@ -204,14 +205,14 @@ jobs:
 
 #### Inputs
 
-| Name                  | Default                                           | Description                                                                    |
-|-----------------------|---------------------------------------------------|--------------------------------------------------------------------------------|
-| `PHP_VERSION`         | `'8.2'`                                           | PHP version with which the scripts are executed                                |
-| `PHP_EXTENSIONS`      | `''`                                              | PHP extensions supported by shivammathur/setup-php to be installed or disabled |
-| `COMPOSER_ARGS`       | `'--prefer-dist'`                                 | Set of arguments passed to Composer                                            |
-| `PHPUNIT_ARGS`        | `'-c phpunit-integration.xml.dist --no-coverage'` | Set of arguments passed to PHPUnit                                             |
-| `NODE_VERSION`        | `'24'`                                            | Node version with which the assets are built                                   |
-| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'`                   | Domain of the private npm registry                                             |
+| Name                  | Default                         | Description                                                                    |
+|-----------------------|---------------------------------|--------------------------------------------------------------------------------|
+| `PHP_VERSION`         | `'8.2'`                         | PHP version with which the scripts are executed                                |
+| `PHP_EXTENSIONS`      | `''`                            | PHP extensions supported by shivammathur/setup-php to be installed or disabled |
+| `COMPOSER_ARGS`       | `'--prefer-dist'`               | Set of arguments passed to Composer                                            |
+| `PHPUNIT_ARGS`        | `'--no-coverage'`               | Set of arguments passed to PHPUnit                                             |
+| `NODE_VERSION`        | `'24'`                          | Node version with which the assets are built                                   |
+| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                             |
 
 #### Secrets
 
