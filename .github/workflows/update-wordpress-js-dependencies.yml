@@ -1,0 +1,144 @@
+name: Update WordPress JS Dependencies
+on:
+  workflow_call:
+    inputs:
+      WP_DIST_TAG:
+        description: The dist tag to update the dependencies to, e.g., `wp-6.7`.
+        required: true
+        type: string
+      NPM_REGISTRY_DOMAIN:
+        description: Domain of the private npm registry.
+        default: https://npm.pkg.github.com/
+        required: false
+        type: string
+    secrets:
+      GITHUB_USER_EMAIL:
+        description: Email address for the GitHub user configuration.
+        required: false
+      GITHUB_USER_NAME:
+        description: Username for the GitHub user configuration.
+        required: false
+      GITHUB_USER_SSH_KEY:
+        description: Private SSH key associated with the GitHub user for the token passed as `GITHUB_USER_TOKEN`.
+        required: false
+      GITHUB_USER_SSH_PUBLIC_KEY:
+        description: Public SSH key associated with the GitHub user for the token passed as `GITHUB_USER_TOKEN`.
+        required: false
+      NPM_REGISTRY_TOKEN:
+        description: Authentication for the private npm registry.
+        required: false
+      
+jobs:
+  update-dependencies:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PACKAGE_MANAGER: npm
+      WP_DIST_TAG: ${{ inputs.WP_DIST_TAG }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        ssh-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
+
+    - name: Set global variables
+      run: |
+        echo "TEMP_BRANCH_NAME=update/${{ env.WP_DIST_TAG }}" >> $GITHUB_ENV
+        echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+
+    - name: Set up SSH
+      env:
+        GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
+      if: ${{ env.GITHUB_USER_SSH_KEY != '' }}
+      uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ env.GITHUB_USER_SSH_KEY }}
+
+    - name: Set up Git
+      env:
+        GITHUB_USER_EMAIL: ${{ secrets.GITHUB_USER_EMAIL }}
+        GITHUB_USER_NAME: ${{ secrets.GITHUB_USER_NAME }}
+      run: |
+        git config --global user.email "${{ env.GITHUB_USER_EMAIL }}"
+        git config --global user.name "${{ env.GITHUB_USER_NAME }}"
+        git config --global advice.addIgnoredFile false
+        git config --global push.autoSetupRemote true
+
+    - name: Set up signing commits
+      env:
+        GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.GITHUB_USER_SSH_PUBLIC_KEY }}
+      if: ${{ env.GITHUB_USER_SSH_PUBLIC_KEY != '' }}
+      run: |
+        : # Create empty SSH private key file so Git does not complain.
+        touch "${{ runner.temp }}/signingkey"
+        echo "${{ env.GITHUB_USER_SSH_PUBLIC_KEY }}" > "${{ runner.temp }}/signingkey.pub"
+        git config --global commit.gpgsign true
+        git config --global gpg.format ssh
+        git config --global user.signingkey "${{ runner.temp }}/signingkey.pub"
+
+    - name: Checkout to temporary branch
+      run: |
+        git show-ref -q refs/remotes/origin/${{ env.TEMP_BRANCH_NAME }} && git checkout ${{ env.TEMP_BRANCH_NAME }} || git checkout -b ${{ env.TEMP_BRANCH_NAME }}
+
+    - name: Set up node cache mode
+      run: |
+        if [ "${{ env.PACKAGE_MANAGER }}" == 'npm' ] && { [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ]; }; then
+          echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV
+        else
+          echo "No lock files found or unknown package manager"
+        fi
+
+    - name: Set up node
+      env:
+        NPM_REGISTRY_DOMAIN: ${{ inputs.NPM_REGISTRY_DOMAIN }}
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        registry-url: ${{ env.NPM_REGISTRY_DOMAIN }}
+        cache: ${{ env.NODE_CACHE_MODE }}
+
+    - name: Install dependencies
+      env:
+        ARGS: ${{ env.NODE_CACHE_MODE == 'npm' && 'ci' || 'install' }}
+        NPM_REGISTRY_DOMAIN: ${{ inputs.NPM_REGISTRY_DOMAIN }}
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      run: ${{ format('{0} {1} --ignore-scripts', env.PACKAGE_MANAGER, env.ARGS) }}
+    
+    - name: Update dependencies
+      env:
+        SCRIPT_START: ${{ env.PACKAGE_MANAGER == 'npm' && 'npm run' }}
+        NPM_REGISTRY_DOMAIN: ${{ inputs.NPM_REGISTRY_DOMAIN }}
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+      run: |
+        ./node_modules/.bin/wp-scripts packages-update --dist-tag=${{ env.WP_DIST_TAG }}
+
+    - name: Git add, commit
+      run: |
+        git add -A
+        git commit -m "[BOT] Add dependencies changes for #${{ github.ref }}" --no-verify || ((echo "NO_CHANGES=yes" >> $GITHUB_ENV) && (echo "No changes to commit"))
+
+    - name: Git push
+      if: ${{ env.NO_CHANGES != 'yes' }}
+      run: git push
+      
+    - name: Create pull request
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        gh pr create \
+          --base ${{ github.event.repository.default_branch }} \
+          --head ${{ env.TEMP_BRANCH_NAME }} \
+          --title "Align WP Dependencies to meet dist tag ${{ env.WP_DIST_TAG }} - ${{ env.CURRENT_DATE }}" \
+          --body "This PR updates the WordPress dependencies to meet the version ${{ env.WP_DIST_TAG }}." \
+          --label "dependencies"
+      
+    - name: Delete signing key files
+      env:
+        GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.GITHUB_USER_SSH_PUBLIC_KEY }}
+      if: ${{ always() && env.GITHUB_USER_SSH_PUBLIC_KEY != '' }}
+      run: |
+        rm -f "${{ runner.temp }}/signingkey"
+        rm -f "${{ runner.temp }}/signingkey.pub"
