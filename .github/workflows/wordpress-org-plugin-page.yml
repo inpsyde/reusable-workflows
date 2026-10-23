@@ -141,10 +141,11 @@ jobs:
             exit 1
           fi
 
-          # This workflow never creates versions, it only has to find the existing tag,
-          # so any numeric dotted version with 1-4 parts is accepted here. This intentionally
-          # differs from the strict X.Y.Z check of wordpress-org-release, which creates new tags.
-          if [[ ! "$STABLE_TAG" =~ ^[0-9]+(\.[0-9]+){0,3}$ ]]; then
+          # This workflow never creates versions, it only has to find the existing tag, so it accepts
+          # the same characters WordPress.org allows in a Stable tag (e.g. 1.2.3.4, 1.0.0-rc1, v1.2).
+          # This intentionally differs from the strict X.Y.Z check of wordpress-org-release, which creates new tags.
+          # The value is used in SVN paths, so '..' is rejected; the tag's existence is verified against SVN later.
+          if [[ ! "$STABLE_TAG" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]*$ ]] || [[ "$STABLE_TAG" == *..* ]]; then
             echo "❌ Unexpected 'Stable tag' format in readme.txt: $STABLE_TAG"
             exit 1
           fi
