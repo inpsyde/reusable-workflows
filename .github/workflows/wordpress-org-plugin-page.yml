@@ -1,0 +1,641 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+name: wordpress.org plugin page
+
+on:
+  workflow_call:
+    inputs:
+      SVN_PLUGIN_SLUG:
+        description: "WordPress.org plugin slug (e.g., 'woocommerce')"
+        type: string
+        required: true
+
+      GIT_REF:
+        description: "Git ref to read readme.txt and the assets directory from (tag, branch, or commit)"
+        type: string
+        required: true
+
+      SYNC_README:
+        description: "Update readme.txt in SVN trunk and in the tag referenced by 'Stable tag'"
+        type: boolean
+        default: true
+        required: false
+
+      SYNC_ASSETS:
+        description: "Mirror ASSETS_DIR to the SVN /assets directory (banners, icons, screenshots, blueprints)"
+        type: boolean
+        default: true
+        required: false
+
+      ASSETS_DIR:
+        description: "Directory in the Git repository holding the WordPress.org assets"
+        type: string
+        default: ".wordpress-org"
+        required: false
+
+      DRY_RUN:
+        description: "Upload the files that would be committed as an artifact instead of committing to SVN"
+        type: boolean
+        default: true
+        required: false
+
+    secrets:
+      SVN_USERNAME:
+        required: true
+
+      SVN_PASSWORD:
+        required: true
+
+jobs:
+  update_plugin_page:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    env:
+      # Filename rules of the WordPress.org plugin directory importer, restricted to the documented
+      # banner and icon resolutions and to lowercase names (a rule of this workflow, not of WordPress.org).
+      # Shared by the asset validation and the scope guard, so they can't drift apart.
+      # Locale suffix: (-rtl)?(-[a-z]{2,3}(_[A-Z]{2})?(_[a-z0-9]+)?)?
+      BANNER_RE: '^banner-(772x250|1544x500)(-rtl)?(-[a-z]{2,3}(_[A-Z]{2})?(_[a-z0-9]+)?)?\.(png|jpg|jpeg|gif)$'
+      ICON_RE: '^icon-(128x128|256x256)(-rtl)?(-[a-z]{2,3}(_[A-Z]{2})?(_[a-z0-9]+)?)?\.(png|jpg|jpeg|gif)$'
+      SCREENSHOT_RE: '^screenshot-[0-9]+(-rtl)?(-[a-z]{2,3}(_[A-Z]{2})?(_[a-z0-9]+)?)?\.(png|jpg|jpeg|gif)$'
+      BLUEPRINT_RE: '^blueprints/blueprint[-A-Za-z0-9_]*\.json$'
+    steps:
+      - name: Install required tools
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y subversion rsync jq imagemagick
+
+      - name: Validate inputs
+        env:
+          SVN_PLUGIN_SLUG: ${{ inputs.SVN_PLUGIN_SLUG }}
+          GIT_REF: ${{ inputs.GIT_REF }}
+          SYNC_README: ${{ inputs.SYNC_README }}
+          SYNC_ASSETS: ${{ inputs.SYNC_ASSETS }}
+          ASSETS_DIR: ${{ inputs.ASSETS_DIR }}
+        run: |
+          set -euo pipefail
+
+          if [[ ! "$SVN_PLUGIN_SLUG" =~ ^[a-z0-9-]+$ ]]; then
+            echo "❌ Invalid plugin slug: $SVN_PLUGIN_SLUG"
+            echo "   WordPress.org slugs may only contain lowercase letters, numbers, and hyphens"
+            exit 1
+          fi
+
+          echo "✅ Valid plugin slug: $SVN_PLUGIN_SLUG"
+
+          if ! git check-ref-format --allow-onelevel "$GIT_REF"; then
+            echo "❌ Invalid Git ref name: $GIT_REF"
+            exit 1
+          fi
+
+          if [ "$SYNC_README" != "true" ] && [ "$SYNC_ASSETS" != "true" ]; then
+            echo "❌ Nothing to do: both SYNC_README and SYNC_ASSETS are disabled"
+            exit 1
+          fi
+
+          # ASSETS_DIR is used as an rsync source, so keep it inside the repository.
+          if [[ ! "$ASSETS_DIR" =~ ^[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*$ ]] || [[ "/$ASSETS_DIR/" == *"/../"* ]]; then
+            echo "❌ Invalid ASSETS_DIR: $ASSETS_DIR"
+            echo "   Must be a relative path inside the repository, without '..' segments"
+            exit 1
+          fi
+
+          echo "✅ Inputs are valid"
+
+      # GIT_REF is validated above, so it is safe to pass it to actions/checkout directly.
+      - name: Checkout git repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ inputs.GIT_REF }}
+          persist-credentials: false
+
+      - name: Resolve Git revision
+        id: git_revision
+        run: |
+          set -euo pipefail
+          echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Validate readme.txt
+        id: readme
+        if: inputs.SYNC_README == true
+        run: |
+          set -euo pipefail
+
+          if [ ! -f readme.txt ]; then
+            echo "❌ readme.txt not found"
+            exit 1
+          fi
+
+          STABLE_TAG=$(grep -m1 -iE '^[[:space:]]*([*+-][[:space:]]+)?Stable tag:' readme.txt \
+            | sed -E 's/^.*Stable tag:[[:space:]]*//I; s/[[:space:]]+$//' | tr -d '\r' || true)
+
+          if [ -z "$STABLE_TAG" ]; then
+            echo "❌ Could not extract 'Stable tag:' from readme.txt"
+            exit 1
+          fi
+
+          if [ "$STABLE_TAG" = "trunk" ]; then
+            echo "❌ 'Stable tag: trunk' is not supported (and discouraged by WordPress.org)"
+            exit 1
+          fi
+
+          # This workflow never creates versions, it only has to find the existing tag,
+          # so any numeric dotted version with 1-4 parts is accepted here. This intentionally
+          # differs from the strict X.Y.Z check of wordpress-org-release, which creates new tags.
+          if [[ ! "$STABLE_TAG" =~ ^[0-9]+(\.[0-9]+){0,3}$ ]]; then
+            echo "❌ Unexpected 'Stable tag' format in readme.txt: $STABLE_TAG"
+            exit 1
+          fi
+
+          echo "STABLE_TAG=$STABLE_TAG" >> "$GITHUB_OUTPUT"
+          echo "✅ readme.txt found, Stable tag: $STABLE_TAG"
+
+      - name: Validate assets directory
+        if: inputs.SYNC_ASSETS == true
+        env:
+          ASSETS_DIR: ${{ inputs.ASSETS_DIR }}
+        run: |
+          set -euo pipefail
+
+          if [ ! -d "$ASSETS_DIR" ]; then
+            echo "❌ Assets directory not found: $ASSETS_DIR"
+            exit 1
+          fi
+
+          ERRORS=0
+
+          # Symlinks would be skipped by rsync and silently leave the old file in SVN,
+          # and any directory other than blueprints/ would be committed as is.
+          mapfile -t UNSUPPORTED < <(cd "$ASSETS_DIR" && find . -mindepth 1 ! -path '*/.*' \
+            \( ! -type f ! -type d -o -type d ! -path ./blueprints \) -printf '%P\n' | LC_ALL=C sort)
+
+          for ENTRY in "${UNSUPPORTED[@]}"; do
+            if [ -d "$ASSETS_DIR/$ENTRY" ] && [ ! -L "$ASSETS_DIR/$ENTRY" ]; then
+              echo "❌ $ENTRY/ is not supported, only the blueprints/ subdirectory is allowed"
+            else
+              echo "❌ $ENTRY is not a regular file (symlinks are not supported)"
+            fi
+            ERRORS=1
+          done
+
+          # Hidden files (.gitkeep, .DS_Store, ...) are ignored here and by the sync below.
+          mapfile -t FILES < <(cd "$ASSETS_DIR" && find . -type f ! -path '*/.*' -printf '%P\n' | LC_ALL=C sort)
+
+          # The sync mirrors this directory, so an empty directory would wipe the plugin page.
+          if [ "${#FILES[@]}" -eq 0 ]; then
+            echo "❌ Assets directory is empty: $ASSETS_DIR"
+            echo "   Syncing it would delete every asset from WordPress.org. Aborting."
+            exit 1
+          fi
+
+          HAS_RASTER_ICON=0
+          HAS_SVG_ICON=0
+          BLUEPRINT_COUNT=0
+
+          for FILE in "${FILES[@]}"; do
+            SIZE=$(stat -c %s "$ASSETS_DIR/$FILE")
+            # Banners and raster icons must have the dimensions their name says,
+            # WordPress.org trusts the name and would render a different size distorted.
+            EXPECTED_DIMENSIONS=""
+
+            if [[ "$FILE" =~ $BANNER_RE ]]; then
+              LIMIT=$((4 * 1024 * 1024))
+              EXPECTED_DIMENSIONS="${BASH_REMATCH[1]}"
+            elif [[ "$FILE" =~ $ICON_RE ]]; then
+              LIMIT=$((1 * 1024 * 1024))
+              EXPECTED_DIMENSIONS="${BASH_REMATCH[1]}"
+              HAS_RASTER_ICON=1
+            elif [ "$FILE" = "icon.svg" ]; then
+              LIMIT=$((1 * 1024 * 1024))
+              HAS_SVG_ICON=1
+            elif [[ "$FILE" =~ $SCREENSHOT_RE ]]; then
+              LIMIT=$((10 * 1024 * 1024))
+            elif [[ "$FILE" =~ $BLUEPRINT_RE ]]; then
+              LIMIT=$((100 * 1024))
+              BLUEPRINT_COUNT=$((BLUEPRINT_COUNT + 1))
+              # The importer requires a JSON object or array, scalars are rejected.
+              if ! jq -e 'type == "object" or type == "array"' "$ASSETS_DIR/$FILE" >/dev/null 2>&1; then
+                echo "❌ $FILE is not a valid JSON object or array"
+                ERRORS=1
+              fi
+            else
+              LOWER=$(tr '[:upper:]' '[:lower:]' <<< "$FILE")
+              if [[ "$LOWER" =~ $BANNER_RE ]] || [[ "$LOWER" =~ $ICON_RE ]] || [[ "$LOWER" =~ $SCREENSHOT_RE ]]; then
+                echo "❌ $FILE must be lowercase (required by this workflow)"
+              else
+                echo "❌ $FILE is not a recognized WordPress.org asset (WordPress.org would ignore it)"
+              fi
+              ERRORS=1
+              continue
+            fi
+
+            if [ "$SIZE" -eq 0 ]; then
+              echo "❌ $FILE is empty"
+              ERRORS=1
+              continue
+            elif [ "$SIZE" -gt "$LIMIT" ]; then
+              echo "❌ $FILE is $SIZE bytes, WordPress.org limit is $LIMIT bytes"
+              ERRORS=1
+            fi
+
+            # The real format must match the extension. This also catches Git LFS pointer files,
+            # which actions/checkout fetches instead of the images unless LFS is enabled.
+            case "$FILE" in
+              *.png) EXPECTED_FORMAT="PNG" ;;
+              *.jpg|*.jpeg) EXPECTED_FORMAT="JPEG" ;;
+              *.gif) EXPECTED_FORMAT="GIF" ;;
+              *) continue ;;
+            esac
+
+            # [0] reads only the first frame of animated GIFs.
+            FORMAT=$(identify -ping -format '%m' "$ASSETS_DIR/${FILE}[0]" 2>/dev/null || true)
+            if [ "$FORMAT" != "$EXPECTED_FORMAT" ]; then
+              echo "❌ $FILE is ${FORMAT:-not a readable image} (expected $EXPECTED_FORMAT). Git LFS files are not supported"
+              ERRORS=1
+              continue
+            fi
+
+            if [ -n "$EXPECTED_DIMENSIONS" ]; then
+              DIMENSIONS=$(identify -ping -format '%wx%h' "$ASSETS_DIR/${FILE}[0]" 2>/dev/null || true)
+              if [ "$DIMENSIONS" != "$EXPECTED_DIMENSIONS" ]; then
+                echo "❌ $FILE is ${DIMENSIONS:-unreadable}, expected $EXPECTED_DIMENSIONS"
+                ERRORS=1
+              fi
+            fi
+          done
+
+          # WordPress.org would show icon.svg alone, but its Plugin Assets docs recommend a raster fallback.
+          if [ "$HAS_SVG_ICON" = "1" ] && [ "$HAS_RASTER_ICON" = "0" ]; then
+            echo "❌ icon.svg requires a PNG/JPG/GIF icon (icon-128x128 or icon-256x256) as fallback (required by this workflow)"
+            ERRORS=1
+          fi
+
+          # WordPress.org would import only the first 10 and skip the rest.
+          if [ "$BLUEPRINT_COUNT" -gt 10 ]; then
+            echo "❌ $BLUEPRINT_COUNT blueprints found, at most 10 are allowed (required by this workflow, WordPress.org imports only 10)"
+            ERRORS=1
+          fi
+
+          [ "$ERRORS" = "1" ] && exit 1
+
+          echo "✅ ${#FILES[@]} asset(s) in $ASSETS_DIR are valid"
+
+      - name: Checkout SVN repository
+        env:
+          SVN_PLUGIN_SLUG: ${{ inputs.SVN_PLUGIN_SLUG }}
+          SYNC_README: ${{ inputs.SYNC_README }}
+          SYNC_ASSETS: ${{ inputs.SYNC_ASSETS }}
+          STABLE_TAG: ${{ steps.readme.outputs.STABLE_TAG }}
+        run: |
+          set -euo pipefail
+
+          export SVN_REPO_ROOT="${RUNNER_TEMP}/svn_repository/${SVN_PLUGIN_SLUG}"
+          echo "SVN_REPO_ROOT=$SVN_REPO_ROOT" >> "$GITHUB_ENV"
+
+          # Sparse checkout: only the files this workflow may change are fetched.
+          # trunk and tags stay (nearly) empty, which keeps this fast for plugins with large histories.
+          mkdir -p "$(dirname "$SVN_REPO_ROOT")"
+          svn checkout "https://plugins.svn.wordpress.org/${SVN_PLUGIN_SLUG}" "$SVN_REPO_ROOT" --depth immediates
+          cd "$SVN_REPO_ROOT"
+
+          if [ "$SYNC_README" = "true" ]; then
+            svn update trunk/readme.txt
+            svn update tags --set-depth immediates
+
+            if [ -d "tags/$STABLE_TAG" ]; then
+              svn update "tags/$STABLE_TAG/readme.txt"
+            fi
+          fi
+
+          if [ "$SYNC_ASSETS" = "true" ]; then
+            if [ -d assets ]; then
+              svn update assets --set-depth infinity
+            else
+              echo "ℹ️ No /assets directory in SVN yet, creating it"
+              svn mkdir assets
+            fi
+          fi
+
+      - name: Verify Stable tag matches WordPress.org
+        if: inputs.SYNC_README == true
+        env:
+          SVN_PLUGIN_SLUG: ${{ inputs.SVN_PLUGIN_SLUG }}
+          STABLE_TAG: ${{ steps.readme.outputs.STABLE_TAG }}
+        run: |
+          set -euo pipefail
+
+          cd "$SVN_REPO_ROOT"
+
+          if [ ! -f trunk/readme.txt ]; then
+            echo "❌ trunk/readme.txt does not exist in SVN"
+            exit 1
+          fi
+
+          SVN_STABLE_TAG=$(grep -m1 -iE '^[[:space:]]*([*+-][[:space:]]+)?Stable tag:' trunk/readme.txt \
+            | sed -E 's/^.*Stable tag:[[:space:]]*//I; s/[[:space:]]+$//' | tr -d '\r' || true)
+
+          # Changing the Stable tag means publishing a different version - that is a release.
+          if [ "$STABLE_TAG" != "$SVN_STABLE_TAG" ]; then
+            echo "❌ readme.txt Stable tag ($STABLE_TAG) does not match Stable tag in SVN trunk ($SVN_STABLE_TAG)"
+            echo "   This workflow cannot change the Stable tag. Use the wordpress-org-release workflow to publish a new version,"
+            echo "   or pass a GIT_REF whose readme.txt matches the currently published version."
+            exit 1
+          fi
+
+          if [ ! -f "tags/$STABLE_TAG/readme.txt" ]; then
+            echo "❌ tags/$STABLE_TAG/readme.txt does not exist in SVN"
+            echo "   Check: https://plugins.svn.wordpress.org/${SVN_PLUGIN_SLUG}/tags/"
+            exit 1
+          fi
+
+          echo "✅ Stable tag $STABLE_TAG matches SVN trunk and exists as a published tag"
+
+      - name: Synchronize readme.txt
+        if: inputs.SYNC_README == true
+        env:
+          STABLE_TAG: ${{ steps.readme.outputs.STABLE_TAG }}
+        run: |
+          set -euo pipefail
+
+          cd "$SVN_REPO_ROOT"
+          GIT_README="$GITHUB_WORKSPACE/readme.txt"
+          TAG_README="tags/$STABLE_TAG/readme.txt"
+
+          readme_header() {
+            grep -m1 -iE "^[[:space:]]*([*+-][[:space:]]+)?$1:" "$2" \
+              | sed -E 's/^[^:]*:[[:space:]]*//; s/[[:space:]]+$//' | tr -d '\r' || true
+          }
+
+          # These headers change the compatibility info of the published version, which is more than cosmetic.
+          for HEADER in "Requires at least" "Requires PHP"; do
+            OLD_VALUE=$(readme_header "$HEADER" "$TAG_README")
+            NEW_VALUE=$(readme_header "$HEADER" "$GIT_README")
+            if [ "$OLD_VALUE" != "$NEW_VALUE" ]; then
+              echo "::warning title=$HEADER changed::'$HEADER' changes from '${OLD_VALUE:-(none)}' to '${NEW_VALUE:-(none)}' for the already published version $STABLE_TAG. Make sure version $STABLE_TAG really has these requirements."
+            fi
+          done
+
+          # If trunk's readme already differs from the published one, trunk holds unreleased changes
+          # (e.g. a trunk preview created by wordpress-org-release with UPDATE_TRUNK_ONLY).
+          # Overwriting it would silently revert those, so trunk is left alone in that case.
+          if cmp -s trunk/readme.txt "$TAG_README"; then
+            TRUNK_IN_SYNC=true
+          else
+            TRUNK_IN_SYNC=false
+          fi
+
+          # The plugin page is rendered from the readme.txt of the Stable tag.
+          cp "$GIT_README" "$TAG_README"
+          echo "✅ Updated $TAG_README"
+
+          if [ "$TRUNK_IN_SYNC" = "true" ]; then
+            cp "$GIT_README" trunk/readme.txt
+            echo "✅ Updated trunk/readme.txt"
+          elif cmp -s trunk/readme.txt "$GIT_README"; then
+            echo "ℹ️ trunk/readme.txt already matches readme.txt from Git"
+          else
+            echo "::warning title=trunk/readme.txt left unchanged::SVN trunk contains unreleased readme.txt changes (likely a trunk preview). Only $TAG_README was updated. Make sure the same change is part of the upcoming release."
+          fi
+
+      - name: Synchronize assets
+        if: inputs.SYNC_ASSETS == true
+        env:
+          ASSETS_DIR: ${{ inputs.ASSETS_DIR }}
+        run: |
+          set -euo pipefail
+
+          rsync -rc \
+          --itemize-changes \
+          --delete \
+          --exclude='.*' \
+          "$GITHUB_WORKSPACE/$ASSETS_DIR/" "$SVN_REPO_ROOT/assets/"
+
+          cd "$SVN_REPO_ROOT"
+          svn add assets --force --depth infinity --quiet
+
+          MISSING=$(svn status assets | grep '^!' | cut -c9- || true)
+
+          if [ -n "$MISSING" ]; then
+            echo "$MISSING" | while IFS= read -r file; do
+              svn delete "$file@"  # @ suffix handles files with @ in name
+            done
+          fi
+
+          # Without a correct svn:mime-type, browsers download assets instead of displaying them.
+          # 'svn add' marks binaries as application/octet-stream, so this also fixes newly added files.
+          find assets -type f | while IFS= read -r file; do
+            case "$file" in
+              *.png) MIME_TYPE="image/png" ;;
+              *.jpg|*.jpeg) MIME_TYPE="image/jpeg" ;;
+              *.gif) MIME_TYPE="image/gif" ;;
+              *.svg) MIME_TYPE="image/svg+xml" ;;
+              *.json) MIME_TYPE="application/json" ;;
+              *) continue ;;
+            esac
+
+            if [ "$(svn propget svn:mime-type "$file@" 2>/dev/null || true)" != "$MIME_TYPE" ]; then
+              svn propset --quiet svn:mime-type "$MIME_TYPE" "$file@"
+            fi
+          done
+
+      - name: Verify only plugin page files are changed
+        env:
+          SYNC_README: ${{ inputs.SYNC_README }}
+          SYNC_ASSETS: ${{ inputs.SYNC_ASSETS }}
+          STABLE_TAG: ${{ steps.readme.outputs.STABLE_TAG }}
+        run: |
+          set -euo pipefail
+
+          cd "$SVN_REPO_ROOT"
+
+          # Defense in depth: this workflow must never touch plugin code, and only touches
+          # what the enabled options allow. Readme paths are matched literally (no regex),
+          # so version dots can't act as wildcards.
+          is_allowed() {
+            local STATUS="$1" FILE="$2"
+
+            if [ "$SYNC_README" = "true" ]; then
+              case "$FILE" in
+                trunk/readme.txt|"tags/$STABLE_TAG/readme.txt") return 0 ;;
+              esac
+            fi
+
+            if [ "$SYNC_ASSETS" = "true" ]; then
+              case "$FILE" in
+                assets|assets/blueprints) return 0 ;;
+                assets/*)
+                  # Removing a file is always fine, e.g. a legacy file with a name WordPress.org ignores.
+                  [ "$STATUS" = "D" ] && return 0
+                  local ASSET="${FILE#assets/}"
+                  [ "$ASSET" = "icon.svg" ] && return 0
+                  [[ "$ASSET" =~ $BANNER_RE || "$ASSET" =~ $ICON_RE || "$ASSET" =~ $SCREENSHOT_RE || "$ASSET" =~ $BLUEPRINT_RE ]] && return 0
+                  ;;
+              esac
+            fi
+
+            return 1
+          }
+
+          UNEXPECTED=$(svn status | while IFS= read -r line; do
+            if ! is_allowed "${line:0:1}" "${line:8}"; then
+              echo "$line"
+            fi
+          done)
+
+          if [ -n "$UNEXPECTED" ]; then
+            echo "❌ Unexpected changes outside of the plugin page files:"
+            echo "$UNEXPECTED"
+            exit 1
+          fi
+
+          echo "✅ Only plugin page files are changed"
+
+      - name: Show SVN changes
+        id: svn_status
+        env:
+          SYNC_README: ${{ inputs.SYNC_README }}
+          SYNC_ASSETS: ${{ inputs.SYNC_ASSETS }}
+          STABLE_TAG: ${{ steps.readme.outputs.STABLE_TAG }}
+        run: |
+          set -euo pipefail
+
+          cd "$SVN_REPO_ROOT"
+
+          # The commit and the dry run preview share this list.
+          COMMIT_PATHS_FILE="${RUNNER_TEMP}/commit-paths.txt"
+          echo "COMMIT_PATHS_FILE=$COMMIT_PATHS_FILE" >> "$GITHUB_ENV"
+          : > "$COMMIT_PATHS_FILE"
+          README_PATHS=()
+
+          if [ "$SYNC_README" = "true" ]; then
+            README_PATHS=(trunk/readme.txt "tags/$STABLE_TAG/readme.txt")
+            printf '%s\n' "${README_PATHS[@]}" >> "$COMMIT_PATHS_FILE"
+          fi
+
+          if [ "$SYNC_ASSETS" = "true" ]; then
+            echo assets >> "$COMMIT_PATHS_FILE"
+          fi
+
+          STATUS=$(svn status)
+
+          # Content (first column) or property (second column) changes
+          if grep -E '^([ADMR~]|.M)' >/dev/null <<< "$STATUS"; then
+            echo "HAS_CHANGES=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "HAS_CHANGES=false" >> "$GITHUB_OUTPUT"
+            echo "✅ The WordPress.org plugin page is already up to date, nothing to commit." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          DELETED=$(grep '^D' <<< "$STATUS" | cut -c9- || true)
+
+          # Readme files may contain ``` themselves, so a longer fence is used.
+          {
+            echo '### SVN changes'
+            echo '`````'
+            echo "$STATUS"
+            echo '`````'
+
+            if [ -n "$DELETED" ]; then
+              echo '### ⚠️ Removed from WordPress.org'
+              echo '`````'
+              echo "$DELETED"
+              echo '`````'
+            fi
+
+            # Readme diffs are text and worth reviewing; binary assets are listed by status only.
+            if [ "${#README_PATHS[@]}" -gt 0 ]; then
+              echo '### readme.txt diff'
+              echo '`````diff'
+              svn diff "${README_PATHS[@]}"
+              echo '`````'
+            fi
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Commit changes to SVN repository
+        if: inputs.DRY_RUN == false
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          GIT_REF: ${{ inputs.GIT_REF }}
+          SHORT_SHA: ${{ steps.git_revision.outputs.SHORT_SHA }}
+          HAS_CHANGES: ${{ steps.svn_status.outputs.HAS_CHANGES }}
+        run: |
+          set -euo pipefail
+
+          # Unlike a release, updating the plugin page is idempotent: re-running without changes is fine.
+          if [ "$HAS_CHANGES" != "true" ]; then
+            echo "::notice title=No changes::The WordPress.org plugin page is already up to date"
+            exit 0
+          fi
+
+          cd "$SVN_REPO_ROOT"
+
+          mapfile -t COMMIT_PATHS < "$COMMIT_PATHS_FILE"
+          # svn log -v lists the exact paths, so the message doesn't repeat them.
+          COMMIT_MESSAGE="Update plugin page from ${GIT_REF}@${SHORT_SHA}"
+          COMMIT_LOG="${RUNNER_TEMP}/svn-commit.log"
+
+          # WordPress.org SVN doesn't support SSH keys or tokens.
+          # Keeping credentials as step-level env vars with --no-auth-cache is the best available option.
+          # The password is piped via stdin, so it never shows up in the process list (argv).
+          # printf must stay the bash builtin, and set -x must not be enabled in this step.
+          echo '🚀 Committing...'
+
+          if ! printf '%s' "$SVN_PASSWORD" | svn commit "${COMMIT_PATHS[@]}" \
+            --username "$SVN_USERNAME" \
+            --password-from-stdin \
+            --no-auth-cache \
+            --non-interactive \
+            -m "$COMMIT_MESSAGE" 2>&1 | tee "$COMMIT_LOG"; then
+
+            # SVN commits are atomic: on a conflict nothing is committed.
+            if grep -qE 'E160028|E160024|out of date' "$COMMIT_LOG"; then
+              echo "::error title=Concurrent SVN commit::Someone else committed to this plugin on WordPress.org in the meantime (maybe a release running at the same time). Nothing was changed. Re-run this workflow once the other run has finished."
+            fi
+            exit 1
+          fi
+
+          echo "✅ WordPress.org plugin page updated. Changes may take a few minutes (up to hours) to show due to CDN caching."
+
+      - name: Prepare dry run preview
+        if: inputs.DRY_RUN == true && steps.svn_status.outputs.HAS_CHANGES == 'true'
+        run: |
+          set -euo pipefail
+
+          PREVIEW_DIR="${RUNNER_TEMP}/plugin_page_preview"
+          echo "PREVIEW_DIR=$PREVIEW_DIR" >> "$GITHUB_ENV"
+          mkdir -p "$PREVIEW_DIR"
+
+          cd "$SVN_REPO_ROOT"
+
+          # The preview holds exactly what would be committed, in its final state.
+          while IFS= read -r COMMIT_PATH; do
+            case "$COMMIT_PATH" in
+              assets)
+                rsync -r --exclude='.svn' assets/ "$PREVIEW_DIR/assets/"
+                ;;
+              trunk/readme.txt)
+                # trunk is left alone when it holds unreleased changes, so include it only if it changes.
+                if [ -n "$(svn status trunk/readme.txt)" ]; then
+                  mkdir -p "$PREVIEW_DIR/trunk"
+                  cp trunk/readme.txt "$PREVIEW_DIR/trunk/readme.txt"
+                fi
+                ;;
+              *)
+                mkdir -p "$PREVIEW_DIR/$(dirname "$COMMIT_PATH")"
+                cp "$COMMIT_PATH" "$PREVIEW_DIR/$COMMIT_PATH"
+                ;;
+            esac
+          done < "$COMMIT_PATHS_FILE"
+
+      - name: Upload dry run preview as an artifact
+        if: inputs.DRY_RUN == true && steps.svn_status.outputs.HAS_CHANGES == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ${{ inputs.SVN_PLUGIN_SLUG }}-plugin-page
+          path: ${{ env.PREVIEW_DIR }}
+          if-no-files-found: error
+          compression-level: 1 #Minimal compression - we don't want to waste resources for this
