@@ -42,6 +42,7 @@ groups here:
 * End-to-end tests with [Playwright](./docs/test-playwright.md)
 * [Build and distribute plugin and theme archives](./docs/build-and-distribute.md)
 * [Release to the WordPress.org plugin directory](./docs/wordpress-org-release.md)
+* [Update the WordPress.org plugin page (readme and assets)](./docs/wordpress-org-plugin-page.md)
 * [Quality Insights Toolkit (QIT) for WooCommerce](./docs/woo-qit.md)
 * [Deployments with Deployer](./docs/deploy-deployer.md)
 
