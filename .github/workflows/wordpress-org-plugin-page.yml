@@ -386,6 +386,12 @@ jobs:
             TRUNK_IN_SYNC=false
           fi
 
+          # WordPress.org treats any change to a released tag as a modified release,
+          # and with Release Confirmation enabled that release must be confirmed again.
+          if ! cmp -s "$GIT_README" "$TAG_README"; then
+            echo "::notice title=Release Confirmation::If this plugin has Release Confirmation enabled on WordPress.org, updating $TAG_README reopens release $STABLE_TAG for confirmation. All committers get an email, and the plugin page updates only after the release is confirmed again."
+          fi
+
           # The plugin page is rendered from the readme.txt of the Stable tag.
           cp "$GIT_README" "$TAG_README"
           echo "✅ Updated $TAG_README"

@@ -19,7 +19,7 @@ To achieve that, this workflow:
 3. When `SYNC_ASSETS` is enabled, validates every file in `ASSETS_DIR` (names, size limits, real image format and dimensions, blueprint JSON), and fails if the directory is missing or empty, or contains symlinks or unsupported subdirectories
 4. Checks out only the needed parts of the WordPress.org SVN repository: `trunk/readme.txt`, the list of tags, the readme of the stable tag, and `/assets`. Plugin code is never fetched
 5. Verifies that the `Stable tag` in Git equals the `Stable tag` in SVN trunk and that this tag exists
-6. Copies `readme.txt` into `tags/<Stable tag>/` (which is what WordPress.org renders) and into `trunk/`. The trunk copy is skipped with a warning if trunk contains unreleased changes, see [Trunk previews](#trunk-previews). A warning is also shown if `Requires at least` or `Requires PHP` changes, because that changes the compatibility info of the published version
+6. Copies `readme.txt` into `tags/<Stable tag>/` (which is what WordPress.org renders) and into `trunk/`. The trunk copy is skipped with a warning if trunk contains unreleased changes, see [Trunk previews](#trunk-previews). A warning is also shown if `Requires at least` or `Requires PHP` changes, because that changes the compatibility info of the published version. A notice reminds about [Release Confirmation](#release-confirmation) whenever the tag's `readme.txt` changes
 7. Mirrors `ASSETS_DIR` to SVN `/assets` via `rsync --delete`, so files removed from Git are removed from WordPress.org as well, and sets the correct `svn:mime-type` on every asset
 8. Fails if anything would change that the enabled options don't allow: `trunk/readme.txt` and `tags/<Stable tag>/readme.txt` with `SYNC_README`, and recognized asset files in `/assets` with `SYNC_ASSETS`
 9. Shows the `svn status`, the removed files, and the `readme.txt` diff in the log and in the job summary on the run page
@@ -145,6 +145,21 @@ Then:
 ## Trunk previews
 
 If SVN `trunk/readme.txt` differs from `tags/<Stable tag>/readme.txt` before the sync, trunk holds unreleased changes, for example a preview published with the release workflow's `UPDATE_TRUNK_ONLY` mode. Overwriting it would silently revert those changes, so in that case the workflow only updates the tag's `readme.txt` and emits a warning. Make sure the same change is part of the upcoming release, so that it isn't lost when the next version is published.
+
+## Release Confirmation
+
+[Release Confirmation](https://developer.wordpress.org/plugins/wordpress-org/release-confirmation-emails/) is an opt-in WordPress.org feature that requires committers to confirm every release by email. Plugin committers can check whether it is enabled for the plugin on WordPress.org.
+
+With Release Confirmation enabled, WordPress.org treats any commit to an already released tag as a modified release, even one that only changes `readme.txt`. Updating `tags/<Stable tag>/readme.txt` therefore:
+
+- reopens that release for confirmation and sends the confirmation email to all committers again
+- restarts the release cooldown
+- keeps the plugin page from updating until the release is confirmed again
+
+Asset-only runs (`SYNC_README: false`) don't touch any tag and are not affected.
+
+> [!NOTE]
+> The handbook page still says that released tags can't be altered at all, including the readme. The plugin directory importer [reopens the modified release for confirmation](https://github.com/WordPress/wordpress.org/commit/8d1727f0e331ccfebce432bdfcf4c30db16e2803) instead.
 
 ## Supported asset files
 
