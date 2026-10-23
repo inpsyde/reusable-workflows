@@ -150,16 +150,18 @@ If SVN `trunk/readme.txt` differs from `tags/<Stable tag>/readme.txt` before the
 
 [Release Confirmation](https://developer.wordpress.org/plugins/wordpress-org/release-confirmation-emails/) is an opt-in WordPress.org feature that requires committers to confirm every release by email. Plugin committers can check whether it is enabled for the plugin on WordPress.org.
 
-With Release Confirmation enabled, WordPress.org treats any commit to an already released tag as a modified release, even one that only changes `readme.txt`. Updating `tags/<Stable tag>/readme.txt` therefore:
+> [!WARNING]
+> For plugins with Release Confirmation enabled, the handbook explicitly states that released tags can't be altered, including the readme (e.g. for `Tested up to`). Updating `readme.txt` with this workflow is therefore **not officially supported** for these plugins. Use it at your own risk, or keep `SYNC_README: false` and ship readme changes with the next release.
+
+Judging by the plugin directory importer's code, the scenario appears to be handled: WordPress.org treats any commit to an already released tag as a [modified release](https://github.com/WordPress/wordpress.org/commit/8d1727f0e331ccfebce432bdfcf4c30db16e2803), even one that only changes `readme.txt`. Updating `tags/<Stable tag>/readme.txt` then:
 
 - reopens that release for confirmation and sends the confirmation email to all committers again
 - restarts the release cooldown
 - keeps the plugin page from updating until the release is confirmed again
 
-Asset-only runs (`SYNC_README: false`) don't touch any tag and are not affected.
+This behavior isn't documented and may change. It's also unclear whether the downloadable ZIP of the release is rebuilt with the new `readme.txt`.
 
-> [!NOTE]
-> The handbook page still says that released tags can't be altered at all, including the readme. The plugin directory importer [reopens the modified release for confirmation](https://github.com/WordPress/wordpress.org/commit/8d1727f0e331ccfebce432bdfcf4c30db16e2803) instead.
+Asset-only runs (`SYNC_README: false`) don't touch any tag and are not affected.
 
 ## Supported asset files
 
