@@ -185,6 +185,9 @@ jobs:
 This workflow runs [PHPUnit](https://phpunit.de/) with the integration test configuration. It does
 so by executing the binary resolved via `composer config bin-dir`.
 
+The project must have a `phpunit-integration.xml.dist` file in the root directory. If the file is
+missing, the workflow fails before it builds the assets and installs the dependencies.
+
 Before the tests, the workflow installs the npm dependencies and runs `npm run build --if-present`.
 This makes the compiled assets (for example, `blocks-manifest.php`) available to the tests. If the
 project has no `build` script, the workflow skips the build.

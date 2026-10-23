@@ -61,6 +61,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
+      - name: Check PHPUnit configuration
+        run: |
+          if [ ! -f phpunit-integration.xml.dist ]; then
+            echo "::error::file phpunit-integration.xml.dist not found - The PHPUnit integration configuration is missing."
+            exit 1
+          fi
+
       - name: Set up custom environment variables
         env:
           ENV_VARS: ${{ secrets.ENV_VARS }}
