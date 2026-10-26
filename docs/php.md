@@ -250,3 +250,56 @@ jobs:
     with:
       PHP_VERSION: ${{ matrix.php }}
 ```
+
+## Rector PHP
+
+This workflow runs [Rector](https://getrector.com/). It does so by executing the binary resolved via
+`composer config bin-dir`.
+
+**Simplest possible example:**
+
+```yml
+name: Rector PHP
+on:
+  push:
+  pull_request:
+jobs:
+  rector-php:
+    uses: inpsyde/reusable-workflows/.github/workflows/rector-php.yml@main
+```
+
+### Configuration parameters
+
+#### Inputs
+
+| Name             | Default           | Description                                                                    |
+|------------------|-------------------|--------------------------------------------------------------------------------|
+| `PHP_VERSION`    | `'8.2'`           | PHP version with which the scripts are executed                                |
+| `PHP_EXTENSIONS` | `''`              | PHP extensions supported by shivammathur/setup-php to be installed or disabled |
+| `COMPOSER_ARGS`  | `'--prefer-dist'` | Set of arguments passed to Composer                                            |
+| `RECTOR_ARGS`    | `''`              | Set of arguments passed to Rector                                              |
+
+#### Secrets
+
+| Name                 | Description                                                                              |
+|----------------------|------------------------------------------------------------------------------------------|
+| `COMPOSER_AUTH_JSON` | Authentication for privately hosted packages and repositories as a JSON formatted object |
+| `ENV_VARS`           | Additional environment variables as a JSON formatted object                              |
+
+**Example with configuration parameters:**
+
+```yml
+name: Rector PHP
+on:
+  push:
+  pull_request:
+jobs:
+  rector-php:
+    uses: inpsyde/reusable-workflows/.github/workflows/rector-php.yml@main
+    secrets:
+      COMPOSER_AUTH_JSON: ${{ secrets.COMPOSER_AUTH_JSON }}
+      ENV_VARS: >-
+        [{"name":"EXAMPLE_USERNAME", "value":"${{ secrets.USERNAME }}"}]
+    with:
+      RECTOR_ARGS: '--rules-summary'
+```
