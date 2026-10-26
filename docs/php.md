@@ -272,12 +272,12 @@ jobs:
 
 #### Inputs
 
-| Name             | Default                               | Description                                                                    |
-|------------------|---------------------------------------|--------------------------------------------------------------------------------|
-| `PHP_VERSION`    | `'8.2'`                               | PHP version with which the scripts are executed                                |
-| `PHP_EXTENSIONS` | `''`                                  | PHP extensions supported by shivammathur/setup-php to be installed or disabled |
-| `COMPOSER_ARGS`  | `'--prefer-dist'`                     | Set of arguments passed to Composer                                            |
-| `RECTOR_ARGS`    | `'--dry-run --output-format=github'`  | Set of arguments passed to Rector                                              |
+| Name             | Default           | Description                                                                    |
+|------------------|-------------------|--------------------------------------------------------------------------------|
+| `PHP_VERSION`    | `'8.2'`           | PHP version with which the scripts are executed                                |
+| `PHP_EXTENSIONS` | `''`              | PHP extensions supported by shivammathur/setup-php to be installed or disabled |
+| `COMPOSER_ARGS`  | `'--prefer-dist'` | Set of arguments passed to Composer                                            |
+| `RECTOR_ARGS`    | `'--dry-run'`     | Set of arguments passed to Rector                                              |
 
 #### Secrets
 
