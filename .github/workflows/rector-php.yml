@@ -1,0 +1,63 @@
+name: Rector PHP
+
+on:
+  workflow_call:
+    inputs:
+      PHP_VERSION:
+        description: PHP version with which the scripts are executed.
+        default: '8.2'
+        required: false
+        type: string
+      PHP_EXTENSIONS:
+        description: PHP extensions supported by shivammathur/setup-php to be installed or disabled.
+        default: ''
+        required: false
+        type: string
+      COMPOSER_ARGS:
+        description: Set of arguments passed to Composer.
+        default: '--prefer-dist'
+        required: false
+        type: string
+      RECTOR_ARGS:
+        description: Set of arguments passed to Rector.
+        default: '--dry-run --output-format=github'
+        required: false
+        type: string
+    secrets:
+      COMPOSER_AUTH_JSON:
+        description: Authentication for privately hosted packages and repositories as a JSON formatted object.
+        required: false
+      ENV_VARS:
+        description: Additional environment variables as a JSON formatted object.
+        required: false
+
+jobs:
+  rector-php:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Set up custom environment variables
+        env:
+          ENV_VARS: ${{ secrets.ENV_VARS }}
+        if: ${{ env.ENV_VARS }}
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+        with:
+          script: |
+            JSON
+              .parse(process.env.ENV_VARS)
+              .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
+
+      - name: Set up PHP
+        uses: inpsyde/reusable-workflows/.github/actions/setup-php@ce4cfd9ad8176f895d09ae11cb12dd65590cc94e # main
+        with:
+          php-version: ${{ inputs.PHP_VERSION }}
+          php-extensions: ${{ inputs.PHP_EXTENSIONS }}
+          php-tools: 'composer'
+          composer-options: ${{ inputs.COMPOSER_ARGS }}
+          composer-auth-json: ${{ secrets.COMPOSER_AUTH_JSON }}
+
+      - name: Run Rector
+        run: ./$(composer config bin-dir)/rector${{ inputs.RECTOR_ARGS }}
