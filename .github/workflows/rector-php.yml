@@ -20,7 +20,7 @@ on:
         type: string
       RECTOR_ARGS:
         description: Set of arguments passed to Rector.
-        default: '--dry-run'
+        default: ''
         required: false
         type: string
     secrets:
@@ -60,4 +60,4 @@ jobs:
           composer-auth-json: ${{ secrets.COMPOSER_AUTH_JSON }}
 
       - name: Run Rector
-        run: ./$(composer config bin-dir)/rector ${{ inputs.RECTOR_ARGS }}
+        run: ./$(composer config bin-dir)/rector --dry-run ${{ inputs.RECTOR_ARGS }}

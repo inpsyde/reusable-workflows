@@ -277,7 +277,7 @@ jobs:
 | `PHP_VERSION`    | `'8.2'`           | PHP version with which the scripts are executed                                |
 | `PHP_EXTENSIONS` | `''`              | PHP extensions supported by shivammathur/setup-php to be installed or disabled |
 | `COMPOSER_ARGS`  | `'--prefer-dist'` | Set of arguments passed to Composer                                            |
-| `RECTOR_ARGS`    | `'--dry-run'`     | Set of arguments passed to Rector                                              |
+| `RECTOR_ARGS`    | `''`              | Set of arguments passed to Rector                                              |
 
 #### Secrets
 
@@ -301,5 +301,5 @@ jobs:
       ENV_VARS: >-
         [{"name":"EXAMPLE_USERNAME", "value":"${{ secrets.USERNAME }}"}]
     with:
-      RECTOR_ARGS: '--dry-run --rules-summary'
+      RECTOR_ARGS: '--rules-summary'
 ```
