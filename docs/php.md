@@ -186,11 +186,12 @@ This workflow runs [PHPUnit](https://phpunit.de/) with the integration test conf
 so by executing the binary resolved via `composer config bin-dir`.
 
 The project must have a `phpunit-integration.xml.dist` file in the root directory. If the file is
-missing, the workflow fails before it builds the assets and installs the dependencies.
+missing, the workflow fails before it installs the dependencies.
 
-Before the tests, the workflow installs the npm dependencies and runs `npm run build --if-present`.
-This makes the compiled assets (for example, `blocks-manifest.php`) available to the tests. If the
-project has no `build` script, the workflow skips the build.
+If `BUILD_ASSETS` is `true`, the workflow installs the npm dependencies and runs
+`npm run build --if-present` before the tests. This makes the compiled assets (for example,
+`blocks-manifest.php`) available to the tests. If the project has no `build` script, the workflow
+skips the build.
 
 **Simplest possible example:**
 
@@ -214,6 +215,7 @@ jobs:
 | `PHP_EXTENSIONS`      | `''`                            | PHP extensions supported by shivammathur/setup-php to be installed or disabled |
 | `COMPOSER_ARGS`       | `'--prefer-dist'`               | Set of arguments passed to Composer                                            |
 | `PHPUNIT_ARGS`        | `'--no-coverage'`               | Set of arguments passed to PHPUnit                                             |
+| `BUILD_ASSETS`        | `false`                         | Whether to install the npm dependencies and build the assets before the tests  |
 | `NODE_VERSION`        | `'24'`                          | Node version with which the assets are built                                   |
 | `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                             |
 
@@ -249,6 +251,7 @@ jobs:
         [{"name":"WP_CORE_VERSION", "value":"${{ matrix.wp }}"}]
     with:
       PHPUNIT_ARGS: '--coverage-text'
+      BUILD_ASSETS: true
 ```
 
 **Note**: The environment variables from `ENV_VARS` are set before the asset build, so the build

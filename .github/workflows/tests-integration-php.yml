@@ -23,6 +23,11 @@ on:
         default: '--no-coverage'
         required: false
         type: string
+      BUILD_ASSETS:
+        description: Whether to install the npm dependencies and build the assets before the tests.
+        type: boolean
+        default: false
+        required: false
       NODE_VERSION:
         description: Node version with which the assets are built.
         default: '24'
@@ -87,6 +92,7 @@ jobs:
           user-name: ${{ secrets.GITHUB_USER_NAME }}
 
       - name: Set up Node
+        if: ${{ inputs.BUILD_ASSETS }}
         uses: inpsyde/reusable-workflows/.github/actions/setup-node@ce4cfd9ad8176f895d09ae11cb12dd65590cc94e # main
         with:
           node-version: ${{ inputs.NODE_VERSION }}
@@ -95,6 +101,7 @@ jobs:
 
       # The integration tests can need compiled assets (e.g. `blocks-manifest.php`), which Git does not track.
       - name: Build assets
+        if: ${{ inputs.BUILD_ASSETS }}
         run: npm run build --if-present
 
       - name: Set up PHP
