@@ -301,5 +301,5 @@ jobs:
       ENV_VARS: >-
         [{"name":"EXAMPLE_USERNAME", "value":"${{ secrets.USERNAME }}"}]
     with:
-      RECTOR_ARGS: '--dry-run --no-progress-bar'
+      RECTOR_ARGS: '--dry-run --rules-summary'
 ```
