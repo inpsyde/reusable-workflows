@@ -617,8 +617,6 @@ jobs:
             --no-auth-cache \
             --non-interactive \
             -m "$COMMIT_MESSAGE" 2>&1 | tee "$COMMIT_LOG"; then
-
-            # SVN commits are atomic: on a conflict nothing is committed.
             if grep -qE 'E160028|E160024|out of date' "$COMMIT_LOG"; then
               echo "::error title=Concurrent SVN commit::Someone else committed to this plugin on WordPress.org in the meantime (maybe a release running at the same time). Nothing was changed. Re-run this workflow once the other run has finished."
             fi
