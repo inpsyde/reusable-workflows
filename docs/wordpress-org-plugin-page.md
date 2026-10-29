@@ -77,32 +77,6 @@ jobs:
 > [!IMPORTANT]
 > `DRY_RUN` defaults to `true`, so a caller that doesn't pass it only previews the changes. Set `DRY_RUN: false` to actually update the plugin page.
 
-## Update assets automatically on merge
-
-Because the assets directory is validated and mirrored, it can be synced whenever it changes on the main branch:
-
-```yml
-name: Update WordPress.org assets
-on:
-  push:
-    branches: [main]
-    paths: ['.wordpress-org/**']
-jobs:
-  update-assets:
-    uses: inpsyde/reusable-workflows/.github/workflows/wordpress-org-plugin-page.yml@main
-    with:
-      SVN_PLUGIN_SLUG: my-plugin
-      GIT_REF: ${{ github.sha }}
-      SYNC_README: false
-      DRY_RUN: false
-    secrets:
-      SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
-      SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
-```
-
-> [!NOTE]
-> Only automate readme syncing if the branch's `readme.txt` always describes the published version. Otherwise, keep `SYNC_README: false` for automated runs and update the readme through a manually triggered run.
-
 ## Advanced usage: requiring manual approval
 
 To require approval before the plugin page is updated, add an `environment:` key to the calling job and configure protection rules (required reviewers, wait timers, etc.) for that environment in your repository settings under **Settings → Environments**.
