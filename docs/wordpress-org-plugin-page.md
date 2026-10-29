@@ -203,6 +203,4 @@ If nothing would change, no artifact is uploaded and the job summary says that t
 
 ## Troubleshooting
 
-Changes are committed in a single atomic SVN commit, and a run without changes succeeds. If a run fails, even in the commit step because of a network error, **Re-run failed jobs** is always safe. The re-run either commits the changes or reports that the plugin page is already up to date, so there is no need to fix anything in SVN by hand. If `GIT_REF` is a branch, a re-run uses its current state, which may include newer commits.
-
-If someone else commits to the plugin's SVN repository while the workflow runs (e.g. a release running at the same time), the commit fails with an `out of date` error and nothing is changed. Re-run the workflow once the other run has finished.
+Changes are committed in a single atomic SVN commit, and a run without changes succeeds. If a run fails, even in the commit step because of a network error, **Re-run failed jobs** is always safe. The re-run either commits the changes or reports that the plugin page is already up to date, so there is no need to fix anything in SVN by hand. If the commit failed because someone else committed in the meantime (e.g. a release running at the same time), wait until that run has finished. If `GIT_REF` is a branch, a re-run uses its current state, which may include newer commits.
