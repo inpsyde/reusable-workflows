@@ -54,8 +54,9 @@ jobs:
       contents: read
     env:
       # Filename rules of the WordPress.org plugin directory importer, restricted to the documented
-      # banner and icon resolutions and to lowercase names (a rule of this workflow, not of WordPress.org).
-      # Shared by the asset validation and the scope guard, so they can't drift apart.
+      # banner and icon resolutions. Banners, icons, and screenshots must be lowercase (a rule of this
+      # workflow, not of WordPress.org), except the locale's region (e.g. es_ES). Blueprint names follow
+      # the importer as is. Shared by the asset validation and the scope guard, so they can't drift apart.
       # Locale suffix: (-rtl)?(-[a-z]{2,3}(_[A-Z]{2})?(_[a-z0-9]+)?)?
       BANNER_RE: '^banner-(772x250|1544x500)(-rtl)?(-[a-z]{2,3}(_[A-Z]{2})?(_[a-z0-9]+)?)?\.(png|jpg|jpeg|gif)$'
       ICON_RE: '^icon-(128x128|256x256)(-rtl)?(-[a-z]{2,3}(_[A-Z]{2})?(_[a-z0-9]+)?)?\.(png|jpg|jpeg|gif)$'

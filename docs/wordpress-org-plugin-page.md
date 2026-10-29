@@ -167,7 +167,7 @@ Asset-only runs (`SYNC_README: false`) don't touch any tag and are not affected.
 
 Any file with a name WordPress.org would ignore fails the validation. On top of the WordPress.org rules, this workflow requires:
 
-- lowercase file names (except the region part of a locale, e.g. `es_ES`)
+- lowercase banner, icon, and screenshot file names (except the region part of a locale, e.g. `es_ES`)
 - a raster fallback for `icon.svg`
 - at most 10 blueprints (WordPress.org would silently import only the first 10)
 - banners and raster icons with exactly the dimensions their name says, and raster files in the format their extension says
