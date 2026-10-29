@@ -64,9 +64,20 @@ jobs:
       BLUEPRINT_RE: '^blueprints/blueprint[-A-Za-z0-9_]*\.json$'
     steps:
       - name: Install required tools
+        env:
+          SYNC_ASSETS: ${{ inputs.SYNC_ASSETS }}
         run: |
+          set -euo pipefail
+
+          PACKAGES=(subversion)
+
+          # Only the asset validation and sync need these.
+          if [ "$SYNC_ASSETS" = "true" ]; then
+            PACKAGES+=(rsync jq imagemagick)
+          fi
+
           sudo apt-get update -y
-          sudo apt-get install -y subversion rsync jq imagemagick
+          sudo apt-get install -y "${PACKAGES[@]}"
 
       - name: Validate inputs
         env:
