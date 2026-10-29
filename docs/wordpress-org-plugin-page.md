@@ -144,7 +144,7 @@ Then:
 
 ## Trunk previews
 
-If SVN `trunk/readme.txt` differs from `tags/<Stable tag>/readme.txt` before the sync, trunk holds unreleased changes, for example a preview published with the release workflow's `UPDATE_TRUNK_ONLY` mode. Overwriting it would silently revert those changes, so in that case the workflow only updates the tag's `readme.txt` and emits a warning. Make sure the same change is part of the upcoming release, so that it isn't lost when the next version is published.
+If SVN `trunk/readme.txt` differs from `tags/<Stable tag>/readme.txt` before the sync, trunk holds unreleased changes, for example a preview published with the release workflow's `UPDATE_TRUNK_ONLY` mode. Overwriting it would silently revert those changes, so in that case the workflow only updates the tag's `readme.txt` and shows a warning, both as an annotation and in the job summary. Make sure the same change is part of the upcoming release, so that it isn't lost when the next version is published.
 
 ## Release Confirmation
 

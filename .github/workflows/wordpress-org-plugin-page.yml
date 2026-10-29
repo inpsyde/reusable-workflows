@@ -417,6 +417,13 @@ jobs:
             echo "ℹ️ trunk/readme.txt already matches readme.txt from Git"
           else
             echo "::warning title=trunk/readme.txt left unchanged::SVN trunk contains unreleased readme.txt changes (likely a trunk preview). Only $TAG_README was updated. Make sure the same change is part of the upcoming release."
+
+            # Warnings are easy to miss, so this is repeated in the job summary next to the SVN changes.
+            {
+              echo '### ⚠️ trunk/readme.txt left unchanged'
+              echo "SVN trunk holds unreleased \`readme.txt\` changes (likely a trunk preview), so only \`$TAG_README\` is updated. Make sure the same change is in the next release."
+              echo
+            } >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Synchronize assets
