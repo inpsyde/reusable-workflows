@@ -140,7 +140,7 @@ Then:
 1. Commit the `.wordpress-org` directory. Don't store it in Git LFS, see [Supported asset files](#supported-asset-files).
 2. Add `.wordpress-org/` to `.distignore` so the assets don't end up in the plugin package or in SVN trunk during releases.
 3. Run the workflow with `DRY_RUN: true`. The SVN changes in the job summary should list **no content changes** in `/assets`. Property-only changes (` M`) are expected where existing assets lack the correct `svn:mime-type`.
-4. Fix any files the validation rejects. Some are ignored by WordPress.org (e.g. `icon_128x128.png`), others are only rejected by this workflow's stricter rules (lowercase names, a raster fallback for `icon.svg`).
+4. Fix any files the validation rejects. Some are ignored by WordPress.org (e.g. `icon_128x128.png`), others are only rejected by this workflow's stricter rules (e.g. a raster fallback for `icon.svg`).
 
 ## Trunk previews
 
@@ -167,7 +167,6 @@ Asset-only runs (`SYNC_README: false`) don't touch any tag and are not affected.
 
 Any file with a name WordPress.org would ignore fails the validation. On top of the WordPress.org rules, this workflow requires:
 
-- lowercase banner, icon, and screenshot file names (except the region part of a locale, e.g. `es_ES`)
 - a raster fallback for `icon.svg`
 - at most 10 blueprints (WordPress.org would silently import only the first 10)
 - banners and raster icons with exactly the dimensions their name says, and raster files in the format their extension says

@@ -54,13 +54,13 @@ jobs:
       contents: read
     env:
       # Filename rules of the WordPress.org plugin directory importer, restricted to the documented
-      # banner and icon resolutions. Banners, icons, and screenshots must be lowercase (a rule of this
-      # workflow, not of WordPress.org), except the locale's region (e.g. es_ES). Blueprint names follow
-      # the importer as is. Shared by the asset validation and the scope guard, so they can't drift apart.
-      # Locale suffix: (-rtl)?(-[a-z]{2,3}(_[A-Z]{2})?(_[a-z0-9]+)?)?
-      BANNER_RE: '^banner-(772x250|1544x500)(-rtl)?(-[a-z]{2,3}(_[A-Z]{2})?(_[a-z0-9]+)?)?\.(png|jpg|jpeg|gif)$'
-      ICON_RE: '^icon-(128x128|256x256)(-rtl)?(-[a-z]{2,3}(_[A-Z]{2})?(_[a-z0-9]+)?)?\.(png|jpg|jpeg|gif)$'
-      SCREENSHOT_RE: '^screenshot-[0-9]+(-rtl)?(-[a-z]{2,3}(_[A-Z]{2})?(_[a-z0-9]+)?)?\.(png|jpg|jpeg|gif)$'
+      # banner and icon resolutions. Shared by the asset validation and the scope guard, so they can't drift apart.
+      # The importer matches banners, icons, and screenshots case-insensitively, so these three are
+      # matched against the lowercased name. Blueprints are matched case-sensitively, like the importer does.
+      # Locale suffix: (-rtl)?(-[a-z]{2,3}(_[a-z]{2})?(_[a-z0-9]+)?)?
+      BANNER_RE: '^banner-(772x250|1544x500)(-rtl)?(-[a-z]{2,3}(_[a-z]{2})?(_[a-z0-9]+)?)?\.(png|jpg|jpeg|gif)$'
+      ICON_RE: '^icon-(128x128|256x256)(-rtl)?(-[a-z]{2,3}(_[a-z]{2})?(_[a-z0-9]+)?)?\.(png|jpg|jpeg|gif)$'
+      SCREENSHOT_RE: '^screenshot-[0-9]+(-rtl)?(-[a-z]{2,3}(_[a-z]{2})?(_[a-z0-9]+)?)?\.(png|jpg|jpeg|gif)$'
       BLUEPRINT_RE: '^blueprints/blueprint[-A-Za-z0-9_]*\.json$'
     steps:
       - name: Install required tools
@@ -195,24 +195,34 @@ jobs:
           HAS_RASTER_ICON=0
           HAS_SVG_ICON=0
           BLUEPRINT_COUNT=0
+          declare -A SEEN_NAMES=()
 
           for FILE in "${FILES[@]}"; do
             SIZE=$(stat -c %s "$ASSETS_DIR/$FILE")
+            LOWER="${FILE,,}"
             # Banners and raster icons must have the dimensions their name says,
             # WordPress.org trusts the name and would render a different size distorted.
             EXPECTED_DIMENSIONS=""
 
-            if [[ "$FILE" =~ $BANNER_RE ]]; then
+            # The importer ignores case, so two names differing only in case would be the same asset.
+            if [ -n "${SEEN_NAMES[$LOWER]:-}" ]; then
+              echo "❌ $FILE and ${SEEN_NAMES[$LOWER]} differ only in case"
+              ERRORS=1
+              continue
+            fi
+            SEEN_NAMES[$LOWER]="$FILE"
+
+            if [[ "$LOWER" =~ $BANNER_RE ]]; then
               LIMIT=$((4 * 1024 * 1024))
               EXPECTED_DIMENSIONS="${BASH_REMATCH[1]}"
-            elif [[ "$FILE" =~ $ICON_RE ]]; then
+            elif [[ "$LOWER" =~ $ICON_RE ]]; then
               LIMIT=$((1 * 1024 * 1024))
               EXPECTED_DIMENSIONS="${BASH_REMATCH[1]}"
               HAS_RASTER_ICON=1
             elif [ "$FILE" = "icon.svg" ]; then
               LIMIT=$((1 * 1024 * 1024))
               HAS_SVG_ICON=1
-            elif [[ "$FILE" =~ $SCREENSHOT_RE ]]; then
+            elif [[ "$LOWER" =~ $SCREENSHOT_RE ]]; then
               LIMIT=$((10 * 1024 * 1024))
             elif [[ "$FILE" =~ $BLUEPRINT_RE ]]; then
               LIMIT=$((100 * 1024))
@@ -223,9 +233,9 @@ jobs:
                 ERRORS=1
               fi
             else
-              LOWER=$(tr '[:upper:]' '[:lower:]' <<< "$FILE")
-              if [[ "$LOWER" =~ $BANNER_RE ]] || [[ "$LOWER" =~ $ICON_RE ]] || [[ "$LOWER" =~ $SCREENSHOT_RE ]]; then
-                echo "❌ $FILE must be lowercase (required by this workflow)"
+              # The importer accepts any case for .svg, but the plugin page only displays icon.svg.
+              if [ "$LOWER" = "icon.svg" ]; then
+                echo "❌ $FILE must be named exactly icon.svg (WordPress.org only displays icon.svg)"
               else
                 echo "❌ $FILE is not a recognized WordPress.org asset (WordPress.org would ignore it)"
               fi
@@ -244,7 +254,7 @@ jobs:
 
             # The real format must match the extension. This also catches Git LFS pointer files,
             # which actions/checkout fetches instead of the images unless LFS is enabled.
-            case "$FILE" in
+            case "$LOWER" in
               *.png) EXPECTED_FORMAT="PNG" ;;
               *.jpg|*.jpeg) EXPECTED_FORMAT="JPEG" ;;
               *.gif) EXPECTED_FORMAT="GIF" ;;
@@ -434,7 +444,7 @@ jobs:
           # Without a correct svn:mime-type, browsers download assets instead of displaying them.
           # 'svn add' marks binaries as application/octet-stream, so this also fixes newly added files.
           find assets -type f | while IFS= read -r file; do
-            case "$file" in
+            case "${file,,}" in
               *.png) MIME_TYPE="image/png" ;;
               *.jpg|*.jpeg) MIME_TYPE="image/jpeg" ;;
               *.gif) MIME_TYPE="image/gif" ;;
@@ -478,7 +488,8 @@ jobs:
                   [ "$STATUS" = "D" ] && return 0
                   local ASSET="${FILE#assets/}"
                   [ "$ASSET" = "icon.svg" ] && return 0
-                  [[ "$ASSET" =~ $BANNER_RE || "$ASSET" =~ $ICON_RE || "$ASSET" =~ $SCREENSHOT_RE || "$ASSET" =~ $BLUEPRINT_RE ]] && return 0
+                  local LOWER="${ASSET,,}"
+                  [[ "$LOWER" =~ $BANNER_RE || "$LOWER" =~ $ICON_RE || "$LOWER" =~ $SCREENSHOT_RE || "$ASSET" =~ $BLUEPRINT_RE ]] && return 0
                   ;;
               esac
             fi
