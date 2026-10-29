@@ -450,7 +450,7 @@ jobs:
             done
           fi
 
-          # Without a correct svn:mime-type, browsers download assets instead of displaying them.
+          # Without a correct svn:mime-type, browsers may download assets instead of displaying them when opened directly.
           # 'svn add' marks binaries as application/octet-stream, so this also fixes newly added files.
           find assets -type f | while IFS= read -r file; do
             case "${file,,}" in
