@@ -258,6 +258,13 @@ jobs:
               *.png) EXPECTED_FORMAT="PNG" ;;
               *.jpg|*.jpeg) EXPECTED_FORMAT="JPEG" ;;
               *.gif) EXPECTED_FORMAT="GIF" ;;
+              *.svg)
+                if ! grep -qi '<svg' "$ASSETS_DIR/$FILE"; then
+                  echo "❌ $FILE is not an SVG image. Git LFS files are not supported"
+                  ERRORS=1
+                fi
+                continue
+                ;;
               *) continue ;;
             esac
 
