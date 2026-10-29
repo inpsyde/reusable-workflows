@@ -481,7 +481,8 @@ jobs:
           is_allowed() {
             local STATUS="$1" FILE="$2"
 
-            if [ "$SYNC_README" = "true" ]; then
+            # The readmes may only be modified, never added or deleted.
+            if [ "$SYNC_README" = "true" ] && [ "$STATUS" = "M" ]; then
               case "$FILE" in
                 trunk/readme.txt|"tags/$STABLE_TAG/readme.txt") return 0 ;;
               esac
@@ -491,7 +492,8 @@ jobs:
               case "$FILE" in
                 assets|assets/blueprints) return 0 ;;
                 assets/*)
-                  # Removing a file is always fine, e.g. a legacy file with a name WordPress.org ignores.
+                  # Mirroring deletes whatever isn't in Git, including legacy files with names WordPress.org
+                  # ignores, so any file in /assets may be deleted. Added or modified files must be recognized assets.
                   [ "$STATUS" = "D" ] && return 0
                   local ASSET="${FILE#assets/}"
                   [ "$ASSET" = "icon.svg" ] && return 0
