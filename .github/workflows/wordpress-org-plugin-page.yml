@@ -477,9 +477,7 @@ jobs:
 
           cd "$SVN_REPO_ROOT"
 
-          # Defense in depth: this workflow must never touch plugin code, and only touches
-          # what the enabled options allow. Readme paths are matched literally (no regex),
-          # so version dots can't act as wildcards.
+          # Defense in depth: whatever the steps above did, only files allowed by the enabled options get committed.
           is_allowed() {
             local STATUS="$1" FILE="$2"
 
