@@ -593,7 +593,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Unlike a release, updating the plugin page is idempotent: re-running without changes is fine.
+          # Unlike a release, a run without changes is not an error: the plugin page is already up to date.
           if [ "$HAS_CHANGES" != "true" ]; then
             echo "::notice title=No changes::The WordPress.org plugin page is already up to date"
             exit 0
