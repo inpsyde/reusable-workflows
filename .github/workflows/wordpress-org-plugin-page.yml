@@ -11,7 +11,7 @@ on:
         required: true
 
       GIT_REF:
-        description: "Git ref to read readme.txt and the assets directory from (tag, branch, or commit)"
+        description: "Git ref to read readme.txt and the assets directory from (tag, branch, or full commit SHA)"
         type: string
         required: true
 

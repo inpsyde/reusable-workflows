@@ -171,7 +171,7 @@ Banners, icons, and screenshots can be localized with an `-rtl` and/or a locale 
 | Name | Required | Default | Description |
 |---|---|---|---|
 | `SVN_PLUGIN_SLUG` | yes | — | WordPress.org plugin slug (e.g. `my-plugin`) |
-| `GIT_REF` | yes | — | Git ref to read `readme.txt` and the assets directory from (tag, branch, or commit SHA) |
+| `GIT_REF` | yes | — | Git ref to read `readme.txt` and the assets directory from (tag, branch, or full 40-character commit SHA) |
 | `SYNC_README` | no | `true` | Update `readme.txt` in SVN trunk and in the tag referenced by `Stable tag` |
 | `SYNC_ASSETS` | no | `true` | Mirror `ASSETS_DIR` to the SVN `/assets` directory |
 | `ASSETS_DIR` | no | `.wordpress-org` | Directory in the Git repository holding the WordPress.org assets |
