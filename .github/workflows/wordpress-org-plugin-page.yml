@@ -380,12 +380,14 @@ jobs:
               | sed -E 's/^[^:]*:[[:space:]]*//; s/[[:space:]]+$//' | tr -d '\r' || true
           }
 
-          # These headers change the compatibility info of the published version, which is more than cosmetic.
+          # Unlike the rest of readme.txt, these headers aren't just displayed: unless the main plugin file
+          # declares them, WordPress.org publishes them as the version's requirements, and WordPress blocks
+          # installing or updating to that version on sites that don't meet them.
           for HEADER in "Requires at least" "Requires PHP"; do
             OLD_VALUE=$(readme_header "$HEADER" "$TAG_README")
             NEW_VALUE=$(readme_header "$HEADER" "$GIT_README")
             if [ "$OLD_VALUE" != "$NEW_VALUE" ]; then
-              echo "::warning title=$HEADER changed::'$HEADER' changes from '${OLD_VALUE:-(none)}' to '${NEW_VALUE:-(none)}' for the already published version $STABLE_TAG. Make sure version $STABLE_TAG really has these requirements."
+              echo "::warning title=$HEADER changed::'$HEADER' changes from '${OLD_VALUE:-(none)}' to '${NEW_VALUE:-(none)}' for the already published version $STABLE_TAG. Unless the main plugin file declares it, WordPress uses this value to block installs and updates on sites that don't meet it."
             fi
           done
 
