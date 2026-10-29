@@ -602,7 +602,6 @@ jobs:
           cd "$SVN_REPO_ROOT"
 
           mapfile -t COMMIT_PATHS < "$COMMIT_PATHS_FILE"
-          # svn log -v lists the exact paths, so the message doesn't repeat them.
           COMMIT_MESSAGE="Update plugin page from ${GIT_REF}@${SHORT_SHA}"
           COMMIT_LOG="${RUNNER_TEMP}/svn-commit.log"
 
