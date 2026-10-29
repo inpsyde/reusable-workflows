@@ -467,6 +467,62 @@ jobs:
             fi
           done
 
+      - name: Verify the plugin page keeps its icon and banner
+        if: inputs.SYNC_ASSETS == true
+        env:
+          ASSETS_DIR: ${{ inputs.ASSETS_DIR }}
+        run: |
+          set -euo pipefail
+
+          cd "$SVN_REPO_ROOT"
+
+          # An incomplete assets directory would strip the plugin page, so removing the last icon or banner is refused.
+          mapfile -t DELETED < <(svn status assets | grep '^D' | cut -c9- | sed 's|^assets/||' || true)
+          mapfile -t REMAINING < <(cd assets && find . -type f ! -path '*/.*' -printf '%P\n')
+
+          count_assets() {
+            local TYPE="$1" COUNT=0 NAME LOWER
+            shift
+            for NAME in "$@"; do
+              LOWER="${NAME,,}"
+              case "$TYPE" in
+                icon) [[ "$LOWER" =~ $ICON_RE || "$NAME" = "icon.svg" ]] ;;
+                banner) [[ "$LOWER" =~ $BANNER_RE ]] ;;
+                screenshot) [[ "$LOWER" =~ $SCREENSHOT_RE ]] ;;
+              esac && COUNT=$((COUNT + 1))
+            done
+            echo "$COUNT"
+          }
+
+          removes_all() {
+            [ "$(count_assets "$1" "${DELETED[@]}")" -gt 0 ] && [ "$(count_assets "$1" "${REMAINING[@]}")" -eq 0 ]
+          }
+
+          ERRORS=0
+          for TYPE in icon banner; do
+            if removes_all "$TYPE"; then
+              echo "❌ This run would remove every $TYPE from the plugin page."
+              echo "   Add a $TYPE to $ASSETS_DIR, or remove it by hand in SVN if that's really intended."
+              ERRORS=1
+            fi
+          done
+
+          if [ "$ERRORS" = "1" ]; then
+            exit 1
+          fi
+
+          # Removing all screenshots can be intended, but leaves the readme's screenshot captions without images.
+          if removes_all screenshot; then
+            echo "::warning title=All screenshots removed::This run removes every screenshot from the plugin page. Make sure the == Screenshots == section of readme.txt matches."
+            {
+              echo '### ⚠️ All screenshots removed'
+              echo "This run removes every screenshot from the plugin page. Make sure the \`== Screenshots ==\` section of \`readme.txt\` matches."
+              echo
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          echo "✅ The plugin page keeps its icon and banner"
+
       - name: Verify only plugin page files are changed
         env:
           SYNC_README: ${{ inputs.SYNC_README }}

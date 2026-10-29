@@ -20,7 +20,7 @@ To achieve that, this workflow:
 4. Checks out only the needed parts of the WordPress.org SVN repository: `trunk/readme.txt`, the list of tags, the readme of the stable tag, and `/assets`. Plugin code is never fetched
 5. Verifies that the `Stable tag` in Git equals the `Stable tag` in SVN trunk and that this tag exists
 6. Copies `readme.txt` into `tags/<Stable tag>/` (which is what WordPress.org renders) and into `trunk/`. The trunk copy is skipped with a warning if trunk contains unreleased changes, see [Trunk previews](#trunk-previews). A warning is also shown if `Requires at least` or `Requires PHP` changes: unless the main plugin file declares them, WordPress uses these values to block installs and updates of the published version on sites that don't meet them. A notice reminds about [Release Confirmation](#release-confirmation) whenever the tag's `readme.txt` changes
-7. Mirrors `ASSETS_DIR` to SVN `/assets` via `rsync --delete`, so files removed from Git are removed from WordPress.org as well, and sets the correct `svn:mime-type` on every asset
+7. Mirrors `ASSETS_DIR` to SVN `/assets` via `rsync --delete`, so files removed from Git are removed from WordPress.org as well, and sets the correct `svn:mime-type` on every asset. Fails if this would remove the last icon or banner from the plugin page, and warns if it removes all screenshots
 8. Fails if anything would change that the enabled options don't allow: `trunk/readme.txt` and `tags/<Stable tag>/readme.txt` with `SYNC_README`, and recognized asset files in `/assets` with `SYNC_ASSETS`
 9. Shows the `svn status`, the removed files, and the `readme.txt` diff in the log and in the job summary on the run page
 10. Commits all changes in a single SVN commit (or uploads them as an artifact in `DRY_RUN` mode). If nothing changed, the workflow ends successfully without committing
@@ -142,6 +142,7 @@ Asset-only runs (`SYNC_README: false`) don't touch any tag and are not affected.
 Any file with a name WordPress.org would ignore fails the validation. On top of the WordPress.org rules, this workflow requires:
 
 - a raster fallback for `icon.svg`
+- at least one icon and one banner, if the plugin page has them today. A run that would remove the last one fails, which catches an incomplete assets directory. To remove them on purpose, delete them by hand in SVN
 - at most 10 blueprints (WordPress.org would silently import only the first 10)
 - banners and raster icons with exactly the dimensions their name says, and raster files in the format their extension says
 - regular files only: symlinks and subdirectories other than `blueprints/` are rejected
