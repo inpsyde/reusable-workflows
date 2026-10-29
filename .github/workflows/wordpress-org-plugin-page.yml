@@ -700,24 +700,19 @@ jobs:
 
           cd "$SVN_REPO_ROOT"
 
-          # The preview holds exactly what would be committed, in its final state.
+          # The preview holds exactly what would be committed, in its final state:
+          # each path only if it changes (e.g. trunk is left alone when it holds unreleased changes).
           while IFS= read -r COMMIT_PATH; do
-            case "$COMMIT_PATH" in
-              assets)
-                rsync -r --exclude='.svn' assets/ "$PREVIEW_DIR/assets/"
-                ;;
-              trunk/readme.txt)
-                # trunk is left alone when it holds unreleased changes, so include it only if it changes.
-                if [ -n "$(svn status trunk/readme.txt)" ]; then
-                  mkdir -p "$PREVIEW_DIR/trunk"
-                  cp trunk/readme.txt "$PREVIEW_DIR/trunk/readme.txt"
-                fi
-                ;;
-              *)
-                mkdir -p "$PREVIEW_DIR/$(dirname "$COMMIT_PATH")"
-                cp "$COMMIT_PATH" "$PREVIEW_DIR/$COMMIT_PATH"
-                ;;
-            esac
+            if [ -z "$(svn status "$COMMIT_PATH")" ]; then
+              continue
+            fi
+
+            if [ "$COMMIT_PATH" = "assets" ]; then
+              rsync -r --exclude='.svn' assets/ "$PREVIEW_DIR/assets/"
+            else
+              mkdir -p "$PREVIEW_DIR/$(dirname "$COMMIT_PATH")"
+              cp "$COMMIT_PATH" "$PREVIEW_DIR/$COMMIT_PATH"
+            fi
           done < "$COMMIT_PATHS_FILE"
 
       - name: Upload dry run preview as an artifact

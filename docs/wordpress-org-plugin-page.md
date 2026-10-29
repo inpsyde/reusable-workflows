@@ -193,11 +193,11 @@ At least one of `SYNC_README` and `SYNC_ASSETS` must be enabled.
 
 With `DRY_RUN: true`, nothing is committed. The job summary on the run page shows every file that would be added (`A`), deleted (`D`), modified (`M`), or have its properties changed (` M`), lists removed files separately, and shows the `readme.txt` diff.
 
-If anything would change, an artifact named `<slug>-plugin-page` is uploaded. It contains exactly what would be committed, in its final state:
+If anything would change, an artifact named `<slug>-plugin-page` is uploaded. It contains exactly what would be committed, in its final state, each only if it would change:
 
-- `tags/<Stable tag>/readme.txt` (with `SYNC_README`)
-- `trunk/readme.txt`, only if it would change (see [Trunk previews](#trunk-previews))
-- `assets/`: the complete assets directory (with `SYNC_ASSETS`)
+- `tags/<Stable tag>/readme.txt`
+- `trunk/readme.txt` (see [Trunk previews](#trunk-previews))
+- `assets/`: the complete assets directory, if anything in it would change
 
 If nothing would change, no artifact is uploaded and the job summary says that the plugin page is already up to date.
 
