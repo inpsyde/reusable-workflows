@@ -142,7 +142,7 @@ Asset-only runs (`SYNC_README: false`) don't touch any tag and are not affected.
 Any file with a name WordPress.org would ignore fails the validation. On top of the WordPress.org rules, this workflow requires:
 
 - a raster fallback for `icon.svg`
-- at least one icon and one banner, if the plugin page has them today. A run that would remove the last one fails, which catches an incomplete assets directory. To remove them on purpose, delete them by hand in SVN
+- at least one default (non-localized) icon and banner, if the plugin page has them today. A run that would remove the last one fails, which catches an incomplete assets directory. To remove them on purpose, delete them by hand in SVN
 - at most 10 blueprints (WordPress.org would silently import only the first 10)
 - banners and raster icons with exactly the dimensions their name says, and raster files in the format their extension says
 - regular files only: symlinks and subdirectories other than `blueprints/` are rejected

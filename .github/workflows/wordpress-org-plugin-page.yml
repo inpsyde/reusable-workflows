@@ -487,15 +487,16 @@ jobs:
           mapfile -t DELETED < <(svn status assets | grep '^D' | cut -c9- | sed 's|^assets/||' || true)
           mapfile -t REMAINING < <(cd assets && find . -type f ! -path '*/.*' -printf '%P\n')
 
+          # Only default assets count: localized ones (-rtl, -de, ...) are shown just for those locales.
           count_assets() {
             local TYPE="$1" COUNT=0 NAME LOWER
             shift
             for NAME in "$@"; do
               LOWER="${NAME,,}"
               case "$TYPE" in
-                icon) [[ "$LOWER" =~ $ICON_RE || "$NAME" = "icon.svg" ]] ;;
-                banner) [[ "$LOWER" =~ $BANNER_RE ]] ;;
-                screenshot) [[ "$LOWER" =~ $SCREENSHOT_RE ]] ;;
+                icon) [[ "$LOWER" =~ ^icon-(128x128|256x256)\.(png|jpg|jpeg|gif)$ || "$NAME" = "icon.svg" ]] ;;
+                banner) [[ "$LOWER" =~ ^banner-(772x250|1544x500)\.(png|jpg|jpeg|gif)$ ]] ;;
+                screenshot) [[ "$LOWER" =~ ^screenshot-[0-9]+\.(png|jpg|jpeg|gif)$ ]] ;;
               esac && COUNT=$((COUNT + 1))
             done
             echo "$COUNT"
