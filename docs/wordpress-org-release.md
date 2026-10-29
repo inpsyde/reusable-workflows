@@ -131,7 +131,7 @@ To preview trunk before publishing, run the workflow twice with the same `PLUGIN
 > The trunk-only check exists because [WordPress.org serves the plugin from trunk instead of a tag when `Stable tag` points to a tag that doesn't exist](https://developer.wordpress.org/plugins/wordpress-org/how-your-readme-txt-works/#how-the-readme-is-parsed) — without it, a trunk-only sync could accidentally push the in-progress release out as "stable" to regular users.
 
 > [!NOTE]
-> WordPress.org reads `readme.txt` from the tag that `Stable tag` points to, not from trunk. Updating `readme.txt` in trunk alone will not update the plugin page — a new tag must be created.
+> WordPress.org reads `readme.txt` from the tag that `Stable tag` points to, not from trunk. Updating `readme.txt` in trunk alone will not update the plugin page. To change the plugin page (readme, banners, icons, screenshots) without releasing a new version, use [WordPress.org Plugin Page](./wordpress-org-plugin-page.md).
 
 ## Configuration parameters
 
@@ -165,3 +165,6 @@ The following files are always excluded from the SVN sync, regardless of `.disti
 - `.distignore` itself
 
 Additional exclusions can be specified via a `.distignore` file in the repository root (same format used by `wp dist-archive`).
+
+> [!TIP]
+> If the repository keeps its WordPress.org assets in Git for the [WordPress.org Plugin Page](./wordpress-org-plugin-page.md) workflow (by default in `.wordpress-org/`), add that directory to `.distignore` so it isn't synced to trunk.
