@@ -19,6 +19,9 @@ To achieve that, this workflow:
 > [!NOTE]
 > When creating a new release (`UPDATE_TRUNK_ONLY=false`), this workflow intentionally fails if the version already exists as an SVN tag. There is no amendment flow.
 
+> [!NOTE]
+> The SVN commit uses an HTTP timeout of 1800 seconds instead of svn's default 600. On releases that add or change hundreds of files, WordPress.org can spend more than 10 minutes in `Committing transaction...`, and the default timeout fails the job with `svn: E175012: Connection timed out` while the server is still committing.
+
 > [!IMPORTANT]
 > The plugin's SVN repository must already exist on WordPress.org before running this workflow — including in `DRY_RUN` mode. Initial plugin submission requires a separate manual process via the [WordPress.org plugin submission form](https://wordpress.org/plugins/developers/add/).
 
