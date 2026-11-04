@@ -85,6 +85,7 @@ jobs:
               .forEach(envVar => core.exportVariable(envVar.name, envVar.value));
 
       - name: Set up Git
+        if: ${{ inputs.BUILD_ASSETS }}
         uses: inpsyde/reusable-workflows/.github/actions/setup-git@ce4cfd9ad8176f895d09ae11cb12dd65590cc94e # main
         with:
           ssh-private-key: ${{ secrets.GITHUB_USER_SSH_KEY }}
