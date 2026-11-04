@@ -302,5 +302,6 @@ jobs:
       ENV_VARS: >-
         [{"name":"EXAMPLE_USERNAME", "value":"${{ secrets.USERNAME }}"}]
     with:
-      RECTOR_ARGS: '--rules-summary'
+      PHP_VERSION: '8.4'
+      RECTOR_ARGS: '--no-progress-bar --rules-summary'
 ```
