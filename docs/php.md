@@ -253,8 +253,9 @@ jobs:
 
 ## Rector PHP
 
-This workflow runs [Rector](https://getrector.com/). It does so by executing the binary resolved via
-`composer config bin-dir`.
+This workflow runs [Rector](https://getrector.com/). It does so by executing the binary resolved via `composer config bin-dir`.
+
+Rector is always executed with the `--dry-run` flag, so no files are modified. The job fails if Rector would apply any changes.
 
 **Simplest possible example:**
 
@@ -272,12 +273,12 @@ jobs:
 
 #### Inputs
 
-| Name             | Default           | Description                                                                    |
-|------------------|-------------------|--------------------------------------------------------------------------------|
-| `PHP_VERSION`    | `'8.2'`           | PHP version with which the scripts are executed                                |
-| `PHP_EXTENSIONS` | `''`              | PHP extensions supported by shivammathur/setup-php to be installed or disabled |
-| `COMPOSER_ARGS`  | `'--prefer-dist'` | Set of arguments passed to Composer                                            |
-| `RECTOR_ARGS`    | `''`              | Set of arguments passed to Rector                                              |
+| Name             | Default               | Description                                                                    |
+|------------------|-----------------------|--------------------------------------------------------------------------------|
+| `PHP_VERSION`    | `'8.2'`               | PHP version with which the scripts are executed                                |
+| `PHP_EXTENSIONS` | `''`                  | PHP extensions supported by shivammathur/setup-php to be installed or disabled |
+| `COMPOSER_ARGS`  | `'--prefer-dist'`     | Set of arguments passed to Composer                                            |
+| `RECTOR_ARGS`    | `'--no-progress-bar'` | Set of arguments passed to Rector                                              |
 
 #### Secrets
 
