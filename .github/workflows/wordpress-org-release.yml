@@ -300,11 +300,14 @@ jobs:
           # Keeping credentials as step-level env vars with --no-auth-cache is the best available option.
           echo '🚀 Committing...'
 
+          # Large releases (hundreds of files) can keep the server busy in "Committing transaction..."
+          # past svn's default 600s HTTP timeout, failing with E175012 while the server still commits.
           svn commit "${COMMIT_PATHS[@]}" \
             --username "$SVN_USERNAME" \
             --password "$SVN_PASSWORD" \
             --no-auth-cache \
             --non-interactive \
+            --config-option servers:global:http-timeout=1800 \
             -m "$COMMIT_MESSAGE"
 
           if [ "${{ inputs.UPDATE_TRUNK_ONLY }}" == "false" ]; then
