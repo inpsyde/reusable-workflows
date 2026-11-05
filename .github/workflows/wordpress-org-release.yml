@@ -298,11 +298,13 @@ jobs:
 
           # WordPress.org SVN doesn't support SSH keys or tokens.
           # Keeping credentials as step-level env vars with --no-auth-cache is the best available option.
+          # The password is piped via stdin, so it never shows up in the process list (argv).
+          # printf must stay the bash builtin, and set -x must not be enabled in this step.
           echo '🚀 Committing...'
 
-          svn commit "${COMMIT_PATHS[@]}" \
+          printf '%s' "$SVN_PASSWORD" | svn commit "${COMMIT_PATHS[@]}" \
             --username "$SVN_USERNAME" \
-            --password "$SVN_PASSWORD" \
+            --password-from-stdin \
             --no-auth-cache \
             --non-interactive \
             -m "$COMMIT_MESSAGE"
