@@ -9,8 +9,8 @@ on:
         default: ''
         required: false
       NODE_VERSION:
-        description: Node version with which the static code analysis is to be executed.
-        default: 18
+        description: Node version with which the assets will be compiled. If empty, the major version from the `engines.node` property in `package.json` is used.
+        default: ''
         required: false
         type: string
       NPM_REGISTRY_DOMAIN:
@@ -256,13 +256,38 @@ jobs:
             echo "No lock files found or unknown package manager"
           fi
 
+      - name: Set up node version
+        id: node_version
+        env:
+          INPUT_NODE_VERSION: ${{ inputs.NODE_VERSION }}
+        run: |
+          if [ -n "${INPUT_NODE_VERSION}" ]; then
+            echo "version=${INPUT_NODE_VERSION}" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          if [ ! -f package.json ]; then
+            echo "::error::NODE_VERSION input is empty and no package.json file was found."
+            exit 1
+          fi
+          ENGINES_NODE="$(jq -r '.engines.node // empty' package.json)"
+          if [ -z "${ENGINES_NODE}" ]; then
+            echo "::error::NODE_VERSION input is empty and package.json has no engines.node property."
+            exit 1
+          fi
+          if [[ ! "${ENGINES_NODE}" =~ ([0-9]+) ]]; then
+            echo "::error::Cannot find a major version in engines.node constraint '${ENGINES_NODE}'."
+            exit 1
+          fi
+          echo "Node version ${BASH_REMATCH[1]} from engines.node constraint '${ENGINES_NODE}'"
+          echo "version=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
+
       - name: Set up node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         env:
           NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
         with:
-          node-version: ${{ inputs.NODE_VERSION }}
+          node-version: ${{ steps.node_version.outputs.version }}
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
           cache: ${{ env.NODE_CACHE_MODE }}
 
