@@ -39,11 +39,6 @@ inputs:
     default: 'true'
     required: false
 
-outputs:
-  cache-mode:
-    description: Detected cache mode (`npm`, `yarn`, or empty if no lock file was found).
-    value: ${{ steps.cache-detection.outputs.cache-mode }}
-
 runs:
   using: composite
   steps:
