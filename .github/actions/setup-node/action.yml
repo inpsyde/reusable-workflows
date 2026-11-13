@@ -3,11 +3,19 @@ description: Set up Node with cache detection and dependency installation.
 
 inputs:
   node-version:
-    description: Node version to set up.
-    default: '18'
+    description: Node version to set up. If empty, the major version from engines.node in package-json-path is used.
+    default: ''
     required: false
   node-version-file:
     description: Path to a file containing the Node version (takes precedence over node-version).
+    default: ''
+    required: false
+  package-json-path:
+    description: Path to the package.json file from which the Node version is discovered, relative to the workspace root.
+    default: 'package.json'
+    required: false
+  node-version-fallback:
+    description: "Node version to use if no version can be discovered from package-json-path. Deprecated: will be removed in a future version."
     default: ''
     required: false
   registry-url:
@@ -54,13 +62,44 @@ runs:
         fi
         echo "cache-mode=$CACHE_MODE" >> "$GITHUB_OUTPUT"
 
+    - name: Discover Node version
+      id: node-version-discovery
+      if: ${{ inputs.node-version == '' && inputs.node-version-file == '' }}
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      env:
+        PACKAGE_JSON_PATH: ${{ inputs.package-json-path }}
+        NODE_VERSION_FALLBACK: ${{ inputs.node-version-fallback }}
+      run: |
+        use_fallback_or_fail() {
+          if [ -n "${NODE_VERSION_FALLBACK}" ]; then
+            echo "::warning::$1 Node ${NODE_VERSION_FALLBACK} is used. Add engines.node to ${PACKAGE_JSON_PATH}, because this fallback will be removed."
+            echo "version=${NODE_VERSION_FALLBACK}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "::error::$1"
+          exit 1
+        }
+        if [ ! -f "${PACKAGE_JSON_PATH}" ]; then
+          use_fallback_or_fail "No ${PACKAGE_JSON_PATH} file was found to read the Node version from."
+        fi
+        ENGINES_NODE="$(jq -r '.engines.node // empty' "${PACKAGE_JSON_PATH}")"
+        if [ -z "${ENGINES_NODE}" ]; then
+          use_fallback_or_fail "${PACKAGE_JSON_PATH} has no engines.node property to read the Node version from."
+        fi
+        if [[ ! "${ENGINES_NODE}" =~ ([0-9]+) ]]; then
+          use_fallback_or_fail "Cannot find a major version in engines.node constraint '${ENGINES_NODE}'."
+        fi
+        echo "Node version ${BASH_REMATCH[1]} from engines.node constraint '${ENGINES_NODE}'"
+        echo "version=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
+
     - name: Set up Node
       uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
       env:
         NODE_OPTIONS: ${{ inputs.node-options }}
         NODE_AUTH_TOKEN: ${{ inputs.node-auth-token }}
       with:
-        node-version: ${{ inputs.node-version-file && '' || inputs.node-version }}
+        node-version: ${{ inputs.node-version-file && '' || inputs.node-version || steps.node-version-discovery.outputs.version }}
         node-version-file: ${{ inputs.node-version-file }}
         registry-url: ${{ inputs.registry-url }}
         cache: ${{ steps.cache-detection.outputs.cache-mode }}
