@@ -110,7 +110,7 @@ jobs:
         uses: inpsyde/reusable-workflows/.github/actions/setup-node@ce4cfd9ad8176f895d09ae11cb12dd65590cc94e # main
         with:
           node-version: ${{ inputs.NODE_VERSION }}
-          node-version-fallback: '24'
+          node-version-fallback: '18'
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
           node-auth-token: ${{ secrets.NPM_REGISTRY_TOKEN }}
           node-options: ${{ inputs.NODE_OPTIONS }}

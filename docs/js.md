@@ -25,7 +25,7 @@ jobs:
 | Name                  | Default                                            | Description                                                                                                                                                              |
 |-----------------------|----------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'`                    | Domain of the private npm registry                                                                                                                                       |
-| `NODE_VERSION`        | `''`                                               | Node version with which the unit tests are to be executed. If empty, the major version from `engines.node` in `package.json` is used, with a deprecated fallback to `24` |
+| `NODE_VERSION`        | `''`                                               | Node version with which the unit tests are to be executed. If empty, the major version from `engines.node` in `package.json` is used, with a deprecated fallback to `18` |
 | `JEST_ARGS`           | `'--reporters=default --reporters=github-actions'` | Set of arguments passed to Jest                                                                                                                                          |
 
 **Note**: The default `github-actions` reporter requires Jest 28 or higher.
@@ -83,7 +83,7 @@ jobs:
 | Name                  | Default                         | Description                                                                                                                                                        |
 |-----------------------|---------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `NODE_OPTIONS`        | `''`                            | Space-separated list of command-line Node options                                                                                                                  |
-| `NODE_VERSION`        | `''`                            | Node version with which the assets will be compiled. If empty, the major version from `engines.node` in `package.json` is used, with a deprecated fallback to `24` |
+| `NODE_VERSION`        | `''`                            | Node version with which the assets will be compiled. If empty, the major version from `engines.node` in `package.json` is used, with a deprecated fallback to `18` |
 | `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                                                                                                 |
 
 #### Secrets
