@@ -103,21 +103,21 @@ the workflow.
 
 ### Inputs
 
-| Name                  | Default                         | Description                                                                                                                                                             |
-|-----------------------|---------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `NODE_OPTIONS`        | `''`                            | Space-separated list of command-line Node options                                                                                                                       |
-| `NODE_VERSION`        | `''`                            | Node version with which the assets will be compiled. If empty, the major version from `engines.node` in `package.json` is used. If both are missing, the workflow fails |
-| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                                                                                                      |
-| `WORKING_DIRECTORY`   | `'./'`                          | Working directory path                                                                                                                                                  |
-| `COMPILE_SCRIPT_PROD` | `'build'`                       | Script added to `npm run` or `yarn` to build production assets                                                                                                          |
-| `COMPILE_SCRIPT_DEV`  | `'build:dev'`                   | Script added to `npm run` or `yarn` to build development assets                                                                                                         |
-| `MODE`                | `''`                            | Mode for compiling assets (`prod` or `dev`)                                                                                                                             |
-| `ASSETS_TARGET_PATHS` | `'./assets'`                    | Space-separated list of target directory paths for compiled assets                                                                                                      |
-| `ASSETS_TARGET_FILES` | `''`                            | Space-separated list of target file paths for compiled assets                                                                                                           |
-| `BUILT_BRANCH_NAME`   | `''`                            | Sets the target branch for pushing assets on the `branch` event                                                                                                         |
-| `RELEASE_BRANCH_NAME` | `''`                            | On tag events, target branch where compiled assets are pushed and the tag is moved to                                                                                   |
-| `PHP_VERSION`         | `'8.2'`                         | PHP version with which the PHP tools are to be executed                                                                                                                 |
-| `PHP_TOOLS`           | `''`                            | PHP tools supported by [shivammathur/setup-php](https://github.com/shivammathur/setup-php#wrench-tools-support) to be installed                                         |
+| Name                  | Default                         | Description                                                                                                                                                        |
+|-----------------------|---------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `NODE_OPTIONS`        | `''`                            | Space-separated list of command-line Node options                                                                                                                  |
+| `NODE_VERSION`        | `''`                            | Node version with which the assets will be compiled. If empty, the major version from `engines.node` in `package.json` is used, with a deprecated fallback to `18` |
+| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                                                                                                 |
+| `WORKING_DIRECTORY`   | `'./'`                          | Working directory path                                                                                                                                             |
+| `COMPILE_SCRIPT_PROD` | `'build'`                       | Script added to `npm run` or `yarn` to build production assets                                                                                                     |
+| `COMPILE_SCRIPT_DEV`  | `'build:dev'`                   | Script added to `npm run` or `yarn` to build development assets                                                                                                    |
+| `MODE`                | `''`                            | Mode for compiling assets (`prod` or `dev`)                                                                                                                        |
+| `ASSETS_TARGET_PATHS` | `'./assets'`                    | Space-separated list of target directory paths for compiled assets                                                                                                 |
+| `ASSETS_TARGET_FILES` | `''`                            | Space-separated list of target file paths for compiled assets                                                                                                      |
+| `BUILT_BRANCH_NAME`   | `''`                            | Sets the target branch for pushing assets on the `branch` event                                                                                                    |
+| `RELEASE_BRANCH_NAME` | `''`                            | On tag events, target branch where compiled assets are pushed and the tag is moved to                                                                              |
+| `PHP_VERSION`         | `'8.2'`                         | PHP version with which the PHP tools are to be executed                                                                                                            |
+| `PHP_TOOLS`           | `''`                            | PHP tools supported by [shivammathur/setup-php](https://github.com/shivammathur/setup-php#wrench-tools-support) to be installed                                    |
 
 ## Secrets
 

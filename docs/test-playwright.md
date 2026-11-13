@@ -31,27 +31,27 @@ jobs:
 
 ### Inputs
 
-| Name                                        | Default                         | Description                                                                                                         |
-|---------------------------------------------|---------------------------------|---------------------------------------------------------------------------------------------------------------------|
-| `PLAYWRIGHT_ARTIFACT_INCLUDE_HIDDEN_FILES`  | `false`                         | Whether to include hidden files in the artifact                                                                     |
-| `PLAYWRIGHT_ARTIFACT_NAME`                  | `'artifact'`                    | Name for the artifact                                                                                               |
-| `PLAYWRIGHT_ARTIFACT_OVERWRITE`             | `false`                         | Determine if an artifact with a matching name will be deleted before a new one is uploaded or not                   |
-| `PLAYWRIGHT_ARTIFACT_PATH`                  |                                 | A file, directory or wildcard pattern that describes what to upload                                                 |
-| `PLAYWRIGHT_ARTIFACT_RETENTION_DAYS`        | `30`                            | Duration after which artifact will expire in day                                                                    |
-| `COMPOSER_DEPS_INSTALL`                     | `false`                         | Whether to install Composer dependencies                                                                            |
-| `NGROK_DOMAIN`                              | `''`                            | Ngrok domain (paid account): reserved domain or host under a wildcard reservation. Omit for a random ngrok URL      |
-| `NGROK_ENABLED`                             | `true`                          | Enable/disable the ngrok tunnel                                                                                     |
-| `NGROK_REWRITE_URLS`                        | `true`                          | Point WordPress URLs and `WP_BASE_URL` to the tunnel. Set `false` to keep the site local and use `NGROK_URL` only   |
-| `NODE_VERSION`                              | `24`                            | Node version with which the node script will be executed                                                            |
-| `NPM_REGISTRY_DOMAIN`                       | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                                                  |
-| `PHP_VERSION`                               | `'8.2'`                         | PHP version with which the dependencies are installed                                                               |
-| `PHP_EXTENSIONS`                            | `''`                            | PHP extensions supported by shivammathur/setup-php to be installed or disabled                                      |
-| `PLAYWRIGHT_BROWSER_ARGS`                   | `''`                            | Set of arguments passed to `npx playwright install`                                                                 |
-| `PRE_SCRIPT`                                | `''`                            | Run custom shell code before executing the test script. `GH_TOKEN` and all `ENV_FILE_DATA` variables are available  |
-| `PLAYWRIGHT_SCRIPT`                         | `''`                            | The name of a custom npm script to run the tests                                                                    |
-| `TESTRAIL_PLAN_ID`                          | `''`                            | TestRail plan ID for reporting. When set, appended to `.env.ci`                                                     |
-| `TESTRAIL_RUN_ID`                           | `''`                            | TestRail run ID for reporting. When set, appended to `.env.ci`                                                      |
-| `XRAY_TEST_EXEC_KEY`                        | `''`                            | Xray test execution key for reporting. When set, appended to `.env.ci`                                              |
+| Name                                       | Default                         | Description                                                                                                                                                             |
+|--------------------------------------------|---------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `PLAYWRIGHT_ARTIFACT_INCLUDE_HIDDEN_FILES` | `false`                         | Whether to include hidden files in the artifact                                                                                                                         |
+| `PLAYWRIGHT_ARTIFACT_NAME`                 | `'artifact'`                    | Name for the artifact                                                                                                                                                   |
+| `PLAYWRIGHT_ARTIFACT_OVERWRITE`            | `false`                         | Determine if an artifact with a matching name will be deleted before a new one is uploaded or not                                                                       |
+| `PLAYWRIGHT_ARTIFACT_PATH`                 |                                 | A file, directory or wildcard pattern that describes what to upload                                                                                                     |
+| `PLAYWRIGHT_ARTIFACT_RETENTION_DAYS`       | `30`                            | Duration after which artifact will expire in day                                                                                                                        |
+| `COMPOSER_DEPS_INSTALL`                    | `false`                         | Whether to install Composer dependencies                                                                                                                                |
+| `NGROK_DOMAIN`                             | `''`                            | Ngrok domain (paid account): reserved domain or host under a wildcard reservation. Omit for a random ngrok URL                                                          |
+| `NGROK_ENABLED`                            | `true`                          | Enable/disable the ngrok tunnel                                                                                                                                         |
+| `NGROK_REWRITE_URLS`                       | `true`                          | Point WordPress URLs and `WP_BASE_URL` to the tunnel. Set `false` to keep the site local and use `NGROK_URL` only                                                       |
+| `NODE_VERSION`                             | `''`                            | Node version with which the node script will be executed. If empty, the major version from `engines.node` in `package.json` is used, with a deprecated fallback to `24` |
+| `NPM_REGISTRY_DOMAIN`                      | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                                                                                                      |
+| `PHP_VERSION`                              | `'8.2'`                         | PHP version with which the dependencies are installed                                                                                                                   |
+| `PHP_EXTENSIONS`                           | `''`                            | PHP extensions supported by shivammathur/setup-php to be installed or disabled                                                                                          |
+| `PLAYWRIGHT_BROWSER_ARGS`                  | `''`                            | Set of arguments passed to `npx playwright install`                                                                                                                     |
+| `PRE_SCRIPT`                               | `''`                            | Run custom shell code before executing the test script. `GH_TOKEN` and all `ENV_FILE_DATA` variables are available                                                      |
+| `PLAYWRIGHT_SCRIPT`                        | `''`                            | The name of a custom npm script to run the tests                                                                                                                        |
+| `TESTRAIL_PLAN_ID`                         | `''`                            | TestRail plan ID for reporting. When set, appended to `.env.ci`                                                                                                         |
+| `TESTRAIL_RUN_ID`                          | `''`                            | TestRail run ID for reporting. When set, appended to `.env.ci`                                                                                                          |
+| `XRAY_TEST_EXEC_KEY`                       | `''`                            | Xray test execution key for reporting. When set, appended to `.env.ci`                                                                                                  |
 
 
 ### Secrets

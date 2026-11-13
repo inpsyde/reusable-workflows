@@ -9,8 +9,8 @@ on:
         default: ''
         required: false
       NODE_VERSION:
-        description: Node version with which the static code analysis is to be executed.
-        default: 18
+        description: Node version with which the assets will be compiled. If empty, the major version from engines.node in package.json is used.
+        default: ''
         required: false
         type: string
       NPM_REGISTRY_DOMAIN:
@@ -62,8 +62,6 @@ jobs:
   assets-compilation:
     timeout-minutes: 5
     runs-on: ubuntu-latest
-    env:
-      NODE_CACHE_MODE: ''
     steps:
       - name: Deprecation warning
         run: echo "::warning::This workflow is deprecated and will be removed soon. Use .github/workflows/build-and-distribute.yml instead."
@@ -108,25 +106,16 @@ jobs:
           git config --global user.email "${{ env.GITHUB_USER_EMAIL }}"
           git config --global user.name "${{ env.GITHUB_USER_NAME }}"
 
-      - name: Set up node cache mode
-        run: |
-          if [ "${{ inputs.PACKAGE_MANAGER }}" == 'npm' ] && { [ -f "${GITHUB_WORKSPACE}/package-lock.json" ] || [ -f "${GITHUB_WORKSPACE}/npm-shrinkwrap.json" ]; }; then
-            echo "NODE_CACHE_MODE=npm" >> $GITHUB_ENV
-          elif [ "${{ inputs.PACKAGE_MANAGER }}" == 'yarn' ] && [ -f "${GITHUB_WORKSPACE}/yarn.lock" ]; then
-            echo "NODE_CACHE_MODE=yarn" >> $GITHUB_ENV
-          else
-            echo "No lock files found or unknown package manager"
-          fi
-
       - name: Set up node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        env:
-          NODE_OPTIONS: ${{ inputs.NODE_OPTIONS }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+        uses: inpsyde/reusable-workflows/.github/actions/setup-node@ce4cfd9ad8176f895d09ae11cb12dd65590cc94e # main
         with:
           node-version: ${{ inputs.NODE_VERSION }}
+          node-version-fallback: '18'
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
-          cache: ${{ env.NODE_CACHE_MODE }}
+          node-auth-token: ${{ secrets.NPM_REGISTRY_TOKEN }}
+          node-options: ${{ inputs.NODE_OPTIONS }}
+          package-manager: ${{ inputs.PACKAGE_MANAGER }}
+          install-dependencies: 'false'
 
       - name: Set up PHP
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2.37.2
