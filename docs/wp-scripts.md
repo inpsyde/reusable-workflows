@@ -22,16 +22,16 @@ jobs:
 
 #### Inputs
 
-| Name                    | Default                         | Description                                           |
-|-------------------------|---------------------------------|-------------------------------------------------------|
-| `NODE_OPTIONS`          | `''`                            | Space-separated list of command-line Node options     |
-| `NODE_VERSION`          | `18`                            | Node version with which the assets will be compiled   |
-| `NPM_REGISTRY_DOMAIN`   | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                    |
-| `LINT_TOOLS`            | `'["js", "style", "md-docs"]'`  | Array of checks to be executed by @wordpress/scripts  |
-| `ESLINT_ARGS`           | `''`                            | Set of arguments passed to `wp-script lint-js`        |
-| `STYLELINT_ARGS`        | `''`                            | Set of arguments passed to `wp-script lint-style`     |
-| `MARKDOWNLINT_ARGS`     | `''`                            | Set of arguments passed to `wp-script lint-md-docs`   |
-| `PACKAGE_JSONLINT_ARGS` | `''`                            | Set of arguments passed to `wp-scripts lint-pkg-json` |
+| Name                    | Default                         | Description                                                                                                                                                        |
+|-------------------------|---------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `NODE_OPTIONS`          | `''`                            | Space-separated list of command-line Node options                                                                                                                  |
+| `NODE_VERSION`          | `''`                            | Node version with which the assets will be compiled. If empty, the major version from `engines.node` in `package.json` is used, with a deprecated fallback to `18` |
+| `NPM_REGISTRY_DOMAIN`   | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                                                                                                 |
+| `LINT_TOOLS`            | `'["js", "style", "md-docs"]'`  | Array of checks to be executed by @wordpress/scripts                                                                                                               |
+| `ESLINT_ARGS`           | `''`                            | Set of arguments passed to `wp-script lint-js`                                                                                                                     |
+| `STYLELINT_ARGS`        | `''`                            | Set of arguments passed to `wp-script lint-style`                                                                                                                  |
+| `MARKDOWNLINT_ARGS`     | `''`                            | Set of arguments passed to `wp-script lint-md-docs`                                                                                                                |
+| `PACKAGE_JSONLINT_ARGS` | `''`                            | Set of arguments passed to `wp-scripts lint-pkg-json`                                                                                                              |
 
 > :information_source: **By default, "pkg-json" is not part of the `LINT_TOOLS` input.**  
 > :information_source: **The `--formatter github` flag is hardcoded into the `wp-script lint-style`

@@ -33,8 +33,8 @@ on:
         default: false
         required: false
       NODE_VERSION:
-        description: Node version with which the node script will be executed.
-        default: '24'
+        description: Node version with which the node script will be executed. If empty, the major version from engines.node in package.json is used.
+        default: ''
         required: false
         type: string
       NPM_REGISTRY_DOMAIN:
@@ -153,6 +153,7 @@ jobs:
         uses: inpsyde/reusable-workflows/.github/actions/setup-node@ce4cfd9ad8176f895d09ae11cb12dd65590cc94e # main
         with:
           node-version: ${{ inputs.NODE_VERSION }}
+          node-version-fallback: '24'
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
           node-auth-token: ${{ secrets.NPM_REGISTRY_TOKEN }}
 

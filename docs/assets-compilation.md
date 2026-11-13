@@ -24,14 +24,14 @@ jobs:
 
 ### Inputs
 
-| Name                  | Default                         | Description                                                     |
-|-----------------------|---------------------------------|-----------------------------------------------------------------|
-| `NODE_OPTIONS`        | `''`                            | Space-separated list of command-line Node options               |
-| `NODE_VERSION`        | `18`                            | Node version with which the assets will be compiled             |
-| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                              |
-| `PHP_VERSION`         | `'8.2'`                         | PHP version with which the assets compilation is to be executed |
-| `COMPOSER_ARGS`       | `'--prefer-dist'`               | Set of arguments passed to Composer                             |
-| `COMPILE_ASSETS_ARGS` | `'-v --env=root'`               | Set of arguments passed to Composer Asset Compiler              |
+| Name                  | Default                         | Description                                                                                                                                                        |
+|-----------------------|---------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `NODE_OPTIONS`        | `''`                            | Space-separated list of command-line Node options                                                                                                                  |
+| `NODE_VERSION`        | `''`                            | Node version with which the assets will be compiled. If empty, the major version from `engines.node` in `package.json` is used, with a deprecated fallback to `18` |
+| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                                                                                                 |
+| `PHP_VERSION`         | `'8.2'`                         | PHP version with which the assets compilation is to be executed                                                                                                    |
+| `COMPOSER_ARGS`       | `'--prefer-dist'`               | Set of arguments passed to Composer                                                                                                                                |
+| `COMPILE_ASSETS_ARGS` | `'-v --env=root'`               | Set of arguments passed to Composer Asset Compiler                                                                                                                 |
 
 ### Secrets
 
