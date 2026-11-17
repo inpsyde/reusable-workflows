@@ -1,11 +1,38 @@
 version: 2
+
 updates:
-  - package-ecosystem: "github-actions"
+  - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "monthly"
-
-  - package-ecosystem: "npm"
-    directory: /
+      interval: "weekly"
+      day: "monday"
+    cooldown:
+      default-days: 3
+      semver-major-days: 14
+    groups:
+      npm-security:
+        applies-to: security-updates
+        patterns: ["*"]
+      npm-production:
+        applies-to: version-updates
+        dependency-type: "production"
+        update-types: ["minor", "patch"]
+      npm-development:
+        applies-to: version-updates
+        dependency-type: "development"
+        update-types: ["minor", "patch"]
+  - package-ecosystem: "github-actions"
+    directories:
+      - "/"
+      - "/.github/actions/*"
     schedule:
       interval: "monthly"
+    cooldown:
+      default-days: 3
+    groups:
+      github-actions-security:
+        applies-to: security-updates
+        patterns: ["*"]
+      github-actions-updates:
+        applies-to: version-updates
+        update-types: ["minor", "patch"]
