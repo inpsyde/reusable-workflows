@@ -1,9 +1,12 @@
 {
   "private": true,
-  "devDependencies": {
-    "@wordpress/scripts": "^34.2.0"
+  "engines": {
+    "node": "^24.0"
   },
   "scripts": {
     "lint:md": "wp-scripts lint-md-docs"
+  },
+  "dependencies": {
+    "@wordpress/scripts": "^36.0.0"
   }
 }
