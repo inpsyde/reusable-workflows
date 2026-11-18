@@ -108,8 +108,6 @@ jobs:
       - name: Install Stylelint GitHub formatter
         if: ${{ contains(fromJSON(inputs.LINT_TOOLS), 'style') }}
         run: |
-          # Stylelint's built-in `github` formatter is deprecated. Use the official drop-in replacement,
-          # matching the formatter version to the installed Stylelint major version.
           STYLELINT_MAJOR="$(./node_modules/.bin/stylelint --version | cut -d. -f1)"
           if [ "${STYLELINT_MAJOR}" -ge 17 ]; then
             FORMATTER_VERSION='^2.0.0'
