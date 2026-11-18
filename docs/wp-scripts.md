@@ -34,7 +34,7 @@ jobs:
 | `PACKAGE_JSONLINT_ARGS` | `''`                            | Set of arguments passed to `wp-scripts lint-pkg-json` |
 
 > :information_source: **By default, "pkg-json" is not part of the `LINT_TOOLS` input.**  
-> :information_source: **The `--formatter github` flag is hardcoded into the `wp-script lint-style`
+> :information_source: **The `--custom-formatter @csstools/stylelint-formatter-github` flag is hardcoded into the `wp-script lint-style`
 command; it must not be passed via `STYLELINT_ARGS`.**
 
 #### Secrets
