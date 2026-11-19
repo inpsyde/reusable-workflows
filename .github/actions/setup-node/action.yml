@@ -94,7 +94,7 @@ runs:
         echo "version=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
 
     - name: Set up Node
-      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       env:
         NODE_OPTIONS: ${{ inputs.node-options }}
         NODE_AUTH_TOKEN: ${{ inputs.node-auth-token }}
