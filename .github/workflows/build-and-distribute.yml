@@ -332,7 +332,7 @@ jobs:
 
       - name: Set up Node
         if: ${{ env.SKIP_BUILD != 'true' }}
-        uses: inpsyde/reusable-workflows/.github/actions/setup-node@ce4cfd9ad8176f895d09ae11cb12dd65590cc94e # main
+        uses: inpsyde/reusable-workflows/.github/actions/setup-node@6fa02cd6f055bc5161f433af6f442806ff1721d9 # main
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           node-version-fallback: '18'
