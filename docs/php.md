@@ -209,15 +209,15 @@ jobs:
 
 #### Inputs
 
-| Name                  | Default                         | Description                                                                    |
-|-----------------------|---------------------------------|--------------------------------------------------------------------------------|
-| `PHP_VERSION`         | `'8.2'`                         | PHP version with which the scripts are executed                                |
-| `PHP_EXTENSIONS`      | `''`                            | PHP extensions supported by shivammathur/setup-php to be installed or disabled |
-| `COMPOSER_ARGS`       | `'--prefer-dist'`               | Set of arguments passed to Composer                                            |
-| `PHPUNIT_ARGS`        | `'--no-coverage'`               | Set of arguments passed to PHPUnit                                             |
-| `BUILD_ASSETS`        | `false`                         | Whether to install the npm dependencies and build the assets before the tests  |
-| `NODE_VERSION`        | `'24'`                          | Node version with which the assets are built                                   |
-| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                             |
+| Name                  | Default                         | Description                                                                                                                                                 |
+|-----------------------|---------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `PHP_VERSION`         | `'8.2'`                         | PHP version with which the scripts are executed                                                                                                             |
+| `PHP_EXTENSIONS`      | `''`                            | PHP extensions supported by shivammathur/setup-php to be installed or disabled                                                                              |
+| `COMPOSER_ARGS`       | `'--prefer-dist'`               | Set of arguments passed to Composer                                                                                                                         |
+| `PHPUNIT_ARGS`        | `'--no-coverage'`               | Set of arguments passed to PHPUnit                                                                                                                          |
+| `BUILD_ASSETS`        | `false`                         | Whether to install the npm dependencies and build the assets before the tests                                                                               |
+| `NODE_VERSION`        | `''`                            | Node version with which the assets are built. If empty, the major version from `engines.node` in `package.json` is used, with a deprecated fallback to `24` |
+| `NPM_REGISTRY_DOMAIN` | `'https://npm.pkg.github.com/'` | Domain of the private npm registry                                                                                                                          |
 
 #### Secrets
 

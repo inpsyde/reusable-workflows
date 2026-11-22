@@ -9,8 +9,8 @@ on:
         required: false
         type: string
       NODE_VERSION:
-        description: Node version with which the unit tests are to be executed.
-        default: 18
+        description: Node version with which the unit tests are to be executed. If empty, the major version from engines.node in package.json is used.
+        default: ''
         required: false
         type: string
       JEST_ARGS:
@@ -72,9 +72,10 @@ jobs:
           user-name: ${{ secrets.GITHUB_USER_NAME }}
 
       - name: Set up Node
-        uses: inpsyde/reusable-workflows/.github/actions/setup-node@ce4cfd9ad8176f895d09ae11cb12dd65590cc94e # main
+        uses: inpsyde/reusable-workflows/.github/actions/setup-node@6fa02cd6f055bc5161f433af6f442806ff1721d9 # main
         with:
           node-version: ${{ inputs.NODE_VERSION }}
+          node-version-fallback: '18'
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
           node-auth-token: ${{ secrets.NPM_REGISTRY_TOKEN }}
           node-options: ${{ inputs.NODE_OPTIONS }}

@@ -9,8 +9,8 @@ on:
         default: ''
         required: false
       NODE_VERSION:
-        description: Node version to be used.
-        default: 18
+        description: Node version to be used. If empty, the major version from engines.node in package.json is used.
+        default: ''
         required: false
         type: string
       NPM_REGISTRY_DOMAIN:
@@ -332,9 +332,10 @@ jobs:
 
       - name: Set up Node
         if: ${{ env.SKIP_BUILD != 'true' }}
-        uses: inpsyde/reusable-workflows/.github/actions/setup-node@ce4cfd9ad8176f895d09ae11cb12dd65590cc94e # main
+        uses: inpsyde/reusable-workflows/.github/actions/setup-node@6fa02cd6f055bc5161f433af6f442806ff1721d9 # main
         with:
           node-version: ${{ inputs.NODE_VERSION }}
+          node-version-fallback: '18'
           registry-url: ${{ inputs.NPM_REGISTRY_DOMAIN }}
           node-auth-token: ${{ secrets.NPM_REGISTRY_TOKEN }}
           node-options: ${{ inputs.NODE_OPTIONS }}
