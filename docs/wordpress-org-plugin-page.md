@@ -15,8 +15,8 @@ To ship new plugin code, use [WordPress.org Release](./wordpress-org-release.md)
 To achieve that, this workflow:
 
 1. Checks out the Git repository at `GIT_REF`
-2. When `SYNC_README` is enabled, reads the `Stable tag` from `readme.txt`
-3. When `SYNC_ASSETS` is enabled, validates every file in `ASSETS_DIR` (names, size limits, real image format and dimensions, blueprint JSON), and fails if the directory is missing or empty, or contains symlinks or unsupported subdirectories
+2. When `SYNC_README` is enabled, reads the `Stable tag` from `readme.txt`, which must be a regular file, not a symlink
+3. When `SYNC_ASSETS` is enabled, validates every file in `ASSETS_DIR` (names, size limits, real image format and dimensions, blueprint JSON), and fails if the directory is missing or empty, resolves to a path outside the repository, or contains symlinks or unsupported subdirectories
 4. Checks out only the needed parts of the WordPress.org SVN repository: `trunk/readme.txt`, the list of tags, the readme of the stable tag, and `/assets`. Plugin code is never fetched
 5. Verifies that the `Stable tag` in Git equals the `Stable tag` in SVN trunk and that this tag exists
 6. Copies `readme.txt` into `tags/<Stable tag>/` (which is what WordPress.org renders) and into `trunk/`. The trunk copy is skipped with a warning if trunk contains unreleased changes, see [Trunk previews](#trunk-previews). A warning is also shown if `Requires at least` or `Requires PHP` changes: unless the main plugin file declares them, WordPress uses these values to block installs and updates of the published version on sites that don't meet them. A notice and the job summary remind about [Release Confirmation](#release-confirmation) whenever the tag's `readme.txt` changes
