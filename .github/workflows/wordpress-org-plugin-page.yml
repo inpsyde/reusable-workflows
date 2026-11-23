@@ -751,6 +751,9 @@ jobs:
             -m "$COMMIT_MESSAGE" 2>&1 | tee "$COMMIT_LOG"; then
             if grep -qE 'E160028|E160024|out of date' "$COMMIT_LOG"; then
               echo "::error title=Concurrent SVN commit::Someone else committed to this plugin on WordPress.org in the meantime (maybe a release running at the same time). Nothing was changed. Re-run this workflow once the other run has finished."
+            elif grep -q 'E175012' "$COMMIT_LOG"; then
+              # The server can still be busy in "Committing transaction..." when svn's HTTP timeout runs out.
+              echo "::error title=SVN commit timed out::WordPress.org didn't confirm the commit in time, but it may still have gone through. Re-run this workflow: it either reports that the plugin page is already up to date or commits the changes."
             fi
             exit 1
           fi
