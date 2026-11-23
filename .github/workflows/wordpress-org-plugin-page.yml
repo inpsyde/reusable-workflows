@@ -468,15 +468,22 @@ jobs:
             done
           fi
 
-          # Without a correct svn:mime-type, browsers may download assets instead of displaying them when opened directly.
+          # Without a correct svn:mime-type, browsers may download images instead of displaying them when opened directly.
           # 'svn add' marks binaries as application/octet-stream, so this also fixes newly added files.
+          # Blueprints get no svn:mime-type: SVN treats application/json as binary, which makes their diffs unreadable,
+          # and the server sends .json files as application/json anyway. Earlier runs set it, so it is removed here.
           find assets -type f ! -path '*/.*' | while IFS= read -r file; do
             case "${file,,}" in
               *.png) MIME_TYPE="image/png" ;;
               *.jpg|*.jpeg) MIME_TYPE="image/jpeg" ;;
               *.gif) MIME_TYPE="image/gif" ;;
               *.svg) MIME_TYPE="image/svg+xml" ;;
-              *.json) MIME_TYPE="application/json" ;;
+              *.json)
+                if [ -n "$(svn propget svn:mime-type "$file@" 2>/dev/null || true)" ]; then
+                  svn propdel --quiet svn:mime-type "$file@"
+                fi
+                continue
+                ;;
               *) continue ;;
             esac
 
