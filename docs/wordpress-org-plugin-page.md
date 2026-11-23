@@ -10,26 +10,23 @@ Use it for changes like:
 - temporarily swapping a banner (e.g. for a campaign) and reverting it later
 - refreshing screenshots or adding a Playground preview blueprint
 
-To ship new plugin code, use [WordPress.org Release](./wordpress-org-release.md) instead. That workflow also publishes `readme.txt` as part of every release, so both workflows keep the plugin page in sync with Git.
+To ship new plugin code, use [WordPress.org Release](./wordpress-org-release.md) instead. That workflow also publishes `readme.txt` as part of every release, but not the assets, see [Common tasks](#common-tasks).
 
-To achieve that, this workflow:
+How it works:
 
-1. Checks out the Git repository at `GIT_REF`
-2. When `SYNC_README` is enabled, reads the `Stable tag` from `readme.txt`. The file must be a regular file (not a symlink) and have exactly one `Stable tag:` line before the first `== Section ==`
-3. When `SYNC_ASSETS` is enabled, validates every file in `ASSETS_DIR` (names, size limits, real image format and dimensions, blueprint JSON), and fails if the directory is missing or empty, resolves to a path outside the repository, or contains symlinks or unsupported subdirectories
-4. Checks out only the needed parts of the WordPress.org SVN repository: `trunk/readme.txt`, the list of tags, the readme of the stable tag, and `/assets`. Plugin code is never fetched
-5. Verifies that the `Stable tag` in Git equals the `Stable tag` in SVN trunk and that this tag exists
-6. Copies `readme.txt` into `tags/<Stable tag>/` (which is what WordPress.org renders) and into `trunk/`. The trunk copy is skipped with a warning if trunk contains unreleased changes, see [Trunk previews](#trunk-previews). A warning is also shown if `Requires at least` or `Requires PHP` changes: unless the main plugin file declares them, WordPress uses these values to block installs and updates of the published version on sites that don't meet them. A notice and the job summary remind about [Release Confirmation](#release-confirmation) whenever the tag's `readme.txt` changes
-7. Mirrors `ASSETS_DIR` to SVN `/assets` via `rsync --delete`, so files removed from Git are removed from WordPress.org as well, and sets the correct `svn:mime-type` on every image (blueprints get none, so SVN keeps treating them as text). Fails if this would remove the last icon or banner from the plugin page, and warns if it removes all screenshots
-8. Fails if anything would change that the enabled options don't allow: `trunk/readme.txt` and `tags/<Stable tag>/readme.txt` with `SYNC_README`, and recognized asset files in `/assets` with `SYNC_ASSETS`
-9. Shows the `svn status`, the removed files, and the `readme.txt` diff in the log and in the job summary on the run page
-10. Commits all changes in a single SVN commit and links it in the job summary (or uploads them as an artifact in `DRY_RUN` mode). If nothing changed, the workflow ends successfully without committing
+- **Validate:** with `SYNC_README`, `readme.txt` must be a regular file (not a symlink) with exactly one `Stable tag:` line before the first `== Section ==`. With `SYNC_ASSETS`, every file in `ASSETS_DIR` must be a [supported asset](#supported-asset-files).
+- **Check the version:** with `SYNC_README`, the `Stable tag` in Git must equal the one in SVN trunk, and that tag must exist. Only `trunk/readme.txt`, the tag's `readme.txt`, and `/assets` are checked out from SVN, never plugin code.
+- **Sync:** `readme.txt` is copied into `tags/<Stable tag>/` (which WordPress.org renders) and `trunk/`, see [Trunk previews](#trunk-previews) and [Release Confirmation](#release-confirmation). `ASSETS_DIR` is mirrored to `/assets`, so files removed from Git are removed from WordPress.org too. The run fails if it would remove the last icon or banner, or change anything other than these files, and warns if it removes all screenshots.
+- **Publish:** the changes are shown in the job summary, then committed in a single SVN commit, or uploaded as an artifact in a [dry run](#dry-run). A run without changes succeeds without committing.
 
 > [!IMPORTANT]
 > This workflow never creates tags, never changes the `Stable tag`, and never touches plugin code. Changing the `Stable tag` means publishing a different version, which is a release.
 
 > [!NOTE]
 > WordPress.org renders the plugin page from the `readme.txt` in the tag that `Stable tag` points to, not from trunk. The WordPress.org [plugin developer FAQ](https://developer.wordpress.org/plugins/wordpress-org/plugin-developer-faq/#do-i-need-to-release-a-new-version-of-my-plugin-every-time-i-update-the-readme) explicitly allows cosmetic readme and asset changes without a new release, as long as both trunk and the tag are updated.
+
+> [!NOTE]
+> `Requires at least` and `Requires PHP` in `readme.txt` aren't just displayed: unless the main plugin file declares them, WordPress uses them to block installs and updates of the published version on sites that don't meet them. The workflow warns when a run changes them.
 
 > [!NOTE]
 > Assets are served through a CDN and cached heavily. Changes can take a few minutes, and under high load up to several hours, to show up on the plugin page.
@@ -97,6 +94,46 @@ git push -u origin HEAD
 > [!WARNING]
 > A development branch is risky as `GIT_REF`. Until the next release, its `Stable tag` usually still names the published version, so the Stable tag check passes. But its `readme.txt` may already contain a changelog entry, upgrade notice, or FAQ entries for the next version, and its assets may include screenshots of unreleased features. The workflow publishes all of it without a warning.
 
+## Common tasks
+
+Make each change on a branch created as described in [Choosing `GIT_REF`](#choosing-git_ref), and check the dry run before publishing.
+
+| Task | Change on the branch | `SYNC_README` | `SYNC_ASSETS` |
+|---|---|---|---|
+| Bump `Tested up to`, add or remove a promo link | `readme.txt` | `true` | `false` |
+| Campaign banner | Replace `banner-*.png` in `.wordpress-org/` | `false` | `true` |
+| Revert the campaign banner | `git revert` the banner commit, and merge the revert into your development branch too | `false` | `true` |
+| New screenshots | `screenshot-N.png` and its caption in `== Screenshots ==` | `true` | `true` |
+| Playground preview | Add `blueprints/blueprint.json`, then make the preview public in the plugin's **Advanced View** | `false` | `true` |
+| Keep assets current after each release | None, see below | `false` | `true` |
+
+The release workflow doesn't publish `.wordpress-org/` (it's excluded via `.distignore`, see [Adopting the workflow](#adopting-the-workflow)), so assets changed in Git only reach WordPress.org with this workflow. To publish them with every release, run it right after the release:
+
+```yml
+jobs:
+  release:
+    uses: inpsyde/reusable-workflows/.github/workflows/wordpress-org-release.yml@main
+    with:
+      SVN_PLUGIN_SLUG: my-plugin
+      PLUGIN_VERSION: ${{ inputs.PLUGIN_VERSION }}
+      GIT_REF: ${{ inputs.GIT_REF }}
+      UPDATE_TRUNK_ONLY: false
+    secrets:
+      SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+      SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+  plugin-page:
+    needs: release
+    uses: inpsyde/reusable-workflows/.github/workflows/wordpress-org-plugin-page.yml@main
+    with:
+      SVN_PLUGIN_SLUG: my-plugin
+      GIT_REF: ${{ inputs.GIT_REF }}
+      SYNC_README: false  # the release already published readme.txt
+      DRY_RUN: false
+    secrets:
+      SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+      SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+```
+
 ## Advanced usage: requiring manual approval
 
 To require approval before the plugin page is updated, add an `environment:` key to the calling job and configure protection rules (required reviewers, wait timers, etc.) for that environment in your repository settings under **Settings → Environments**.
@@ -119,7 +156,7 @@ jobs:
 > The `environment:` key alone does nothing: protection rules must be explicitly configured in repository settings. An environment with no rules configured provides no approval gate.
 
 > [!WARNING]
-> An environment's **deployment branch** rule restricts the ref the *calling* workflow runs from, not `GIT_REF`. With `GIT_REF` as a free-text input, anyone allowed to run the workflow can publish the readme and assets from any branch, regardless of the environment rule. If you rely on branch rules, pass `${{ github.sha }}` or `${{ github.ref_name }}` as `GIT_REF`, or offer a `choice` input instead.
+> An environment's **deployment branch** rule restricts the ref the *calling* workflow runs from, not `GIT_REF`. With `GIT_REF` as a free-text input, anyone allowed to run the workflow can publish the readme and assets from any branch, regardless of the environment rule. This includes pull request refs like `refs/pull/<n>/head`, so even a fork's pull request can be published. If you rely on branch rules, pass `${{ github.sha }}` or `${{ github.ref_name }}` as `GIT_REF`, or offer a `choice` input instead.
 
 To use a branch created as described in [Choosing `GIT_REF`](#choosing-git_ref), run the calling workflow from that branch with `GIT_REF: ${{ github.sha }}`, and allow only `plugin-page/*` branches, with `if:` as below or with the environment's deployment branch rule. Both only check the branch name, not what the branch contains, so check the dry run either way.
 
@@ -154,6 +191,8 @@ Assets are mirrored, so the assets directory in Git must contain **every** asset
 ```shell
 svn export https://plugins.svn.wordpress.org/my-plugin/assets .wordpress-org
 ```
+
+If `.wordpress-org` already exists, add `--force` to export into it.
 
 Then:
 
@@ -250,4 +289,12 @@ If nothing would change, no artifact is uploaded and the job summary says that t
 
 ## Troubleshooting
 
-Changes are committed in a single atomic SVN commit, and a run without changes succeeds. If a run fails, even in the commit step because of a network error or a timeout, **Re-run failed jobs** is always safe. The re-run either commits the changes or reports that the plugin page is already up to date, so there is no need to fix anything in SVN by hand. If the commit failed because someone else committed in the meantime (e.g. a release running at the same time), wait until that run has finished. If that was a release, the re-run fails the Stable tag check instead, because the release published a new version: run the workflow again with a `GIT_REF` that matches it. If `GIT_REF` is a branch, a re-run uses its current state, which may include newer commits.
+Changes are committed in a single atomic SVN commit, so **Re-run failed jobs** is always safe: the re-run either commits the changes or reports that the plugin page is already up to date. There is no need to fix anything in SVN by hand. If `GIT_REF` is a branch, a re-run uses its current state, which may include newer commits.
+
+- **Stable tag mismatch:** `readme.txt` in `GIT_REF` doesn't describe the published version, e.g. it comes from a development branch or a release happened since. See [Choosing `GIT_REF`](#choosing-git_ref).
+- **"Exactly one 'Stable tag:' line":** remove duplicate `Stable tag:` lines, or move the line into the header before the first `== Section ==`.
+- **Asset rejected:** the log says why. See [Supported asset files](#supported-asset-files) for names, formats, sizes, and dimensions.
+- **Concurrent SVN commit:** someone else committed in the meantime, e.g. a release. Wait until that run has finished, then re-run. If it was a release, the re-run fails the Stable tag check: run the workflow again with a `GIT_REF` that matches the new version.
+- **SVN commit timed out, or a network error:** the commit may still have gone through. Re-run to find out.
+- **trunk/readme.txt left unchanged:** trunk holds unreleased changes, see [Trunk previews](#trunk-previews).
+- **Plugin page not updated:** wait for the CDN cache (minutes, sometimes hours). With [Release Confirmation](#release-confirmation), the release must be confirmed again first.
