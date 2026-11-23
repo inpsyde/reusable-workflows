@@ -23,7 +23,7 @@ To achieve that, this workflow:
 7. Mirrors `ASSETS_DIR` to SVN `/assets` via `rsync --delete`, so files removed from Git are removed from WordPress.org as well, and sets the correct `svn:mime-type` on every image (blueprints get none, so SVN keeps treating them as text). Fails if this would remove the last icon or banner from the plugin page, and warns if it removes all screenshots
 8. Fails if anything would change that the enabled options don't allow: `trunk/readme.txt` and `tags/<Stable tag>/readme.txt` with `SYNC_README`, and recognized asset files in `/assets` with `SYNC_ASSETS`
 9. Shows the `svn status`, the removed files, and the `readme.txt` diff in the log and in the job summary on the run page
-10. Commits all changes in a single SVN commit (or uploads them as an artifact in `DRY_RUN` mode). If nothing changed, the workflow ends successfully without committing
+10. Commits all changes in a single SVN commit and links it in the job summary (or uploads them as an artifact in `DRY_RUN` mode). If nothing changed, the workflow ends successfully without committing
 
 > [!IMPORTANT]
 > This workflow never creates tags, never changes the `Stable tag`, and never touches plugin code. Changing the `Stable tag` means publishing a different version, which is a release.

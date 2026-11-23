@@ -475,14 +475,18 @@ jobs:
           fi
 
           # The plugin page is rendered from the readme.txt of the Stable tag.
-          cp "$GIT_README" "$TAG_README"
-          echo "✅ Updated $TAG_README"
+          if cmp -s "$GIT_README" "$TAG_README"; then
+            echo "ℹ️ $TAG_README is already up to date"
+          else
+            cp "$GIT_README" "$TAG_README"
+            echo "✅ Updated $TAG_README"
+          fi
 
-          if [ "$TRUNK_IN_SYNC" = "true" ]; then
+          if cmp -s trunk/readme.txt "$GIT_README"; then
+            echo "ℹ️ trunk/readme.txt is already up to date"
+          elif [ "$TRUNK_IN_SYNC" = "true" ]; then
             cp "$GIT_README" trunk/readme.txt
             echo "✅ Updated trunk/readme.txt"
-          elif cmp -s trunk/readme.txt "$GIT_README"; then
-            echo "ℹ️ trunk/readme.txt already matches readme.txt from Git"
           else
             echo "::warning title=trunk/readme.txt left unchanged::SVN trunk contains unreleased readme.txt changes (likely a trunk preview). Only $TAG_README was updated. Make sure the same change is part of the upcoming release."
 
@@ -660,6 +664,7 @@ jobs:
       - name: Show SVN changes
         id: svn_status
         env:
+          DRY_RUN: ${{ inputs.DRY_RUN }}
           SYNC_README: ${{ inputs.SYNC_README }}
           SYNC_ASSETS: ${{ inputs.SYNC_ASSETS }}
           STABLE_TAG: ${{ steps.readme.outputs.STABLE_TAG }}
@@ -696,9 +701,19 @@ jobs:
 
           DELETED=$(grep '^D' <<< "$STATUS" | cut -c9- || true)
 
+          README_DIFF=""
+          if [ "${#README_PATHS[@]}" -gt 0 ]; then
+            README_DIFF=$(svn diff "${README_PATHS[@]}")
+          fi
+
           # Readme files may contain ``` themselves, so a longer fence is used.
           {
-            echo '### SVN changes'
+            # Dry and live runs show the same changes, so the heading says whether they were committed.
+            if [ "$DRY_RUN" = "true" ]; then
+              echo '### SVN changes (dry run, nothing committed)'
+            else
+              echo '### SVN changes'
+            fi
             echo '`````'
             echo "$STATUS"
             echo '`````'
@@ -711,10 +726,10 @@ jobs:
             fi
 
             # Readme diffs are text and worth reviewing; binary assets are listed by status only.
-            if [ "${#README_PATHS[@]}" -gt 0 ]; then
+            if [ -n "$README_DIFF" ]; then
               echo '### readme.txt diff'
               echo '`````diff'
-              svn diff "${README_PATHS[@]}"
+              echo "$README_DIFF"
               echo '`````'
             fi
           } | tee -a "$GITHUB_STEP_SUMMARY"
@@ -724,6 +739,7 @@ jobs:
         env:
           SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
           SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SVN_PLUGIN_SLUG: ${{ inputs.SVN_PLUGIN_SLUG }}
           GIT_REF: ${{ inputs.GIT_REF }}
           SHORT_SHA: ${{ steps.git_revision.outputs.SHORT_SHA }}
           HAS_CHANGES: ${{ steps.svn_status.outputs.HAS_CHANGES }}
@@ -763,7 +779,15 @@ jobs:
             exit 1
           fi
 
-          echo "✅ WordPress.org plugin page updated. Changes may take a few minutes (up to hours) to show due to CDN caching."
+          REVISION=$(grep -oP 'Committed revision \K[0-9]+' "$COMMIT_LOG" || true)
+          {
+            if [ -n "$REVISION" ]; then
+              echo "✅ Committed [r$REVISION](https://plugins.trac.wordpress.org/changeset/$REVISION) to WordPress.org."
+            else
+              echo "✅ Committed to WordPress.org."
+            fi
+            echo "The [plugin page](https://wordpress.org/plugins/$SVN_PLUGIN_SLUG/) may take a few minutes (up to hours) to show the changes due to CDN caching."
+          } | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Prepare dry run preview
         if: inputs.DRY_RUN == true && steps.svn_status.outputs.HAS_CHANGES == 'true'
