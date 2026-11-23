@@ -62,6 +62,20 @@ jobs:
       ICON_RE: '^icon-(128x128|256x256)(-rtl)?(-[a-z]{2,3}(_[a-z]{2})?(_[a-z0-9]+)?)?\.(png|jpg|jpeg|gif)$'
       SCREENSHOT_RE: '^screenshot-[0-9]+(-rtl)?(-[a-z]{2,3}(_[a-z]{2})?(_[a-z0-9]+)?)?\.(png|jpg|jpeg|gif)$'
       BLUEPRINT_RE: '^blueprints/blueprint[-A-Za-z0-9_]*\.json$'
+      # Prints the value of every readme.txt header line with the given key, one per line. Only lines before the
+      # first == Section == count. The key is case-insensitive, and spaces, "*" and "-" around key and value are ignored.
+      # Callers decide what zero or several matches mean, so an ambiguous readme fails instead of guessing
+      # which value WordPress.org would use. Usage: awk -v key="stable tag" "$README_HEADER_AWK" readme.txt
+      README_HEADER_AWK: |
+        { sub(/\r$/, "") }
+        /^==[^=]/ { exit }
+        index($0, ":") {
+          k = tolower(substr($0, 1, index($0, ":") - 1))
+          v = substr($0, index($0, ":") + 1)
+          gsub(/^[ \t*-]+|[ \t*-]+$/, "", k)
+          gsub(/^[ \t*-]+|[ \t*-]+$/, "", v)
+          if (k == tolower(key)) print v
+        }
     steps:
       - name: Install required tools
         env:
@@ -148,11 +162,16 @@ jobs:
             exit 1
           fi
 
-          STABLE_TAG=$(grep -m1 -iE '^[[:space:]]*([*+-][[:space:]]+)?Stable tag:' readme.txt \
-            | sed -E 's/^.*Stable tag:[[:space:]]*//I; s/[[:space:]]+$//' | tr -d '\r' || true)
+          # The Stable tag decides which SVN tag gets the readme, so anything ambiguous fails.
+          mapfile -t STABLE_TAGS < <(awk -v key="stable tag" "$README_HEADER_AWK" readme.txt)
+          if [ "${#STABLE_TAGS[@]}" -ne 1 ]; then
+            echo "❌ readme.txt must have exactly one 'Stable tag:' line before the first == Section ==, found ${#STABLE_TAGS[@]}"
+            exit 1
+          fi
+          STABLE_TAG="${STABLE_TAGS[0]}"
 
           if [ -z "$STABLE_TAG" ]; then
-            echo "❌ Could not extract 'Stable tag:' from readme.txt"
+            echo "❌ 'Stable tag:' in readme.txt is empty"
             exit 1
           fi
 
@@ -380,8 +399,13 @@ jobs:
             exit 1
           fi
 
-          SVN_STABLE_TAG=$(grep -m1 -iE '^[[:space:]]*([*+-][[:space:]]+)?Stable tag:' trunk/readme.txt \
-            | sed -E 's/^.*Stable tag:[[:space:]]*//I; s/[[:space:]]+$//' | tr -d '\r' || true)
+          mapfile -t SVN_STABLE_TAGS < <(awk -v key="stable tag" "$README_HEADER_AWK" trunk/readme.txt)
+          if [ "${#SVN_STABLE_TAGS[@]}" -ne 1 ]; then
+            echo "❌ trunk/readme.txt in SVN must have exactly one 'Stable tag:' line before the first == Section ==, found ${#SVN_STABLE_TAGS[@]}"
+            echo "   Fix trunk/readme.txt in SVN first, e.g. with the next release."
+            exit 1
+          fi
+          SVN_STABLE_TAG="${SVN_STABLE_TAGS[0]}"
 
           # Changing the Stable tag means publishing a different version - that is a release.
           if [ "$STABLE_TAG" != "$SVN_STABLE_TAG" ]; then
@@ -410,9 +434,10 @@ jobs:
           GIT_README="$GITHUB_WORKSPACE/readme.txt"
           TAG_README="tags/$STABLE_TAG/readme.txt"
 
+          # Several matches are joined into one line: the value ends up in a ::warning, and a line break would let
+          # readme.txt start its own workflow command on the next line.
           readme_header() {
-            grep -m1 -iE "^[[:space:]]*([*+-][[:space:]]+)?$1:" "$2" \
-              | sed -E 's/^[^:]*:[[:space:]]*//; s/[[:space:]]+$//' | tr -d '\r' || true
+            awk -v key="$1" "$README_HEADER_AWK" "$2" | paste -sd ',' -
           }
 
           # Unlike the rest of readme.txt, these headers aren't just displayed: unless the main plugin file

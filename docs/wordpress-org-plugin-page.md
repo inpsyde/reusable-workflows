@@ -15,7 +15,7 @@ To ship new plugin code, use [WordPress.org Release](./wordpress-org-release.md)
 To achieve that, this workflow:
 
 1. Checks out the Git repository at `GIT_REF`
-2. When `SYNC_README` is enabled, reads the `Stable tag` from `readme.txt`, which must be a regular file, not a symlink
+2. When `SYNC_README` is enabled, reads the `Stable tag` from `readme.txt`. The file must be a regular file (not a symlink) and have exactly one `Stable tag:` line before the first `== Section ==`
 3. When `SYNC_ASSETS` is enabled, validates every file in `ASSETS_DIR` (names, size limits, real image format and dimensions, blueprint JSON), and fails if the directory is missing or empty, resolves to a path outside the repository, or contains symlinks or unsupported subdirectories
 4. Checks out only the needed parts of the WordPress.org SVN repository: `trunk/readme.txt`, the list of tags, the readme of the stable tag, and `/assets`. Plugin code is never fetched
 5. Verifies that the `Stable tag` in Git equals the `Stable tag` in SVN trunk and that this tag exists
