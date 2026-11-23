@@ -556,16 +556,21 @@ jobs:
           mapfile -t REMAINING < <(cd assets && find . -type f ! -path '*/.*' -printf '%P\n')
 
           # Only default assets count: localized ones (-rtl, -de, ...) are shown just for those locales.
+          # The shared patterns also match localized names. Every locale suffix starts with "-", so a default
+          # name has exactly one "-" before the extension (icon-128x128.png, screenshot-1.png).
           count_assets() {
-            local TYPE="$1" COUNT=0 NAME LOWER
+            local TYPE="$1" COUNT=0 NAME LOWER RE
             shift
+            case "$TYPE" in
+              icon) RE="$ICON_RE" ;;
+              banner) RE="$BANNER_RE" ;;
+              screenshot) RE="$SCREENSHOT_RE" ;;
+            esac
             for NAME in "$@"; do
               LOWER="${NAME,,}"
-              case "$TYPE" in
-                icon) [[ "$LOWER" =~ ^icon-(128x128|256x256)\.(png|jpg|jpeg|gif)$ || "$NAME" = "icon.svg" ]] ;;
-                banner) [[ "$LOWER" =~ ^banner-(772x250|1544x500)\.(png|jpg|jpeg|gif)$ ]] ;;
-                screenshot) [[ "$LOWER" =~ ^screenshot-[0-9]+\.(png|jpg|jpeg|gif)$ ]] ;;
-              esac && COUNT=$((COUNT + 1))
+              if [[ ( "$LOWER" =~ $RE && "${LOWER%.*}" != *-*-* ) || ( "$TYPE" = "icon" && "$NAME" = "icon.svg" ) ]]; then
+                COUNT=$((COUNT + 1))
+              fi
             done
             echo "$COUNT"
           }
