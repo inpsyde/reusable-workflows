@@ -106,15 +106,11 @@ jobs:
         if: ${{ contains(fromJSON(inputs.LINT_TOOLS), 'js') }}
         run: ./node_modules/.bin/wp-scripts lint-js ${{ inputs.ESLINT_ARGS }}
 
-      - name: Install Stylelint GitHub formatter
-        if: ${{ contains(fromJSON(inputs.LINT_TOOLS), 'style') }}
-        run: |
-          # Stylelint's built-in `github` formatter is deprecated. Use the official drop-in replacement.
-          npm install --no-save --no-package-lock "@csstools/stylelint-formatter-github@^2.0.0"
-
       - name: Lint style files
         if: ${{ contains(fromJSON(inputs.LINT_TOOLS), 'style') }}
-        run: ./node_modules/.bin/wp-scripts lint-style ${{ inputs.STYLELINT_ARGS }} --custom-formatter @csstools/stylelint-formatter-github
+        run: |
+          npm install --no-save --no-package-lock "@csstools/stylelint-formatter-github"
+          ./node_modules/.bin/wp-scripts lint-style ${{ inputs.STYLELINT_ARGS }} --custom-formatter @csstools/stylelint-formatter-github
 
       - name: Lint markdown files
         if: ${{ contains(fromJSON(inputs.LINT_TOOLS), 'md-docs') }}
