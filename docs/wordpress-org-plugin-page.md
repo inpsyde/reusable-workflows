@@ -19,7 +19,7 @@ To achieve that, this workflow:
 3. When `SYNC_ASSETS` is enabled, validates every file in `ASSETS_DIR` (names, size limits, real image format and dimensions, blueprint JSON), and fails if the directory is missing or empty, or contains symlinks or unsupported subdirectories
 4. Checks out only the needed parts of the WordPress.org SVN repository: `trunk/readme.txt`, the list of tags, the readme of the stable tag, and `/assets`. Plugin code is never fetched
 5. Verifies that the `Stable tag` in Git equals the `Stable tag` in SVN trunk and that this tag exists
-6. Copies `readme.txt` into `tags/<Stable tag>/` (which is what WordPress.org renders) and into `trunk/`. The trunk copy is skipped with a warning if trunk contains unreleased changes, see [Trunk previews](#trunk-previews). A warning is also shown if `Requires at least` or `Requires PHP` changes: unless the main plugin file declares them, WordPress uses these values to block installs and updates of the published version on sites that don't meet them. A notice reminds about [Release Confirmation](#release-confirmation) whenever the tag's `readme.txt` changes
+6. Copies `readme.txt` into `tags/<Stable tag>/` (which is what WordPress.org renders) and into `trunk/`. The trunk copy is skipped with a warning if trunk contains unreleased changes, see [Trunk previews](#trunk-previews). A warning is also shown if `Requires at least` or `Requires PHP` changes: unless the main plugin file declares them, WordPress uses these values to block installs and updates of the published version on sites that don't meet them. A notice and the job summary remind about [Release Confirmation](#release-confirmation) whenever the tag's `readme.txt` changes
 7. Mirrors `ASSETS_DIR` to SVN `/assets` via `rsync --delete`, so files removed from Git are removed from WordPress.org as well, and sets the correct `svn:mime-type` on every image (blueprints get none, so SVN keeps treating them as text). Fails if this would remove the last icon or banner from the plugin page, and warns if it removes all screenshots
 8. Fails if anything would change that the enabled options don't allow: `trunk/readme.txt` and `tags/<Stable tag>/readme.txt` with `SYNC_README`, and recognized asset files in `/assets` with `SYNC_ASSETS`
 9. Shows the `svn status`, the removed files, and the `readme.txt` diff in the log and in the job summary on the run page
@@ -176,10 +176,11 @@ If SVN `trunk/readme.txt` differs from `tags/<Stable tag>/readme.txt` before the
 Judging by the plugin directory importer's code, the scenario appears to be handled: WordPress.org treats any commit to an already released tag as a [modified release](https://github.com/WordPress/wordpress.org/commit/8d1727f0e331ccfebce432bdfcf4c30db16e2803), even one that only changes `readme.txt`. Updating `tags/<Stable tag>/readme.txt` then:
 
 - reopens that release for confirmation and sends the confirmation email to all committers again
-- restarts the release cooldown
+- restarts the release cooldown, a delay WordPress.org can apply before it serves a new release
 - keeps the plugin page from updating until the release is confirmed again
+- marks the release's ZIP as not built, so it is rebuilt with the new `readme.txt` once the release is confirmed again
 
-This behavior isn't documented and may change. It's also unclear whether the downloadable ZIP of the release is rebuilt with the new `readme.txt`.
+This behavior isn't documented and may change. Whenever the tag's `readme.txt` changes, the workflow points this out in a notice and in the job summary.
 
 Asset-only runs (`SYNC_README: false`) don't touch any tag and are not affected.
 
