@@ -72,10 +72,30 @@ jobs:
       SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
 ```
 
-`GIT_REF` should point to a ref whose `readme.txt` describes the **currently published** version, such as the Git tag of the latest release plus the cosmetic change, or the branch that holds the released state. A development branch whose `readme.txt` already carries the next version's `Stable tag` fails the Stable tag check by design.
+For which ref to pass as `GIT_REF`, see [Choosing `GIT_REF`](#choosing-git_ref).
 
 > [!IMPORTANT]
 > `DRY_RUN` defaults to `true`, so a caller that doesn't pass it only previews the changes. Set `DRY_RUN: false` to actually update the plugin page.
+
+## Choosing `GIT_REF`
+
+The workflow publishes `readme.txt` and `ASSETS_DIR` from `GIT_REF` as they are, and ignores the plugin code. In `GIT_REF`, both should match what is currently published, plus only the change you want to publish.
+
+To get there, create a branch from the latest release: its Git tag, or the commit you released from if you don't tag releases. If the plugin page was updated with this workflow after the release, create it from that update's branch instead, or your run reverts that update.
+
+```shell
+git switch -c plugin-page/tested-up-to-6.9 v1.2.3
+# edit readme.txt, e.g. "Tested up to: 6.9"
+git commit -am "Bump Tested up to 6.9"
+git push -u origin HEAD
+```
+
+1. Run the workflow with `GIT_REF: plugin-page/tested-up-to-6.9` and `DRY_RUN: true`. In the job summary, the SVN changes and the `readme.txt` diff should show only your change.
+2. Run it again with `DRY_RUN: false`.
+3. Merge the branch into your development branch, so the next release keeps the change.
+
+> [!WARNING]
+> A development branch is risky as `GIT_REF`. Until the next release, its `Stable tag` usually still names the published version, so the Stable tag check passes. But its `readme.txt` may already contain a changelog entry, upgrade notice, or FAQ entries for the next version, and its assets may include screenshots of unreleased features. The workflow publishes all of it without a warning.
 
 ## Advanced usage: requiring manual approval
 
@@ -100,6 +120,32 @@ jobs:
 
 > [!WARNING]
 > An environment's **deployment branch** rule restricts the ref the *calling* workflow runs from, not `GIT_REF`. With `GIT_REF` as a free-text input, anyone allowed to run the workflow can publish the readme and assets from any branch, regardless of the environment rule. If you rely on branch rules, pass `${{ github.sha }}` or `${{ github.ref_name }}` as `GIT_REF`, or offer a `choice` input instead.
+
+To use a branch created as described in [Choosing `GIT_REF`](#choosing-git_ref), run the calling workflow from that branch with `GIT_REF: ${{ github.sha }}`, and allow only `plugin-page/*` branches, with `if:` as below or with the environment's deployment branch rule. Both only check the branch name, not what the branch contains, so check the dry run either way.
+
+```yml
+on:
+  workflow_dispatch:
+    inputs:
+      DRY_RUN:
+        description: 'Upload the changes as an artifact instead of committing to SVN'
+        type: boolean
+        default: true
+jobs:
+  update-plugin-page:
+    if: startsWith(github.ref, 'refs/heads/plugin-page/')  # runs from other branches are skipped
+    environment: wordpress-org
+    uses: inpsyde/reusable-workflows/.github/workflows/wordpress-org-plugin-page.yml@main
+    with:
+      SVN_PLUGIN_SLUG: my-plugin
+      GIT_REF: ${{ github.sha }}
+      DRY_RUN: ${{ inputs.DRY_RUN }}
+    secrets:
+      SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+      SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+```
+
+The calling workflow file must exist on that branch. If the release is older than the file, copy it over and commit it, e.g. `git restore --source=develop -- .github/workflows/update-plugin-page.yml`.
 
 ## Adopting the workflow
 
