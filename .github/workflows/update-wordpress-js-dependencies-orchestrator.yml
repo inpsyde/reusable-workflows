@@ -1,0 +1,60 @@
+name: Update WordPress JS Dependencies Orchestrator
+on:
+  workflow_call:
+    inputs:
+      WP_DIST_TAG:
+        description: The dist tag to update the dependencies to, e.g., `wp-6.7`
+        required: true
+        type: string
+      PACKAGES:
+        description: Comma-separated list of additional `owner/repo`s to be updated.
+        required: false
+        type: string
+    secrets:
+      GH_TOKEN:
+        description: A personal access token (classic) with `repo` and `workflow` permissions, used to authenticate when calling GitHub APIs in target repositories.
+        required: true
+      
+jobs:
+  update-dependencies-orchestrator:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      WP_DIST_TAG: ${{ inputs.WP_DIST_TAG }}
+      PACKAGES: ${{ inputs.PACKAGES }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Gather packages and call the individual workflows.
+      run: |
+        # Initialize an array for packages
+        packages=()
+
+        # Add packages from composer.json if it exists
+        if [ -f composer.json ]; then
+          composer_packages=$(cat composer.json | jq -r '.require | keys[]')
+          for pkg in $composer_packages; do
+            packages+=("$pkg")
+          done
+        fi
+
+        # Add packages from the PACKAGES environment variable
+        IFS=',' read -r -a env_packages <<< "$PACKAGES"
+        for pkg in "${env_packages[@]}"; do
+          packages+=("$pkg")
+        done
+
+        # Process all unique packages
+        unique_packages=$(echo "${packages[@]}" | tr ' ' '\n' | sort -u)
+
+        for package in ${unique_packages[@]}; do
+          echo "Processing package: $package"
+          gh workflow run update-wordpress-js-dependencies.yml \
+            --repo $package \
+            --field WP_DIST_TAG=${{ env.WP_DIST_TAG }}
+        done
