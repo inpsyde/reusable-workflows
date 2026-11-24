@@ -109,7 +109,7 @@ jobs:
       - name: Lint style files
         if: ${{ contains(fromJSON(inputs.LINT_TOOLS), 'style') }}
         run: |
-          npm install --no-save --no-package-lock "@csstools/stylelint-formatter-github"
+          npm install --no-save --no-package-lock "@csstools/stylelint-formatter-github@2.0.0"
           ./node_modules/.bin/wp-scripts lint-style ${{ inputs.STYLELINT_ARGS }} --custom-formatter @csstools/stylelint-formatter-github
 
       - name: Lint markdown files
