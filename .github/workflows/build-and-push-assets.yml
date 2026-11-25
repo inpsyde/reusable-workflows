@@ -162,7 +162,7 @@ jobs:
         env:
           GITHUB_USER_SSH_KEY: ${{ secrets.GITHUB_USER_SSH_KEY }}
         if: ${{ env.GITHUB_USER_SSH_KEY != '' }}
-        uses: webfactory/ssh-agent@a6f90b1f127823b31d4d4a8d96047790581349bd # v0.9.1
+        uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
         with:
           ssh-private-key: ${{ env.GITHUB_USER_SSH_KEY }}
 
@@ -268,7 +268,7 @@ jobs:
 
       - name: Set up PHP
         if: ${{ inputs.PHP_TOOLS }}
-        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2.37.2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2.40.0
         with:
           php-version: ${{ inputs.PHP_VERSION }}
           tools: ${{ inputs.PHP_TOOLS }}
